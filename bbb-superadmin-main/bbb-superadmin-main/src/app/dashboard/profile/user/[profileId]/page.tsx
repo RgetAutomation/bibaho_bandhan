@@ -139,7 +139,7 @@ export default async function UserProfileId({
         <div className="flex flex-col xl:flex-row">
           
           {/* Left Column - Media */}
-          <div className="w-full xl:w-[280px] p-5 border-b xl:border-b-0 xl:border-r border-gray-100 flex flex-col gap-3 shrink-0">
+          <div className="w-full xl:w-[220px] p-5 border-b xl:border-b-0 xl:border-r border-gray-100 flex flex-col gap-3 shrink-0">
             <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
               {data.avatar ? (
                 <img src={data.avatar} alt={fullName} className="w-full h-full object-cover" />
@@ -166,7 +166,7 @@ export default async function UserProfileId({
           </div>
 
           {/* Middle Column - Core Info */}
-          <div className="flex-1 p-5 md:p-6 lg:p-8 flex flex-col min-w-0">
+          <div className="flex-1 p-5 lg:p-6 flex flex-col min-w-0">
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 h-full">
               <div className="flex flex-col h-full w-full">
                 <div className="flex items-center gap-3 mb-1">
@@ -193,7 +193,7 @@ export default async function UserProfileId({
                 </div>
 
                 {/* Badges */}
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {data.isProfileComplete && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">
                       <BadgeCheck className="w-3.5 h-3.5" /> Verified
@@ -212,7 +212,7 @@ export default async function UserProfileId({
                 </div>
 
                 {/* Key Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 py-5 border-y border-gray-100 mb-5">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 py-4 border-y border-gray-100 mb-4">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 text-gray-500 mb-1">
                       <Users className="w-4 h-4" />
@@ -279,7 +279,7 @@ export default async function UserProfileId({
           </div>
 
           {/* Right Column - Meta Details */}
-          <div className="w-full xl:w-[320px] p-5 md:p-6 lg:p-8 border-t xl:border-t-0 xl:border-l border-gray-100 bg-gray-50/50 flex flex-col shrink-0">
+          <div className="w-full xl:w-[300px] p-5 lg:p-6 border-t xl:border-t-0 xl:border-l border-gray-100 bg-gray-50/50 flex flex-col shrink-0">
             <div className="flex flex-col gap-4 flex-1">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Registration Date</span>
