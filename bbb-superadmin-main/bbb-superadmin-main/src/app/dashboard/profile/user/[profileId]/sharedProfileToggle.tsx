@@ -1,10 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Share2 } from "lucide-react";
+import { Share2, Loader2 } from "lucide-react";
+import { toggleSharedProfile } from "@/action/toggleSharedProfile";
 
-export default function SharedProfileToggle() {
-  const [isShared, setIsShared] = useState(false);
+export default function SharedProfileToggle({ userId, initialValue = false }: { userId: string, initialValue?: boolean }) {
+  const [isShared, setIsShared] = useState(initialValue);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+    setIsShared(newValue); // Optimistic UI update
+    setIsLoading(true);
+
+    const result = await toggleSharedProfile(userId, newValue);
+    if (!result.success) {
+      setIsShared(!newValue); // Revert on failure
+      alert("Failed to update Shared Profile status");
+    }
+    
+    setIsLoading(false);
+  };
 
   return (
     <div className="flex items-center gap-2 ml-2">
@@ -12,10 +28,13 @@ export default function SharedProfileToggle() {
         <input 
           type="checkbox" 
           checked={isShared} 
-          onChange={(e) => setIsShared(e.target.checked)} 
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+          onChange={handleToggle} 
+          disabled={isLoading}
+          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 disabled:opacity-50"
         />
-        <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Mark Shared</span>
+        <span className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+          Mark Shared {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+        </span>
       </label>
       
       {isShared && (
