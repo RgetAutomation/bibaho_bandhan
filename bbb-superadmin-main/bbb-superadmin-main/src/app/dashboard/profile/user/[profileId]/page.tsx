@@ -172,30 +172,30 @@ export default async function UserProfileId({
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 h-full">
               <div className="flex flex-col h-full w-full">
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">{fullName}</h1>
+                  <h1 className="text-xl lg:text-2xl font-bold text-foreground truncate">{fullName}</h1>
                   {data.blocked ? (
-                    <span className="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-1 shrink-0">
+                    <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[11px] font-semibold flex items-center gap-1 shrink-0">
                       <Ban className="w-3 h-3" /> Blocked
                     </span>
                   ) : (
-                    <span className="px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold flex items-center gap-1 shrink-0">
+                    <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[11px] font-semibold flex items-center gap-1 shrink-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400" /> Active
                     </span>
                   )}
                 </div>
                 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <div className="flex items-center gap-2 text-[12px] text-muted-foreground mb-3">
                   <span className="font-medium">Profile ID:</span>
                   <span className="font-bold text-foreground">{data.publicId}</span>
                   <CopyableComponent copyText={data.publicId}>
                     <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                      <Copy className="w-4 h-4" />
+                      <Copy className="w-3.5 h-3.5" />
                     </span>
                   </CopyableComponent>
                 </div>
 
                 {/* Badges */}
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {data.isProfileComplete && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-100 dark:border-emerald-800">
                       <BadgeCheck className="w-3.5 h-3.5" /> Verified
@@ -214,63 +214,63 @@ export default async function UserProfileId({
                 </div>
 
                 {/* Key Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 py-4 border-y border-border mb-4">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                      <Users className="w-4 h-4" />
-                      <span className="text-xs font-medium uppercase tracking-wider">Age</span>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 py-3 border-y border-border mb-3">
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Age</span>
                     </div>
-                    <span className="font-semibold text-foreground">{p?.dob ? `${new Date().getFullYear() - new Date(p.dob).getFullYear()} Yrs` : "—"}</span>
+                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.dob ? `${new Date().getFullYear() - new Date(p.dob).getFullYear()} Yrs` : "—"}</span>
                   </div>
                   
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                      <Ruler className="w-4 h-4" />
-                      <span className="text-xs font-medium uppercase tracking-wider">Height</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+                      <Ruler className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Height</span>
                     </div>
-                    <span className="font-semibold text-foreground">{p?.height || "—"}</span>
+                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.height || "—"}</span>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                      <Book className="w-4 h-4" />
-                      <span className="text-xs font-medium uppercase tracking-wider">Religion</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+                      <Book className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Religion</span>
                     </div>
-                    <span className="font-semibold text-foreground">{p?.religion || "—"}</span>
+                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.religion || "—"}</span>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-                      <Heart className="w-4 h-4" />
-                      <span className="text-xs font-medium uppercase tracking-wider">Marital Status</span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
+                      <Heart className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Marital</span>
                     </div>
-                    <span className="font-semibold text-foreground">{p?.maritalStatus || "—"}</span>
+                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.maritalStatus || "—"}</span>
                   </div>
                 </div>
 
                 {/* Bottom Info */}
-                <div className="flex flex-col lg:flex-row lg:items-center gap-6 justify-between mt-auto">
-                  <div className="flex items-center gap-6 lg:gap-10">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs text-muted-foreground">Mother Tongue</span>
-                      <span className="font-semibold text-sm text-foreground">{p?.language || "—"}</span>
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between mt-auto">
+                  <div className="flex items-center gap-4 lg:gap-6">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Mother Tongue</span>
+                      <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.language || "—"}</span>
                     </div>
                     
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> Location</span>
-                      <span className="font-semibold text-sm text-foreground">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> Location</span>
+                      <span className="font-semibold text-[13px] text-foreground leading-tight line-clamp-1">
                         {p?.dist || p?.state ? [p?.dist, p?.state].filter(Boolean).join(", ") : "—"}
                       </span>
                     </div>
                   </div>
 
                   {/* Profile Completion */}
-                  <div className="flex flex-col gap-2 min-w-[200px]">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground">Profile Completion</span>
+                  <div className="flex flex-col gap-1.5 min-w-[150px]">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-muted-foreground font-medium uppercase tracking-wider">Profile Completion</span>
                       <span className="font-bold text-foreground">{calculateCompletion(p)}%</span>
                     </div>
-                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${calculateCompletion(p)}%` }} />
                     </div>
                   </div>
