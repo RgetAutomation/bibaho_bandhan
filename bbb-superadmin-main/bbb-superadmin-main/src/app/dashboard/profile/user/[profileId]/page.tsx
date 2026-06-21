@@ -288,7 +288,7 @@ export default async function UserProfileId({
               
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Last Login</span>
-                <span className="text-sm font-semibold text-gray-900">{data.updatedAt ? formatDate(data.updatedAt) : "—"}</span>
+                <span className="text-sm font-semibold text-gray-900">{(data as any).updatedAt ? formatDate((data as any).updatedAt) : "—"}</span>
               </div>
               
               <div className="flex justify-between items-center">
@@ -301,17 +301,17 @@ export default async function UserProfileId({
                 <span className="text-sm font-semibold text-gray-900">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
               </div>
               
-              {data.assignedMatchmaker && (
+              {(data as any).assignedMatchmaker && (
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500">Assigned Matchmaker</span>
-                  <span className="text-sm font-semibold text-gray-900">{data.assignedMatchmaker}</span>
+                  <span className="text-sm font-semibold text-gray-900">{(data as any).assignedMatchmaker}</span>
                 </div>
               )}
               
-              {data.viewsCount !== undefined && (
+              {(data as any).viewsCount !== undefined && (
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500">Profile Views</span>
-                  <span className="text-sm font-semibold text-gray-900">{data.viewsCount}</span>
+                  <span className="text-sm font-semibold text-gray-900">{(data as any).viewsCount}</span>
                 </div>
               )}
             </div>
