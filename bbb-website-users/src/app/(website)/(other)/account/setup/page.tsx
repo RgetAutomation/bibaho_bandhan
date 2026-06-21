@@ -30,7 +30,7 @@ const STEPS = [
 // ─── Step Indicator Component ──────────────────────────────────────────────────
 function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
-    <div className="flex items-center gap-1 md:gap-2 overflow-x-auto pb-2 custom-scrollbar">
+    <div className="flex items-center gap-1 md:gap-2 overflow-x-auto pb-2 scrollbar-hide">
       {STEPS.map((step, idx) => {
         const isCurrent = step.id === currentStep;
         const isCompleted = step.id < currentStep;
@@ -82,7 +82,7 @@ export default function CompleteProfilePage() {
   return (
     <div className="flex flex-col xl:flex-row h-[calc(100dvh-5rem)] bg-background">
       {/* Left side: Main Content */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-hide">
         {/* Step Progress Bar */}
         <StepIndicator currentStep={currentStep} />
 
@@ -100,7 +100,7 @@ export default function CompleteProfilePage() {
       </div>
 
       {/* Right side: Summary / Sidebar */}
-      <div className="hidden xl:flex w-[350px] 2xl:w-[400px] border-l border-border bg-card p-6 flex-col overflow-y-auto custom-scrollbar">
+      <div className="hidden xl:flex w-[350px] 2xl:w-[400px] border-l border-border bg-card p-6 flex-col overflow-y-auto scrollbar-hide">
         <h3 className="font-semibold text-lg mb-4 text-slate-800 dark:text-foreground">Why complete your profile?</h3>
         
         <div className="space-y-6">
