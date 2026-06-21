@@ -13,7 +13,7 @@ import { authClient } from "@/lib/auth-client";
 import api from "@/lib/axiosInstance";
 import { LoadingButton } from "@/components/loadingButton";
 
-export default function Step8FaceVerify({ onBack }: { onBack: () => void }) {
+export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [faceVerified, setFaceVerified] = useState(false);
@@ -114,7 +114,7 @@ export default function Step8FaceVerify({ onBack }: { onBack: () => void }) {
           </Button>
           <p className="text-xs text-muted-foreground">Your account will only be created after this step is complete.</p>
           <Button type="button" variant="ghost" className="rounded-full" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Partner Preferences
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Photos
           </Button>
         </div>
       </div>

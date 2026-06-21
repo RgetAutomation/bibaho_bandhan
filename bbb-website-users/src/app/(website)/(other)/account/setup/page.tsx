@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import { useCreateAccountStore } from "@/lib/createAccountStore";
-import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone, Shield, Users, Lock } from "lucide-react";
+import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone, Shield, Users, Lock, ImageIcon } from "lucide-react";
 
 // Import all the new step components
 import Step1Basic from "./_steps/Step1Basic";
@@ -13,7 +13,8 @@ import Step4Physical from "./_steps/Step4Physical";
 import Step5Family from "./_steps/Step5Family";
 import Step6PartnerBasic from "./_steps/Step6PartnerBasic";
 import Step7PartnerAdvanced from "./_steps/Step7PartnerAdvanced";
-import Step8FaceVerify from "./_steps/Step8FaceVerify";
+import Step8Photos from "./_steps/Step8Photos";
+import Step9FaceVerify from "./_steps/Step9FaceVerify";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -24,7 +25,8 @@ const STEPS = [
   { id: 5, title: "Family", icon: Home },
   { id: 6, title: "Partner 1", icon: Scale },
   { id: 7, title: "Partner 2", icon: Scale },
-  { id: 8, title: "Verify", icon: ShieldCheck },
+  { id: 8, title: "Photos", icon: ImageIcon },
+  { id: 9, title: "Verify", icon: ShieldCheck },
 ];
 
 // ─── Step Indicator Component ──────────────────────────────────────────────────
@@ -95,7 +97,8 @@ export default function CompleteProfilePage() {
           {currentStep === 5 && <Step5Family onComplete={() => setCurrentStep(6)} onBack={() => setCurrentStep(4)} />}
           {currentStep === 6 && <Step6PartnerBasic onComplete={() => setCurrentStep(7)} onBack={() => setCurrentStep(5)} />}
           {currentStep === 7 && <Step7PartnerAdvanced onComplete={() => setCurrentStep(8)} onBack={() => setCurrentStep(6)} />}
-          {currentStep === 8 && <Step8FaceVerify onBack={() => setCurrentStep(7)} />}
+          {currentStep === 8 && <Step8Photos onComplete={() => setCurrentStep(9)} onBack={() => setCurrentStep(7)} />}
+          {currentStep === 9 && <Step9FaceVerify onBack={() => setCurrentStep(8)} />}
         </div>
       </div>
 
