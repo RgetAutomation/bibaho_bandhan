@@ -87,7 +87,7 @@ export default function CompleteProfilePage() {
         <StepIndicator currentStep={currentStep} />
 
         {/* Step Content */}
-        <div className="mt-6 max-w-4xl">
+        <div className="mt-6 w-full">
           {currentStep === 1 && <Step1Basic onComplete={() => setCurrentStep(2)} />}
           {currentStep === 2 && <Step2Career onComplete={() => setCurrentStep(3)} onBack={() => setCurrentStep(1)} />}
           {currentStep === 3 && <Step3Religion onComplete={() => setCurrentStep(4)} onBack={() => setCurrentStep(2)} />}
