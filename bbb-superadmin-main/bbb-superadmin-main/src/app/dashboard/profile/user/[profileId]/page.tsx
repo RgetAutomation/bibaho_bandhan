@@ -186,9 +186,9 @@ export default async function UserProfileId({
                   <span className="font-medium">Profile ID:</span>
                   <span className="font-bold text-gray-900">{data.publicId}</span>
                   <CopyableComponent copyText={data.publicId}>
-                    <button className="text-gray-400 hover:text-gray-700 transition-colors">
+                    <span className="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer">
                       <Copy className="w-4 h-4" />
-                    </button>
+                    </span>
                   </CopyableComponent>
                 </div>
 
