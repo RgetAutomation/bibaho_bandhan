@@ -133,7 +133,7 @@ export default async function UserProfileId({
   addIfMissing("Address Line 2", p?.addressLine2);
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] flex flex-col xl:flex-row gap-6 px-3 py-4 sm:px-6 sm:py-6">
+    <div className="w-full flex flex-col xl:flex-row gap-4 lg:gap-6 pl-3 pr-1 py-4 sm:pl-6 sm:pr-4 sm:py-6">
       {/* Left Column (Main Content) */}
       <div className="flex-1 space-y-4 sm:space-y-6 min-w-0">
       {/* ================= HEADER ================= */}
