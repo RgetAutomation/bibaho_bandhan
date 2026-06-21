@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import ImageViewClient from "./imageViewClient";
 import ProfileCopyClient from "./profileCopyClient";
 import MarkButtonClient from "./markButtonClient";
-import EditButtonClient from "./editButtonClient";
 import SidebarEditButtonClient from "./sidebarEditButtonClient";
 import UpdateProfileClient from "./updateProfileClient";
 import { SectionHistory } from "./sectionHistoryClient";
@@ -330,9 +329,6 @@ export default async function UserProfileId({
               <div className="flex gap-2 w-full mt-2 border-t border-border pt-4">
                 <div className="flex-1">
                   <MarkButtonClient />
-                </div>
-                <div className="flex-1 flex justify-end">
-                  <EditButtonClient />
                 </div>
               </div>
             </div>
