@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import { useCreateAccountStore } from "@/lib/createAccountStore";
-import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone } from "lucide-react";
+import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone, Shield, Users, Lock } from "lucide-react";
 
 // Import all the new step components
 import Step1Basic from "./_steps/Step1Basic";
@@ -133,7 +133,8 @@ export default function CompleteProfilePage() {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border">
+        <div className="mt-8 space-y-4 pt-8 border-t border-border">
+          {/* Need Help Card */}
           <div className="bg-[#fdf2f8]/50 dark:bg-pink-950/20 rounded-2xl p-5 border border-[#fce7f3] dark:border-pink-900/30">
             <h4 className="font-bold text-[16px] text-slate-800 dark:text-foreground mb-1 tracking-tight">Need Help?</h4>
             <p className="text-xs text-muted-foreground mb-4 font-medium">Our support team is here to help you</p>
@@ -144,6 +145,29 @@ export default function CompleteProfilePage() {
               <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[12px] font-bold hover:bg-[#e11d48]/5 transition-colors">
                 <Phone className="w-4 h-4" /> Contact Support
               </button>
+            </div>
+          </div>
+
+          {/* Privacy Matters Card */}
+          <div className="bg-[#fdf2f8]/50 dark:bg-pink-950/20 rounded-2xl p-5 border border-[#fce7f3] dark:border-pink-900/30 flex items-center justify-between gap-4">
+            <div>
+              <h4 className="font-bold text-[15px] text-slate-800 dark:text-foreground mb-1 tracking-tight">Your Privacy Matters</h4>
+              <p className="text-xs text-muted-foreground font-medium leading-relaxed pr-2">We respect your privacy and keep your information safe.</p>
+            </div>
+            <div className="shrink-0 relative flex items-center justify-center w-14 h-14">
+              <Shield className="w-14 h-14 text-[#f472b6] dark:text-pink-600 absolute" fill="#fbcfe8" strokeWidth={1} />
+              <Lock className="w-4 h-4 text-[#e11d48] dark:text-white relative z-10" fill="#e11d48" />
+            </div>
+          </div>
+
+          {/* Trusted by Millions Card */}
+          <div className="bg-card dark:bg-card rounded-2xl p-4 border border-border flex items-center gap-4 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-[#fdf2f8] dark:bg-pink-950/40 flex items-center justify-center shrink-0">
+              <Users className="w-6 h-6 text-[#e11d48] dark:text-primary" />
+            </div>
+            <div>
+              <h4 className="font-bold text-[14px] text-slate-800 dark:text-foreground tracking-tight mb-0.5">Trusted by Millions</h4>
+              <p className="text-[12px] text-muted-foreground font-medium">Join thousands of happy members</p>
             </div>
           </div>
         </div>
