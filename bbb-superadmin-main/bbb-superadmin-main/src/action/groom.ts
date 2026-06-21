@@ -136,6 +136,7 @@ export async function getAllGrooms({
           blocked: true,
           planExpiryDate: true,
           isGhotokOwned: true,
+          allowSocialPublish: true,
         },
       }),
       prisma.user.count({ where }),

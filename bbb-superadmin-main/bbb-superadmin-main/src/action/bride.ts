@@ -111,6 +111,7 @@ export async function getAllBrides({
           blocked: true,
           planExpiryDate: true,
           isGhotokOwned: true,
+          allowSocialPublish: true,
         },
       }),
       prisma.user.count({ where }),

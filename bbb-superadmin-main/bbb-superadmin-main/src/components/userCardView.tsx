@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Calendar, CheckCircle2, Hash, Info, Phone } from "lucide-react";
+import { Calendar, CheckCircle2, Hash, Info, Phone, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function UserCardView({ user }: { user: IUsers }) {
@@ -108,6 +108,15 @@ export default function UserCardView({ user }: { user: IUsers }) {
             )}
             {user.isProfileComplete ? "Complete Profile" : "Incomplete Profile"}
           </Badge>
+          {user.allowSocialPublish && (
+            <Badge
+              variant={"outline"}
+              className="rounded-2xl border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-900/20"
+            >
+              <Share2 className="w-3 h-3 mr-1" />
+              Shared Profile
+            </Badge>
+          )}
         </div>
       </CardContent>
     </Card>

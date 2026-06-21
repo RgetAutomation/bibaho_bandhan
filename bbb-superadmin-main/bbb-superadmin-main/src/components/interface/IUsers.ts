@@ -16,6 +16,7 @@ export interface IUsers {
   planExpiryDate: Date | null;
   isProfileComplete: boolean;
   isGhotokOwned: boolean;
+  allowSocialPublish?: boolean;
 }
 
 export interface IFullUserWithImages extends IUsers {
