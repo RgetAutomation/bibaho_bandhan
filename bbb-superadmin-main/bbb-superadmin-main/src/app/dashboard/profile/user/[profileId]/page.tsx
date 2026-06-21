@@ -131,7 +131,7 @@ export default async function UserProfileId({
               <img
                 src={data.avatar}
                 alt={fullName}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-muted-foreground">
