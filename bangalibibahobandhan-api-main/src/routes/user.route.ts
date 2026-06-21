@@ -3,10 +3,12 @@ import { authorize } from "../middlewares/authorize.middleware.js";
 import { UserType } from "../types/user-type.js";
 import {
   acceptInterest,
+  activateFreePlan,
   allReceivedInterests,
   allSentInterests,
   blockUser,
   changeContactDetails,
+  claimDiscountedPlan,
   connectionRequestReject,
   createGhotokReview,
   createMatchingPayment,
@@ -50,6 +52,7 @@ import {
   updateProfileAvatar,
   uploadImages,
   getVipProfiles,
+  getMySubscriptions,
 } from "../controllers/user.controller.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import {
@@ -95,6 +98,13 @@ userRoute.get(
   "/profile/self",
   authorize([UserType.FREE_USER, UserType.PAID_USER]),
   asyncHandler(getSelfDetails)
+);
+
+//api/v1/users/me/subscriptions
+userRoute.get(
+  "/me/subscriptions",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(getMySubscriptions)
 );
 
 //api/v1/users/profile/update
@@ -284,6 +294,12 @@ userRoute.get("/plans", asyncHandler(getPlans));
 
 //api/v1/users/plans/:id
 userRoute.get("/plans/:id", asyncHandler(getPlanById));
+
+//api/v1/users/plans/activate-free
+userRoute.post("/plans/activate-free", authorize([UserType.FREE_USER, UserType.PAID_USER]), asyncHandler(activateFreePlan));
+
+//api/v1/users/plans/claim-discounted
+userRoute.post("/plans/claim-discounted", authorize([UserType.FREE_USER, UserType.PAID_USER]), asyncHandler(claimDiscountedPlan));
 
 //********************* PLANS ROUTES END *************************  */
 

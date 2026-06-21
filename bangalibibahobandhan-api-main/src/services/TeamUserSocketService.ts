@@ -115,8 +115,7 @@ export class TeamUserSocketService {
             id: teamSession.userId,
             role: teamSession.team.role as Role,
             isProfileComplete: teamSession.team.isProfileComplete,
-            tokenType:
-              teamSession.team.role === "SUPERADMIN" ? "SUPERADMIN" : "TEAM",
+            tokenType: "TEAM",
           };
 
           return next();
@@ -832,6 +831,12 @@ export class TeamUserSocketService {
                 userId: true,
               },
             },
+            senderTeam: {
+              select: {
+                internalId: true,
+                role: true,
+              },
+            },
           },
         }),
 
@@ -858,6 +863,7 @@ export class TeamUserSocketService {
         status: saveMessage.status,
         createdAt: saveMessage.createdAt,
         receiverGender: saveMessage.senderUser?.gender,
+        senderTeam: saveMessage.senderTeam,
       };
 
       const receiverId =

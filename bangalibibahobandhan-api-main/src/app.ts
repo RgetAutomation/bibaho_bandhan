@@ -4,12 +4,15 @@ import cookieParser from "cookie-parser";
 import ApiResponse from "./utils/ApiResponse.js";
 import userRoute from "./routes/user.route.js";
 import adminRoute from "./routes/admin.route.js";
+import discountRoute from "./routes/discount.route.js";
+import couponRoute from "./routes/coupon.route.js";
 import authRoute from "./routes/auth.route.js";
 import ghotokRoute from "./routes/ghotok.route.js";
 import superAdminRoute from "./routes/superadmin.route.js";
 import othersRoute from "./routes/others.route.js";
 import moderatorRoute from "./routes/moderator.route.js";
 import conversationsRoute from "./routes/conversations.route.js";
+import broadcastRoute from "./routes/broadcast.route.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
@@ -31,10 +34,11 @@ app.use(
       "http://localhost:3001",
       "http://localhost:3002",
       "http://192.168.0.101:3000",
-      "https://bangalibibahobandhan.com",
-      "https://www.bangalibibahobandhan.com",
-      "https://team.bangalibibahobandhan.com",
-      "https://teamhead.bangalibibahobandhan.com",
+      "https://bibahobandhan.com",
+      "https://www.bibahobandhan.com",
+      "https://team.bibahobandhan.com",
+      "https://teamhead.bibahobandhan.com",
+      "https://superadmin.bibahobandhan.com",
     ],
     credentials: true,
   })
@@ -62,8 +66,8 @@ app.use(express.static("public"));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 1000, // limit each IP to 1000 requests per windowMs to allow dev/polling
 });
 app.use(limiter);
 
@@ -111,6 +115,15 @@ app.use("/api/v1/app/sa", superAdminRoute);
 
 //Conversation Routes
 app.use("/api/v1/conversations", conversationsRoute);
+
+// Broadcast Routes
+app.use("/api/v1/broadcasts", broadcastRoute);
+
+// Discount Routes
+app.use("/api/v1/discounts", discountRoute);
+
+// Coupon Routes
+app.use("/api/v1/coupons", couponRoute);
 
 // Others Routes
 app.use("/api/v1/other", othersRoute);

@@ -38,6 +38,23 @@ export async function createPlan(req: Request, res: Response) {
 
 export async function getPlansForSA(req: Request, res: Response) {
   try {
+    // Check if free plan exists, create if not
+    const freePlan = await prisma.plan.findFirst({
+      where: { price: "0" },
+    });
+
+    if (!freePlan) {
+      await prisma.plan.create({
+        data: {
+          title: "FREE Plan",
+          price: "0",
+          duration: "15",
+          connection: "0",
+          status: true,
+        },
+      });
+    }
+
     // Get plans from database
     const plans = await prisma.plan.findMany();
     return res

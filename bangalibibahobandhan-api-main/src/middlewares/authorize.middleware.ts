@@ -7,7 +7,7 @@ import { UserType } from "../types/user-type.js";
 import { User } from "../types/user.js";
 import { AuthenticatedSocket, JwtPayload } from "../types/jwt-payload.js";
 import { Gender } from "../types/gender.js";
-import { authTeam, authUser } from "../utils/auth.js";
+import { authTeam, authUser, authSuperAdmin } from "../utils/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
 import { prisma } from "../config/db.js";
 
@@ -18,9 +18,21 @@ export function authorizeSystem(allowedRoles: Role[]): RequestHandler {
     next: NextFunction
   ): Promise<void> {
     try {
-      const session = await authTeam.api.getSession({
-        headers: fromNodeHeaders(req.headers),
-      });
+      // Check which cookie prefix is present and use the matching auth instance
+      // This prevents cross-portal session confusion when both cookies exist
+      const cookieHeader = req.headers.cookie || "";
+      const hasSuperAdminCookie = cookieHeader.includes("bbbsuperadmin.");
+
+      let session = hasSuperAdminCookie
+        ? await authSuperAdmin.api.getSession({ headers: fromNodeHeaders(req.headers) })
+        : await authTeam.api.getSession({ headers: fromNodeHeaders(req.headers) });
+
+      // Fallback: try the other auth if the primary one failed
+      if (!session || !session.session || !session.user) {
+        session = hasSuperAdminCookie
+          ? await authTeam.api.getSession({ headers: fromNodeHeaders(req.headers) })
+          : await authSuperAdmin.api.getSession({ headers: fromNodeHeaders(req.headers) });
+      }
 
       if (!session || !session.session || !session.user) {
         res

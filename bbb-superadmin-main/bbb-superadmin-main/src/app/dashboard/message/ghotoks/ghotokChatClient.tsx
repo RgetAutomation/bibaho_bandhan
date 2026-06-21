@@ -1,0 +1,176 @@
+"use client";
+
+import ButtonLoading from "@/components/buttonLoading";
+import { EpmptyList } from "@/components/emptyList";
+import { ITeamsForChat } from "@/components/interface/ITeam";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { AxiosResponse } from "@/components/utils/AxiosResponse";
+import { useNotificationStore } from "@/hooks/useNotificationStore";
+import axios, { isAxiosError } from "axios";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
+
+export default function GhotokChatClient({
+  ghotoks,
+}: {
+  ghotoks: ITeamsForChat[];
+}) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [loadingConversation, setLoadingConversation] = useState<
+    string | null
+  >();
+  const { ghotokConversationIds, removeGhotokConversation } =
+    useNotificationStore();
+
+  const filtered = useMemo(() => {
+    if (!query) return ghotoks;
+    return ghotoks.filter((ghotok) =>
+      (ghotok.firstName + " " + ghotok.middleName + " " + ghotok.lastName)
+        .toLowerCase()
+        .includes(query.toLowerCase())
+    );
+  }, [query, ghotoks]);
+
+  const handleGetConversationId = async (
+    userId: string,
+    conversationId: string
+  ) => {
+    if (
+      conversationId &&
+      conversationId !== null &&
+      conversationId !== "" &&
+      conversationId !== undefined
+    ) {
+      router.push(`/dashboard/message/chat/${conversationId}`);
+    } else {
+      try {
+        setLoadingConversation(userId);
+        const response = await axios.get<AxiosResponse<string>>(
+          `/api/conversation/${userId}`
+        );
+
+        if (response.data.success) {
+          router.push(`/dashboard/message/chat/${response.data.data}`);
+        } else {
+          toast.error(response.data.message);
+        }
+      } catch (error) {
+        const errorMessage = isAxiosError(error)
+          ? error.response?.data?.message || "Failed to get conversation"
+          : "Something went wrong. Please try again.";
+        toast.error(errorMessage);
+        setLoadingConversation(null);
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-1 flex-col gap-4">
+      <div className="bg-card flex flex-col items-center justify-between gap-4 border p-4 md:flex-row md:p-6">
+        <h1 className="text-xl font-bold text-gray-800 md:text-2xl dark:text-gray-100">
+          Ghotok Users
+        </h1>
+        <Input
+          placeholder="Search ghotok..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-full md:w-64"
+        />
+      </div>
+
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 p-2 md:grid-cols-2 lg:grid-cols-3 lg:p-4">
+          {filtered.map((ghotok) =>
+            loadingConversation === ghotok.id ? (
+              <div
+                key={ghotok.id}
+                className={
+                  "bg-card flex w-full flex-1 flex-col items-center justify-center rounded-2xl border p-6 shadow-md"
+                }
+              >
+                <ButtonLoading text="Please wait" />
+              </div>
+            ) : (
+              <div
+                className={"cursor-pointer"}
+                onClick={() => {
+                  removeGhotokConversation(ghotok.conversationId);
+                  handleGetConversationId(ghotok.id, ghotok.conversationId);
+                }}
+                key={ghotok.id}
+              >
+                <TeamCard
+                  ghotok={ghotok}
+                  addBadge={ghotokConversationIds.includes(
+                    ghotok.conversationId
+                  )}
+                />
+              </div>
+            )
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center p-4">
+          <EpmptyList
+            title="No Ghotok Found"
+            subtitle="We could not find any ghotok that you are looking for."
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TeamCard({
+  ghotok,
+  addBadge,
+}: {
+  ghotok: ITeamsForChat;
+  addBadge: boolean;
+}) {
+  return (
+    <div
+      className={
+        "bg-card flex items-center gap-4 rounded-2xl border p-3 shadow-md"
+      }
+    >
+      <Avatar className={"size-10"}>
+        <AvatarImage
+          src={
+            ghotok.avatar
+              ? ghotok.avatar
+              : ghotok.gender === "MALE"
+                ? "/groom.webp"
+                : "/bride.webp"
+          }
+        />
+        <AvatarFallback>{ghotok.firstName.charAt(0)}</AvatarFallback>
+      </Avatar>
+      <div className={"flex w-full flex-col"}>
+        <div className="flex w-full items-center justify-between">
+          <h1 className={"text-lg font-semibold"}>
+            {ghotok.firstName} {ghotok.middleName} {ghotok.lastName}
+          </h1>
+          {addBadge && <Badge>New Message</Badge>}
+        </div>
+        <p className={"text-muted-foreground text-sm"}>
+          Gender: {ghotok.gender}
+        </p>
+        {/* <div
+          className={"text-muted-foreground flex items-center gap-1 text-sm"}
+        >
+          {admin.lastMessage?.senderTeamId === currentUserId ? (
+            <Check className="size-4" />
+          ) : (
+            <div className="bg-primary size-2 rounded-2xl" />
+          )}
+          {admin.lastMessage?.content}
+        </div> */}
+      </div>
+    </div>
+  );
+}

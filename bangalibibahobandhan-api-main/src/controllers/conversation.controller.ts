@@ -272,7 +272,7 @@ export async function getConversationAndMessages(req: Request, res: Response) {
       prisma.messageTemplate.findMany({
         where: {
           roles: {
-            hasSome: [currentTeam.role], // use `hasSome` for Postgres array field
+            array_contains: currentTeam.role,
           },
           isActive: true,
           category: "ADMIN_MODERATOR",
@@ -318,10 +318,22 @@ export async function getAllTeamUserConversation(req: Request, res: Response) {
         .json(new ApiError(401, "Unauthorized: team not found"));
     }
 
+    const systemUserRole = req.systemUser?.role;
+    let userGenderFilter: Gender | undefined = undefined;
+    if (systemUserRole === Role.ADMIN) {
+      userGenderFilter = Gender.MALE;
+    } else if (systemUserRole === Role.MODERATOR) {
+      userGenderFilter = Gender.FEMALE;
+    } else if (systemUserRole === Role.SUPERADMIN) {
+      if (req.query.gender === "MALE") {
+        userGenderFilter = Gender.MALE;
+      } else if (req.query.gender === "FEMALE") {
+        userGenderFilter = Gender.FEMALE;
+      }
+    }
+
     const conversation = await prisma.teamUserConversation.findMany({
-      where: {
-        teamId: currentTeamId,
-      },
+      where: userGenderFilter ? { user: { gender: userGenderFilter } } : {},
       select: {
         id: true,
         user: {
@@ -498,6 +510,12 @@ export async function getTeamUserConversationAndMessages(
             paymentPhase: true,
             status: true,
             createdAt: true,
+            senderTeam: {
+              select: {
+                internalId: true,
+                role: true,
+              },
+            },
           },
           orderBy: {
             createdAt: "asc",
@@ -526,6 +544,12 @@ export async function getTeamUserConversationAndMessages(
           paymentPhase: message.paymentPhase,
           status: message.status,
           createdAt: message.createdAt,
+          senderTeam: message.senderTeam
+            ? {
+                internalId: message.senderTeam.internalId,
+                role: message.senderTeam.role,
+              }
+            : undefined,
         })),
       })
     );

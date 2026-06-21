@@ -92,4 +92,12 @@ authRoute.post(
 // Logout User Route
 //authRoute.get("/system/logout", asyncHandler(logoutSystemUser));
 
+import { sendVerificationOtp, verifyOtp } from "../controllers/verification.controller.js";
+
+//  /api/v1/auth/send-otp
+authRoute.post("/send-otp", sendVerificationOtp);
+
+//  /api/v1/auth/verify-otp
+authRoute.post("/verify-otp", verifyOtp);
+
 export default authRoute;

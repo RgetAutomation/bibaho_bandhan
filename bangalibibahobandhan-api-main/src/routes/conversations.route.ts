@@ -83,7 +83,7 @@ conversationsRoute.get(
 //api/v1/conversations/team/user/conversation/:convId/details
 conversationsRoute.get(
   "/team/user/conversation/:convId/details",
-  authorizeSystem([Role.ADMIN, Role.MODERATOR]),
+  authorizeSystem([Role.ADMIN, Role.MODERATOR, Role.SUPERADMIN]),
   asyncHandler(getTeamUserConversationAndMessages)
 );
 

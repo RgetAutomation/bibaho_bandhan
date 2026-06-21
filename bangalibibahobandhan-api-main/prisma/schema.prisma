@@ -55,6 +55,7 @@ model Team {
   adminAssignmentsAudit      ConvsersationAssignedAuditLogs[] @relation("admin")
 
   assignedHelps   HelpRequest[]
+  helpRequestMessages HelpRequestMessage[]
   teamsessions    TeamSession[]
   teamaccounts    TeamAccount[]
   reportUserTeams ReportUserTeams[] @relation("ReportedTeam")
@@ -175,6 +176,7 @@ model User {
 
   isProfileComplete Boolean @default(false)
   blocked           Boolean @default(false)
+  hasUsedFreePlan   Boolean @default(false)
 
   totalLimit         Int      @default(0)
   remainingLimit     Int      @default(0)
@@ -183,6 +185,9 @@ model User {
   hasMatched         Boolean  @default(false)
   matchingStartDate  DateTime @default(now())
   matchingExpiryDate DateTime @default(now())
+
+  activePlanId       String?
+  activePlan         Plan?    @relation(fields: [activePlanId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -218,6 +223,7 @@ model User {
   reportUserTeams            ReportUserTeams[]           @relation("ReportUser")
   superAdminUserConversation SuperAdminUserConversation? @relation("SuperAdminUserConversations")
   matchingPayments           MatchingPayment[]           @relation("MatchingPaymentUser")
+  subscriptions              UserSubscription[]
 
   @@unique([username])
   @@index([gender, blocked])
@@ -322,6 +328,78 @@ model Profile {
   drinkingHabits String?
   aboutMyself    String?
   aboutMyPartner String?
+
+  rashi          String?
+  nakshatra      String?
+  birthTime      String?
+  cityOfBirth    String?
+  countryOfBirth String?
+
+  familyType          String?
+  mothersOccupation   String?
+  noOfBrothers        String?
+  noOfSisters         String?
+  familyValues        String?
+
+  workExperience      String?
+  collegeInstitution  String?
+  fieldOfStudy        String?
+  passingYear         String?
+  organizationName    String?
+
+  partnerAgeRange     String?
+  partnerHeightRange  String?
+  partnerMaritalStatus String?
+  partnerReligion     String?
+  partnerCaste        String?
+  partnerEducation    String?
+  partnerProfession   String?
+  partnerIncome       String?
+  partnerLocation     String?
+  partnerDiet         String?
+  partnerComplexion   String?
+  partnerMotherTongue String?
+
+  // Additional Missing Fields
+  disabilityDetails     String?
+  healthScreening       String?
+  country               String?
+  citizenship           String?
+  ancestralOrigin       String?
+  relationshipWithBrideGroom String?
+  
+  personalityTraits     String?
+  lifeGoals             String?
+  employmentType        String?
+  occupationDetails     String?
+  designation           String?
+  companyName           String?
+  
+  brothersMarriedCount  String?
+  sistersMarriedCount   String?
+  myFamilyStatus        String?
+  familyDescription     String?
+  familyBackground      String?
+  culturalValues        String?
+  
+  partnerWeightRange             String?
+  partnerSpokenLanguages         String?
+  partnerEmploymentType          String?
+  partnerSubCaste                String?
+  partnerGothra                  String?
+  partnerPreferredCountry        String?
+  partnerPreferredState          String?
+  partnerPreferredDistrict       String?
+  partnerDrinkingHabit           String?
+  partnerSmokingHabit            String?
+  partnerDisabilityAcceptable    String?
+  partnerDescription             String?
+  partnerPersonalityExpectation  String?
+  partnerFamilyExpectation       String?
+  partnerFamilyDetails           String?
+  familyStatusPreference         String?
+  familyTypePreference           String?
+  familyValuesPreference         String?
 
   user          User           @relation("UserProfile", fields: [userId], references: [id], onDelete: Cascade)
   profileImages ProfileImage[]
@@ -539,6 +617,33 @@ model Plan {
   updatedAt        DateTime          @updatedAt
   Payment          Payment[]
   teamUserMessages TeamUserMessage[] @relation("PlanToTeamUserMessage")
+  activeUsers      User[]
+  discounts        Discount[]
+  coupons          Coupon[]
+  subscriptions    UserSubscription[]
+}
+
+// Coupon Model (For Plans)
+model Coupon {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  percentage  Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Discount Model (For Plans)
+model Discount {
+  id          String   @id @default(cuid())
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  percentage  Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Join Ghotok Request Model (For Ghotok)
@@ -592,20 +697,39 @@ model MatchingReport {
 
 // Help Request Model (For User)
 model HelpRequest {
-  id        String     @id @default(cuid())
-  name      String
-  phone     String
-  email     String?
-  reason    String
-  message   String?
-  status    HelpStatus @default(PENDING)
-  adminNote String? // internal note for team use
-  feedback  String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String     @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  reason     String
+  message    String?
+  status     HelpStatus @default(PENDING)
+  adminNote  String?    // internal note for team use
+  feedback   String?
+  resolvedAt DateTime?  // timestamp when admin marks RESOLVED (starts 7-day window)
+  isReopened Boolean    @default(false) // true when user clicks reopen button
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   assignedToId String?
   assignedTo   Team?   @relation(fields: [assignedToId], references: [id])
+  
+  messages     HelpRequestMessage[]
+}
+
+// Help Request Message Model
+model HelpRequestMessage {
+  id            String      @id @default(cuid())
+  helpRequestId String
+  senderType    String      @default("GUEST") // "GUEST" | "TEAM"
+  senderId      String?     // Team member ID if senderType == "TEAM"
+  content       String
+  createdAt     DateTime    @default(now())
+
+  helpRequest   HelpRequest @relation(fields: [helpRequestId], references: [id], onDelete: Cascade)
+  teamSender    Team?       @relation(fields: [senderId], references: [id])
+
+  @@index([helpRequestId])
 }
 
 // Feedback Model (For User)
@@ -855,4 +979,47 @@ enum HelpStatus {
   PENDING
   INPROGRESS
   RESOLVED
+  CLOSED
+}
+
+// Broadcast Message Model (For SuperAdmin and User)
+model BroadcastMessage {
+  id           String    @id @default(cuid())
+  content      String
+  targetGender String?
+  imageUrl     String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+}
+
+// User Subscription Model (For Tracking Individual Plan Expirations)
+model UserSubscription {
+  id             String   @id @default(cuid())
+  userId         String
+  planId         String
+  startDate      DateTime @default(now())
+  expiryDate     DateTime
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan           Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([planId])
+  @@index([expiryDate])
+}
+
+// System Settings Model
+model SystemSettings {
+  id            String   @id @default(cuid())
+  smtpHost      String?
+  smtpPort      Int?
+  smtpUser      String?
+  smtpPass      String?
+  smsGatewayUrl String?
+  smsApiKey     String?
+  updatedAt     DateTime @updatedAt
 }

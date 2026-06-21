@@ -1,0 +1,940 @@
+generator client {
+  provider = "prisma-client-js"
+  //output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Team Model (For SuperAdmin/Admin/Moderator/Ghotok)
+model Team {
+  id                String              @id @default(cuid())
+  internalId        Int                 @unique // sequential, visible to Admin/Moderator only
+  firstName         String
+  middleName        String?
+  lastName          String
+  gender            Gender
+  username          String?             @unique
+  displayUsername   String?
+  phone             String              @unique
+  email             String?             @unique
+  emailVerified     Boolean             @default(false)
+  avatar            String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  role              TeamRole
+  blocked           Boolean             @default(false)
+  isProfileComplete Boolean             @default(false)
+  ghotokPublicId    String?             @unique // 8-digit public ID (string so you can pad with leading zeros)
+  profile           TeamProfile?
+  profileRequest    TeamProfileRequest?
+
+  //reports         ReportUser[]
+  ghotokReviews   GhotokReview[]
+  matchingReports MatchingReport[]
+  payments        Payment[]
+  userProfiles    User[]
+
+  //Admin Moderator Conversations
+  adminModeratorConversations  AdminModeratorConversation[]
+  adminModeratorMessagesSender AdminModeratorMessage[]      @relation("SentAdminModeratorMessages")
+
+  teamUserConversation TeamUserConversation[]
+  teamUserMessage      TeamUserMessage[]
+
+  teamConversations TeamConversation[] @relation("TeamConversationParticipants")
+  sentRoleMessages  TeamMessage[]      @relation("SentRoleMessages")
+
+  assignedConversations Conversation[]
+  reviewedModerations   MessageModeration[]
+
+  //Audit logs
+  assignedConversationsAudit ConvsersationAssignedAuditLogs[] @relation("moderator")
+  adminAssignmentsAudit      ConvsersationAssignedAuditLogs[] @relation("admin")
+
+  assignedHelps   HelpRequest[]
+  helpRequestMessages HelpRequestMessage[]
+  teamsessions    TeamSession[]
+  teamaccounts    TeamAccount[]
+  reportUserTeams ReportUserTeams[] @relation("ReportedTeam")
+
+  @@index([role])
+  @@index([blocked])
+  @@map("Team")
+}
+
+// Team Session Model (For SuperAdmin/Admin/Moderator/Ghotok)
+model TeamSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  team      Team     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("TeamSession")
+}
+
+// Team Account Model (For SuperAdmin/Admin/Moderator/Ghotok)
+model TeamAccount {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  team                  Team      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("TeamAccount")
+}
+
+// Team Verification Model (For SuperAdmin/Admin/Moderator/Ghotok)
+model TeamVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("TeamVerification")
+}
+
+// Team Profile Model (For SuperAdmin/Admin/Moderator/Ghotok)
+model TeamProfile {
+  id                  String   @id @default(uuid())
+  teamId              String   @unique
+  dob                 DateTime
+  identificationProof String
+  addressLine1        String
+  addressLine2        String?
+  postOffice          String
+  policeStation       String
+  dist                String
+  state               String
+  pinCode             String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+}
+
+// Team Profile Request Model (For SuperAdmin/Admin/Moderator/Ghotok)
+model TeamProfileRequest {
+  id                  String           @id @default(uuid())
+  teamId              String           @unique
+  avatar              String
+  dob                 DateTime
+  identificationProof String
+  addressLine1        String
+  addressLine2        String?
+  postOffice          String
+  policeStation       String
+  dist                String
+  state               String
+  pinCode             String
+  status              ModerationStatus @default(PENDING)
+  feedback            String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+}
+
+// User Model (For User)
+model User {
+  id         String   @id @default(cuid())
+  publicId   String?  @unique
+  title      String
+  firstName  String
+  middleName String?
+  lastName   String
+  gender     Gender
+  phone      String   @unique
+  email      String?
+  avatar     String?
+  type       UserType @default(FREE)
+
+  isProfileComplete Boolean @default(false)
+  blocked           Boolean @default(false)
+  hasUsedFreePlan   Boolean @default(false)
+
+  totalLimit         Int      @default(0)
+  remainingLimit     Int      @default(0)
+  planStartDate      DateTime @default(now())
+  planExpiryDate     DateTime @default(now())
+  hasMatched         Boolean  @default(false)
+  matchingStartDate  DateTime @default(now())
+  matchingExpiryDate DateTime @default(now())
+
+  activePlanId       String?
+  activePlan         Plan?    @relation(fields: [activePlanId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ghotokId           String?
+  ghotok             Team?   @relation(fields: [ghotokId], references: [id])
+  isGhotokOwned      Boolean @default(false)
+  isProfilePublic    Boolean @default(false)
+  allowSocialPublish Boolean @default(false)
+
+  payments               Payment[]
+  conversations          Conversation[]  @relation("ConversationParticipants")
+  sentMessages           Message[]       @relation("SentMessages")
+  receivedMessages       Message[]       @relation("ReceivedMessages")
+  sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
+  blocksInitiated        BlockedUser[]   @relation("Blocker")
+  blocksReceived         BlockedUser[]   @relation("Blocked")
+
+  teamUserConversation TeamUserConversation[]
+  TeamUserMessage      TeamUserMessage[]
+  ghotokReviews        GhotokReview[]
+
+  profile                    Profile?                    @relation("UserProfile")
+  refreshTokens              RefreshToken?               @relation("UserRefreshToken")
+  emailVerified              Boolean                     @default(false)
+  username                   String?
+  displayUsername            String?
+  usersessions               UserSession[]
+  useraccounts               UserAccount[]
+  reportsCreated             ReportUsers[]               @relation("ReportCreatedBy")
+  reportsAgainst             ReportUsers[]               @relation("ReportAgainstUser")
+  reportUserTeams            ReportUserTeams[]           @relation("ReportUser")
+  superAdminUserConversation SuperAdminUserConversation? @relation("SuperAdminUserConversations")
+  matchingPayments           MatchingPayment[]           @relation("MatchingPaymentUser")
+  subscriptions              UserSubscription[]
+
+  @@unique([username])
+  @@index([gender, blocked])
+  @@index([type, planExpiryDate])
+  @@index([matchingExpiryDate])
+  @@index([ghotokId])
+  @@map("User")
+}
+
+// User Session Model (For User)
+model UserSession {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("UserSession")
+}
+
+// User Account Model (For User)
+model UserAccount {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("UserAccount")
+}
+
+// User Verification Model (For User)
+model UserVerification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("UserVerification")
+}
+
+// Profile Model (For User)
+model Profile {
+  id                  String   @id @default(uuid())
+  dob                 DateTime
+  children            Int?
+  speciallyAble       Boolean
+  whatsappNumber      String
+  alternatePhone      String?
+  gotra               String?
+  caste               String
+  subCaste            String?
+  height              String?
+  weight              String?
+  bloodGroup          String?
+  addressLine1        String
+  addressLine2        String?
+  postOffice          String
+  policeStation       String
+  dist                String
+  state               String
+  pinCode             String
+  skinTone            String?
+  profession          String
+  education           String
+  hobbies             String?
+  monthlyIncome       String?
+  language            String?
+  familyMembers       String?
+  fatherProfession    String?
+  candidatePreference String?
+  locationPreference  String?
+  userId              String   @unique
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  bodyType            String?
+  religion            String
+  maritalStatus       String
+
+  //New Fields
+  manglikDosh    Boolean?
+  eatingHabits   String?
+  smokingHabits  String?
+  drinkingHabits String?
+  aboutMyself    String?
+  aboutMyPartner String?
+
+  user          User           @relation("UserProfile", fields: [userId], references: [id], onDelete: Cascade)
+  profileImages ProfileImage[]
+
+  @@index([userId])
+  @@index([maritalStatus])
+  @@index([dist])
+  @@index([state])
+}
+
+// Refresh Token Model (For User)
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String
+  revoked   Boolean  @default(false)
+  ip        String?
+  userAgent String?
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  user      User     @relation("UserRefreshToken", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Profile Image Model (For User)
+model ProfileImage {
+  id        String   @id @default(cuid())
+  profileId String
+  createdAt DateTime @default(now())
+  url       String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // optional
+  @@unique([profileId, id])
+  @@index([profileId])
+}
+
+// Payment Model (For User)
+model Payment {
+  id            String        @id @default(cuid())
+  planId        String
+  userId        String
+  screenShotUrl String
+  paymentName   String?
+  paymentType   String        @default("SUBSCRIPTION")
+  status        PaymentStatus @default(PENDING) // overall status for SuperAdmin
+
+  messageId String?
+  teamId    String? // Admin handling this payment
+  feedback  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team?    @relation(fields: [teamId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@index([teamId])
+  @@index([status])
+}
+
+// Conversation Model (For User)
+model Conversation {
+  id            String    @id @default(cuid())
+  convId        String    @unique
+  lastMessageAt DateTime?
+  participants  User[]    @relation("ConversationParticipants")
+
+  messages     Message[]        @relation("ConversationMessages")
+  matchReports MatchingReport[]
+
+  hasGhotokParticipant Boolean @default(false) // flag if any participant is ghotok-owned
+  assignedModeratorId  String?
+  assignedModerator    Team?   @relation(fields: [assignedModeratorId], references: [id])
+  starConversation     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignedLogs ConvsersationAssignedAuditLogs[]
+
+  @@index([assignedModeratorId])
+  @@index([lastMessageAt])
+}
+
+// Message Model (For User)
+model Message {
+  id             String       @id @default(cuid())
+  content        String
+  conversationId String
+  senderId       String
+  receiverId     String
+  conversation   Conversation @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id])
+  receiver       User         @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  status     MessageStatus      @default(SENT)
+  moderation MessageModeration? @relation("MessageModeration")
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// Message Moderation Model (For User)
+model MessageModeration {
+  id        String  @id @default(cuid())
+  messageId String  @unique
+  message   Message @relation("MessageModeration", fields: [messageId], references: [id], onDelete: Cascade)
+
+  status      ModerationStatus @default(PENDING)
+  moderatorId String?
+  moderator   Team?            @relation(fields: [moderatorId], references: [id])
+
+  reviewedAt DateTime? @default(now())
+  reason     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Friend Request Model (For User)
+model FriendRequest {
+  id         String              @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendRequestStatus @default(SENT)
+
+  sender   User @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([senderId, receiverId])
+}
+
+// Blocked User Model (For User)
+model BlockedUser {
+  id        String @id @default(cuid())
+  blockerId String
+  blockedId String
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // prevent duplicate blocks
+  @@unique([blockerId, blockedId])
+}
+
+// Report User Model (For SuperAdmin & Admin)
+model ConvsersationAssignedAuditLogs {
+  id             String @id @default(cuid())
+  conversationId String
+  moderatorId    String
+  adminId        String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  admin        Team         @relation("admin", fields: [adminId], references: [id], onDelete: Cascade)
+  moderator    Team         @relation("moderator", fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId])
+  @@index([moderatorId])
+  @@index([adminId])
+}
+
+// Report User Model (For User)
+model ReportUsers {
+  id                String   @id @default(cuid())
+  screenShotUrl     String?
+  reason            String
+  reply             String?
+  reporterId        String
+  reportedAgainstId String
+  userType          String   @default("USER")
+  status            String   @default("PENDING")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  reporter          User     @relation("ReportCreatedBy", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedAgainst   User     @relation("ReportAgainstUser", fields: [reportedAgainstId], references: [id], onDelete: Cascade)
+}
+
+// Report User Model (For Team)
+model ReportUserTeams {
+  id            String   @id @default(cuid())
+  screenShotUrl String?
+  reason        String
+  reply         String?
+  userId        String
+  reportedId    String
+  userType      String   @default("USER")
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  team          Team     @relation("ReportedTeam", fields: [reportedId], references: [id], onDelete: Cascade)
+  user          User     @relation("ReportUser", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Plan Model 
+model Plan {
+  id               String            @id @default(cuid())
+  title            String
+  price            String
+  duration         String
+  connection       String
+  status           Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  Payment          Payment[]
+  teamUserMessages TeamUserMessage[] @relation("PlanToTeamUserMessage")
+  activeUsers      User[]
+  discounts        Discount[]
+  coupons          Coupon[]
+  subscriptions    UserSubscription[]
+}
+
+// Coupon Model (For Plans)
+model Coupon {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  percentage  Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Discount Model (For Plans)
+model Discount {
+  id          String   @id @default(cuid())
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  percentage  Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Join Ghotok Request Model (For Ghotok)
+model JoinGhotokRequest {
+  id         String   @id @default(cuid())
+  firstName  String
+  middleName String?
+  lastName   String
+  gender     Gender
+  email      String?  @unique
+  phone      String   @unique
+  password   String
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Ghotok Review Model (For User)
+model GhotokReview {
+  id        String   @id @default(cuid())
+  userId    String
+  ghotokId  String
+  rating    Int
+  review    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ghotok Team @relation(fields: [ghotokId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ghotokId])
+  @@index([userId, ghotokId])
+}
+
+// Matching Report Model (For Moderator)
+model MatchingReport {
+  id             String       @id @default(cuid())
+  message        String?
+  conversationId String
+  teamId         String
+  status         String       @default("PENDING")
+  isPaid         Boolean      @default(false)
+  paymentSSUrl   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  moderator      Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+// Help Request Model (For User)
+model HelpRequest {
+  id         String     @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  reason     String
+  message    String?
+  status     HelpStatus @default(PENDING)
+  adminNote  String?    // internal note for team use
+  feedback   String?
+  resolvedAt DateTime?  // timestamp when admin marks RESOLVED (starts 7-day window)
+  isReopened Boolean    @default(false) // true when user clicks reopen button
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  assignedToId String?
+  assignedTo   Team?   @relation(fields: [assignedToId], references: [id])
+  
+  messages     HelpRequestMessage[]
+}
+
+// Help Request Message Model
+model HelpRequestMessage {
+  id            String      @id @default(cuid())
+  helpRequestId String
+  senderType    String      @default("GUEST") // "GUEST" | "TEAM"
+  senderId      String?     // Team member ID if senderType == "TEAM"
+  content       String
+  createdAt     DateTime    @default(now())
+
+  helpRequest   HelpRequest @relation(fields: [helpRequestId], references: [id], onDelete: Cascade)
+  teamSender    Team?       @relation(fields: [senderId], references: [id])
+
+  @@index([helpRequestId])
+}
+
+// Feedback Model (For User)
+model Feedback {
+  id        String   @id @default(cuid())
+  rating    String
+  name      String
+  phone     String
+  email     String?
+  feedback  String
+  createdAt DateTime @default(now())
+}
+
+// Admin Moderator Conversation Model (For Admin & Moderator)
+model AdminModeratorConversation {
+  id           String @id @default(cuid())
+  participants Team[]
+
+  messages  AdminModeratorMessage[] @relation("AdminModeratorConversationMessages")
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+}
+
+// Admin Moderator Message Model (For Admin & Moderator)
+model AdminModeratorMessage {
+  id             String                     @id @default(cuid())
+  conversationId String
+  conversation   AdminModeratorConversation @relation("AdminModeratorConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  templateId     String
+  template       MessageTemplate?           @relation(fields: [templateId], references: [id])
+  senderTeamId   String
+  senderTeam     Team                       @relation("SentAdminModeratorMessages", fields: [senderTeamId], references: [id])
+  status         MessageStatus              @default(SENT)
+  createdAt      DateTime                   @default(now())
+
+  @@index([conversationId, templateId])
+}
+
+// Message Template Model (For Admin & Moderator)
+model MessageTemplate {
+  id        String     @id @default(cuid())
+  name      String
+  content   String
+  category  String
+  roles     Json
+  isActive  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  messages AdminModeratorMessage[]
+}
+
+// Team Conversation Model (For Admin & Moderator)
+model TeamConversation {
+  id           String               @id @default(cuid())
+  type         RoleConversationType
+  participants Team[]               @relation("TeamConversationParticipants")
+  messages     TeamMessage[]        @relation("TeamConversationMessages")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Team Message Model (For Admin & Moderator)
+model TeamMessage {
+  id             String           @id @default(cuid())
+  content        String
+  conversationId String
+  conversation   TeamConversation @relation("TeamConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderTeamId String?
+  senderTeam   Team?   @relation("SentRoleMessages", fields: [senderTeamId], references: [id])
+
+  status    MessageStatus @default(SENT)
+  createdAt DateTime      @default(now())
+
+  @@index([conversationId])
+}
+
+// Team User Conversation Model (For Admin, Moderator & User)
+model TeamUserConversation {
+  id            String                   @id @default(cuid())
+  type          UserTeamConversationType // only ADMIN_MALE or MODERATOR_FEMALE
+  teamId        String
+  userId        String
+  lastMessageAt DateTime?
+  team          Team                     @relation(fields: [teamId], references: [id])
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      TeamUserMessage[]        @relation("TeamUserMessages")
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+}
+
+// Team User Message Model (For Admin, Moderator & User)
+model TeamUserMessage {
+  id             String               @id @default(cuid())
+  content        String
+  conversationId String
+  conversation   TeamUserConversation @relation("TeamUserMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  senderTeamId   String?
+  senderTeam     Team?                @relation(fields: [senderTeamId], references: [id])
+  senderUserId   String?
+  senderUser     User?                @relation(fields: [senderUserId], references: [id])
+
+  type         MessageType @default(TEXT)
+  planId       String?
+  plan         Plan?       @relation("PlanToTeamUserMessage", fields: [planId], references: [id])
+  paymentPhase String? // PENDING | DECLINED | APPROVED | REJECTED | VERIFYING
+
+  status    MessageStatus @default(SENT)
+  createdAt DateTime      @default(now())
+
+  @@index([conversationId])
+}
+
+// Super Admin User Conversation Model (For SuperAdmin & User)
+model SuperAdminUserConversation {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation("SuperAdminUserConversations", fields: [userId], references: [id], onDelete: Cascade)
+
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  messages SuperAdminUserMessage[] @relation("SuperAdminUserConversationMessages")
+}
+
+// Super Admin User Message Model (For SuperAdmin & User)
+model SuperAdminUserMessage {
+  id             String                     @id @default(cuid())
+  conversationId String
+  conversation   SuperAdminUserConversation @relation("SuperAdminUserConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  content        String
+  senderId       String // userId OR superAdminId
+
+  type         MessageType @default(TEXT)
+  price        Decimal?    @db.Decimal(10, 2)
+  paymentPhase String? // PENDING |DECLINED | APPROVED | REJECTED | VERIFYING
+  reportId     String?
+
+  status    MessageStatus @default(SENT)
+  createdAt DateTime      @default(now())
+
+  // Optional reference (NO cascade)
+  matchingPayment   MatchingPayment? @relation("MatchingPaymentMessage", fields: [matchingPaymentId], references: [id])
+  matchingPaymentId String?          @unique
+
+  @@index([conversationId])
+}
+
+// Matching Payment Model (For SuperAdmin & User)
+model MatchingPayment {
+  id            String        @id @default(cuid())
+  amount        Decimal       @db.Decimal(10, 2)
+  screenShotUrl String?
+  paymentName   String?
+  status        PaymentStatus @default(PENDING)
+  feedback      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Optional back-reference (NO cascade)
+  message SuperAdminUserMessage? @relation("MatchingPaymentMessage")
+
+  userId String
+  user   User   @relation("MatchingPaymentUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum MessageType {
+  TEXT
+  PAYMENT
+  PROFILE
+  SYSTEM
+}
+
+enum PaymentRequestStatus {
+  PENDING
+  PAID
+  REJECTED
+  EXPIRED
+}
+
+enum SenderType {
+  USER
+  SUPERADMIN
+}
+
+enum RoleConversationType {
+  SUPERADMIN_GHOTOK
+  SUPERADMIN_ADMIN
+  SUPERADMIN_MODERATOR
+  GHOTOK_ADMIN
+  GHOTOK_MODERATOR
+}
+
+enum UserTeamConversationType {
+  ADMIN_GROOM
+  MODERATOR_BRIDE
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TeamRole {
+  SUPERADMIN
+  ADMIN
+  MODERATOR
+  GHOTOK
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum UserType {
+  FREE
+  PAID
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum FriendRequestStatus {
+  SENT
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum HelpStatus {
+  PENDING
+  INPROGRESS
+  RESOLVED
+  CLOSED
+}
+
+// Broadcast Message Model (For SuperAdmin and User)
+model BroadcastMessage {
+  id           String    @id @default(cuid())
+  content      String
+  targetGender String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+}
+
+// User Subscription Model (For Tracking Individual Plan Expirations)
+model UserSubscription {
+  id             String   @id @default(cuid())
+  userId         String
+  planId         String
+  startDate      DateTime @default(now())
+  expiryDate     DateTime
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan           Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([planId])
+  @@index([expiryDate])
+}

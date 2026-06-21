@@ -6,6 +6,9 @@ import {
   getHelpRequestById,
   helpRequestSearch,
   updateHelpRequestFeedback,
+  getHelpRequestMessages,
+  sendGuestHelpMessage,
+  reopenHelpRequest,
 } from "../controllers/others.controller.js";
 
 const othersRoute = express.Router();
@@ -26,6 +29,24 @@ othersRoute.get("/help/request/:requestId", asyncHandler(getHelpRequestById));
 othersRoute.post(
   "/help/request/feedback",
   asyncHandler(updateHelpRequestFeedback)
+);
+
+//api/v1/other/help/request/:requestId/messages
+othersRoute.get(
+  "/help/request/:requestId/messages",
+  asyncHandler(getHelpRequestMessages)
+);
+
+//api/v1/other/help/request/:requestId/messages
+othersRoute.post(
+  "/help/request/:requestId/messages",
+  asyncHandler(sendGuestHelpMessage)
+);
+
+//api/v1/other/help/request/:requestId/reopen
+othersRoute.patch(
+  "/help/request/:requestId/reopen",
+  asyncHandler(reopenHelpRequest)
 );
 
 export default othersRoute;

@@ -714,15 +714,37 @@ export async function getAllHelpRequests(req: Request, res: Response) {
           message: true,
           feedback: true,
           status: true,
+          isReopened: true,
           createdAt: true,
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              senderType: true,
+            },
+          },
         },
 
         skip,
         take: limitNum,
-        orderBy: { createdAt: "desc" },
+        orderBy: { updatedAt: "desc" },
       }),
       prisma.helpRequest.count(),
     ]);
+
+    const processedRequests = helpRequests.map((req) => {
+      const isNew = req.messages.length === 0 && req.status === "PENDING";
+      const hasUnread = req.messages[0]?.senderType === "GUEST";
+      const latestMessageId = req.messages[0]?.id || null;
+      const { messages, ...rest } = req;
+      return {
+        ...rest,
+        isNew,
+        hasUnread,
+        latestMessageId,
+      };
+    });
 
     const totalPages = Math.ceil(totalData / limitNum);
 
@@ -732,7 +754,7 @@ export async function getAllHelpRequests(req: Request, res: Response) {
         totalPages,
         currentPage: pageNum,
         pageSize: limitNum,
-        data: helpRequests,
+        data: processedRequests,
       })
     );
   } catch (err) {
@@ -761,6 +783,7 @@ export async function getSingleHelpRequestById(req: Request, res: Response) {
         status: true,
         adminNote: true,
         feedback: true,
+        isReopened: true,
         createdAt: true,
       },
     });
@@ -771,6 +794,57 @@ export async function getSingleHelpRequestById(req: Request, res: Response) {
   } catch (err) {
     console.error(err);
     return res.status(500).json(new ApiError(500, "Server error"));
+  }
+}
+
+export async function sendAdminHelpMessage(req: Request, res: Response) {
+  try {
+    const requestId = req.params.requestId;
+    const { content } = req.body;
+    const adminId = (req as any).systemUser?.id;
+
+    if (!requestId) {
+      return res.status(400).json(new ApiError(400, "Invalid request id"));
+    }
+    if (!content) {
+      return res.status(400).json(new ApiError(400, "Message content is required"));
+    }
+    if (!adminId) {
+      return res.status(401).json(new ApiError(401, "Unauthorized access"));
+    }
+
+    const ticket = await prisma.helpRequest.findUnique({ where: { id: requestId } });
+    if (!ticket) {
+      return res.status(404).json(new ApiError(404, "Ticket not found"));
+    }
+
+    const message = await prisma.helpRequestMessage.create({
+      data: {
+        helpRequestId: requestId,
+        senderType: "TEAM",
+        senderId: adminId,
+        content,
+      },
+      include: {
+        teamSender: {
+          select: {
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    await prisma.helpRequest.update({
+      where: { id: requestId },
+      data: { updatedAt: new Date() },
+    });
+
+    return res.status(201).json(new ApiResponse(201, "Admin reply sent successfully", message));
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(new ApiError(500, "Internal server error"));
   }
 }
 
@@ -786,8 +860,35 @@ export async function updateHelpRequestStatus(req: Request, res: Response) {
 
     await prisma.helpRequest.update({
       where: { id: requestId },
-      data: { status, adminNote: feedback },
+      data: {
+        status,
+        adminNote: feedback,
+        resolvedAt: status === "RESOLVED" ? new Date() : null,
+        isReopened: false, // admin action always clears the reopen flag
+      },
     });
+
+    if (status === "RESOLVED") {
+      const adminId = (req as any).systemUser?.id;
+      let adminInfo = "Admin";
+      if (adminId) {
+        const admin = await prisma.team.findUnique({ where: { id: adminId } });
+        if (admin) {
+          adminInfo = `${admin.firstName} ${admin.lastName} (${adminId})`;
+        } else {
+          adminInfo = `Admin (${adminId})`;
+        }
+      }
+      
+      await prisma.helpRequestMessage.create({
+        data: {
+          helpRequestId: requestId,
+          senderType: "TEAM",
+          senderId: adminId || null,
+          content: `This request has been marked as resolved. The chat is now closed.`,
+        }
+      });
+    }
 
     res.status(200).json(new ApiResponse(200, "Request status updated", null));
   } catch (err) {

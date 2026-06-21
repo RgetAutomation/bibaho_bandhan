@@ -318,6 +318,8 @@ export async function getUserById(req: Request, res: Response) {
           lastName: true,
           gender: true,
           avatar: true,
+          email: true,
+          phone: true,
           isGhotokOwned: true,
           ghotok: {
             select: {
@@ -362,6 +364,11 @@ export async function getUserById(req: Request, res: Response) {
               candidatePreference: true,
               locationPreference: true,
               aboutMyPartner: true,
+              rashi: true,
+              nakshatra: true,
+              birthTime: true,
+              cityOfBirth: true,
+              countryOfBirth: true,
             },
           },
         },
@@ -487,6 +494,8 @@ export async function getUserById(req: Request, res: Response) {
       receivedRequestStatus: youRequestReceived?.status,
       alreadyBlocked: !!youBlockUser,
       alreadyFriend: !!bothAreFriends,
+      phone: !!bothAreFriends ? targetUser.phone : null,
+      email: !!bothAreFriends ? targetUser.email : null,
       status,
       height: targetUser.profile?.height,
       education: targetUser.profile?.education,
@@ -496,6 +505,11 @@ export async function getUserById(req: Request, res: Response) {
       drinkingHabits: targetUser.profile?.drinkingHabits,
       smokingHabits: targetUser.profile?.smokingHabits,
       aboutMyPartner: targetUser.profile?.aboutMyPartner,
+      rashi: targetUser.profile?.rashi,
+      nakshatra: targetUser.profile?.nakshatra,
+      birthTime: targetUser.profile?.birthTime,
+      cityOfBirth: targetUser.profile?.cityOfBirth,
+      countryOfBirth: targetUser.profile?.countryOfBirth,
     };
 
     const fullInfo = {
@@ -578,6 +592,11 @@ export async function getSelfDetails(req: Request, res: Response) {
             candidatePreference: true,
             locationPreference: true,
             aboutMyPartner: true,
+            rashi: true,
+            nakshatra: true,
+            birthTime: true,
+            cityOfBirth: true,
+            countryOfBirth: true,
           },
         },
       },
@@ -652,6 +671,77 @@ export async function updateProfile(req: Request, res: Response) {
       candidatePreference: data.candidatePreferences,
       locationPreference: data.locationPreferences,
       aboutMyPartner: data.aboutMyPartner,
+      rashi: data.rashi,
+      nakshatra: data.nakshatra,
+      birthTime: data.timeOfBirth,
+      cityOfBirth: data.cityOfBirth,
+      countryOfBirth: data.countryOfBirth,
+      
+      familyType: data.familyType,
+      mothersOccupation: data.mothersOccupation,
+      noOfBrothers: data.noOfBrothers,
+      noOfSisters: data.noOfSisters,
+      familyValues: data.familyValues,
+      
+      workExperience: data.workExperience,
+      collegeInstitution: data.collegeInstitution,
+      fieldOfStudy: data.fieldOfStudy,
+      passingYear: data.passingYear,
+      organizationName: data.organizationName,
+      
+      partnerAgeRange: data.partnerAgeRange,
+      partnerHeightRange: data.partnerHeightRange,
+      partnerMaritalStatus: data.partnerMaritalStatus,
+      partnerReligion: data.partnerReligion,
+      partnerCaste: data.partnerCaste,
+      partnerEducation: data.partnerEducation,
+      partnerProfession: data.partnerProfession,
+      partnerIncome: data.partnerIncome,
+      partnerLocation: data.partnerLocation,
+      partnerDiet: data.partnerDiet,
+      partnerComplexion: data.partnerComplexion,
+      partnerMotherTongue: data.partnerMotherTongue,
+
+      // Additional Missing Fields
+      disabilityDetails: data.disabilityDetails,
+      healthScreening: data.healthScreening,
+      country: data.country,
+      citizenship: data.citizenship,
+      ancestralOrigin: data.ancestralOrigin,
+      relationshipWithBrideGroom: data.relationshipWithBrideGroom,
+
+      personalityTraits: data.personalityTraits,
+      lifeGoals: data.lifeGoals,
+      employmentType: data.employmentType,
+      occupationDetails: data.occupationDetails,
+      designation: data.designation,
+      companyName: data.companyName,
+
+      brothersMarriedCount: data.brothersMarriedCount,
+      sistersMarriedCount: data.sistersMarriedCount,
+      myFamilyStatus: data.myFamilyStatus,
+      familyDescription: data.familyDescription,
+      familyBackground: data.familyBackground,
+      culturalValues: data.culturalValues,
+
+      partnerWeightRange: data.partnerWeightRange,
+      partnerSpokenLanguages: data.partnerSpokenLanguages,
+      partnerEmploymentType: data.partnerEmploymentType,
+      partnerSubCaste: data.partnerSubCaste,
+      partnerGothra: data.partnerGothra,
+      partnerPreferredCountry: data.partnerPreferredCountry,
+      partnerPreferredState: data.partnerPreferredState,
+      partnerPreferredDistrict: data.partnerPreferredDistrict,
+      partnerDrinkingHabit: data.partnerDrinkingHabit,
+      partnerSmokingHabit: data.partnerSmokingHabit,
+      partnerDisabilityAcceptable: data.partnerDisabilityAcceptable,
+      partnerDescription: data.partnerDescription,
+      partnerPersonalityExpectation: data.partnerPersonalityExpectation,
+      partnerFamilyExpectation: data.partnerFamilyExpectation,
+      partnerFamilyDetails: data.partnerFamilyDetails,
+      familyStatusPreference: data.familyStatusPreference,
+      familyTypePreference: data.familyTypePreference,
+      familyValuesPreference: data.familyValuesPreference,
     };
 
     await prisma.user.update({
@@ -1032,15 +1122,30 @@ export async function getAllSubscriptionPayment(req: Request, res: Response) {
 
 export async function getPlans(req: Request, res: Response) {
   try {
+    // Check if free plan exists, create if not
+    const freePlan = await prisma.plan.findFirst({
+      where: { price: "0" },
+    });
+
+    if (!freePlan) {
+      await prisma.plan.create({
+        data: {
+          title: "FREE Plan",
+          price: "0",
+          duration: "15",
+          connection: "0",
+          status: true,
+        },
+      });
+    }
+
     // Get plans from database
     const plans = await prisma.plan.findMany({
       where: { status: true },
-      select: {
-        id: true,
-        title: true,
-        price: true,
-        duration: true,
-        connection: true,
+      include: {
+        discounts: {
+          where: { isActive: true },
+        },
       },
     });
 
@@ -1058,18 +1163,196 @@ export async function getPlanById(req: Request, res: Response) {
     // Get plans from database
     const plan = await prisma.plan.findFirst({
       where: { id: planId },
-      select: {
-        id: true,
-        title: true,
-        price: true,
-        duration: true,
-        connection: true,
+      include: {
+        discounts: {
+          where: { isActive: true },
+        },
       },
     });
     return res
       .status(200)
       .json(new ApiResponse(200, "Plan fetched successfully", plan));
   } catch (error) {
+    return res.status(500).json(new ApiError(500, "Internal server error"));
+  }
+}
+
+export async function claimDiscountedPlan(req: Request, res: Response) {
+  try {
+    const userId = req.user?.id;
+    const { planId, couponCode } = req.body;
+
+    if (!userId) return res.status(401).json(new ApiError(401, "Unauthorized"));
+    if (!planId) return res.status(400).json(new ApiError(400, "Plan ID is required"));
+
+    const user = await prisma.user.findUnique({ 
+      where: { id: userId },
+      select: { type: true, planExpiryDate: true, totalLimit: true, remainingLimit: true } 
+    });
+    if (!user) return res.status(404).json(new ApiError(404, "User not found"));
+
+    // Fetch Plan with active discounts
+    const plan = await prisma.plan.findUnique({
+      where: { id: planId },
+      include: {
+        discounts: {
+          where: { isActive: true },
+          orderBy: { percentage: "desc" },
+          take: 1
+        }
+      }
+    });
+
+    if (!plan) return res.status(404).json(new ApiError(404, "Plan not found"));
+
+    let couponDiscount = 0;
+    if (couponCode) {
+      const coupon = await (prisma as any).coupon.findFirst({
+        where: { code: couponCode, planId: plan.id, isActive: true }
+      });
+      if (coupon) couponDiscount = coupon.percentage;
+    }
+
+    const activeDiscount = plan.discounts && plan.discounts.length > 0 ? plan.discounts[0]?.percentage ?? 0 : 0;
+    const rawPrice = Number(plan.price);
+    const baseDiscountedPrice = activeDiscount ? Math.round(rawPrice - (rawPrice * activeDiscount) / 100) : rawPrice;
+    const finalPrice = couponDiscount ? Math.round(baseDiscountedPrice - (baseDiscountedPrice * couponDiscount) / 100) : baseDiscountedPrice;
+
+    if (finalPrice > 0) {
+      return res.status(400).json(new ApiError(400, "This plan is not free. A valid 100% discount combination is required."));
+    }
+
+    const addedLimits = parseInt(plan.connection) || 0;
+    const durationDays = parseInt(plan.duration) || 0;
+
+    let baseDate = new Date();
+    if (user.planExpiryDate && user.planExpiryDate > baseDate) {
+      baseDate = user.planExpiryDate;
+    }
+    
+    const planExpiryDate = new Date(baseDate);
+    planExpiryDate.setDate(planExpiryDate.getDate() + durationDays);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        type: UserType.PAID_USER as any,
+        totalLimit: (user.totalLimit || 0) + addedLimits,
+        remainingLimit: (user.remainingLimit || 0) + addedLimits,
+        planExpiryDate: planExpiryDate,
+        activePlanId: plan.id,
+      },
+    });
+
+    await prisma.userSubscription.create({
+      data: {
+        userId: userId,
+        planId: plan.id,
+        startDate: baseDate,
+        expiryDate: planExpiryDate,
+        isActive: true,
+      }
+    });
+
+    res.status(200).json(new ApiResponse(200, "Plan claimed successfully for ₹0", null));
+  } catch (error: any) {
+    res.status(500).json(new ApiError(500, error?.message || "Internal server error"));
+  }
+}
+
+export async function activateFreePlan(req: Request, res: Response) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json(new ApiError(401, "Unauthorized"));
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json(new ApiError(404, "User not found"));
+    }
+
+    // Check if the user has already used the free plan
+    const rawUser: any[] = await prisma.$queryRawUnsafe(`SELECT "hasUsedFreePlan" FROM "User" WHERE id = $1`, userId);
+    const hasUsedFreePlan = rawUser?.[0]?.hasUsedFreePlan;
+
+    if (hasUsedFreePlan) {
+      return res.status(400).json(new ApiError(400, "You have already used the Free Plan once."));
+    }
+    
+
+
+    // Fetch the free plan
+    const freePlan = await prisma.plan.findFirst({
+      where: { price: "0" },
+    });
+
+    if (!freePlan) {
+      return res.status(404).json(new ApiError(404, "Free plan not found"));
+    }
+
+    const addedLimits = parseInt(freePlan.connection) || 0;
+    const durationDays = parseInt(freePlan.duration) || 0;
+    
+    let baseDate = new Date();
+    if (user.planExpiryDate && user.planExpiryDate > baseDate) {
+      baseDate = user.planExpiryDate;
+    }
+    
+    const planExpiryDate = new Date(baseDate);
+    planExpiryDate.setDate(planExpiryDate.getDate() + durationDays);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        type: UserType.PAID_USER as any, // Using the enum mapped value
+        totalLimit: (user.totalLimit || 0) + addedLimits,
+        remainingLimit: (user.remainingLimit || 0) + addedLimits,
+        planExpiryDate: planExpiryDate,
+        activePlanId: freePlan.id,
+      },
+    });
+
+    await prisma.userSubscription.create({
+      data: {
+        userId: userId,
+        planId: freePlan.id,
+        startDate: baseDate,
+        expiryDate: planExpiryDate,
+        isActive: true,
+      }
+    });
+
+    // Mark free plan as used
+    await prisma.$executeRawUnsafe(`UPDATE "User" SET "hasUsedFreePlan" = true WHERE id = $1`, userId);
+
+    return res.status(200).json(new ApiResponse(200, "Free plan activated successfully!", null));
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(new ApiError(500, "Internal server error"));
+  }
+}
+
+export async function getMySubscriptions(req: Request, res: Response) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json(new ApiError(401, "Unauthorized"));
+
+    const activeSubscriptions = await prisma.userSubscription.findMany({
+      where: {
+        userId,
+        expiryDate: { gt: new Date() },
+        isActive: true,
+      },
+      orderBy: { expiryDate: "desc" },
+    });
+
+    return res.status(200).json(new ApiResponse(200, "Subscriptions fetched successfully", activeSubscriptions));
+  } catch (error) {
+    console.error(error);
     return res.status(500).json(new ApiError(500, "Internal server error"));
   }
 }
@@ -1093,7 +1376,7 @@ export async function getPublicProfile(req: Request, res: Response) {
           avatar: true,
           profile: { select: { dob: true, dist: true, state: true } },
         },
-        take: 3,
+        take: 10,
       }),
       prisma.user.findMany({
         where: {
@@ -1111,7 +1394,7 @@ export async function getPublicProfile(req: Request, res: Response) {
           avatar: true,
           profile: { select: { dob: true, dist: true, state: true } },
         },
-        take: 2,
+        take: 10,
       }),
     ]);
 
@@ -2107,6 +2390,15 @@ export const getAllBlockedUsers = async (req: Request, res: Response) => {
             title: true,
             lastName: true,
             avatar: true,
+            gender: true,
+            profile: {
+              select: {
+                dob: true,
+                profession: true,
+                dist: true,
+                state: true,
+              }
+            }
           },
         },
         createdAt: true,
@@ -2119,6 +2411,8 @@ export const getAllBlockedUsers = async (req: Request, res: Response) => {
       title: blockedUser.blocked.title,
       lastName: blockedUser.blocked.lastName,
       avatar: blockedUser.blocked.avatar,
+      gender: blockedUser.blocked.gender,
+      profile: blockedUser.blocked.profile,
       createdAt: blockedUser.createdAt,
     }));
 

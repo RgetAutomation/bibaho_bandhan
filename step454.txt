@@ -1,0 +1,17 @@
+Created At: 2026-06-06T22:02:41Z
+Completed At: 2026-06-06T22:02:41Z
+File Path: `file:///c:/xampp/htdocs/bbbrepo/bbb-superadmin-main/bbb-superadmin-main/src/app/dashboard/request/help/page.tsx`
+Total Lines: 9
+Total Bytes: 299
+Showing lines 1 to 9
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import HelpClientPage from "./helpClient";
+2: import { checkAuthAndGetSession } from "@/components/helper/checkAuthAndGetSession";
+3: import { headers } from "next/headers";
+4: 
+5: export default async function HelpRequestPage() {
+6:   await checkAuthAndGetSession(await headers());
+7:   return <HelpClientPage />;
+8: }
+9: 
+The above content shows the entire, complete file contents of the requested file.

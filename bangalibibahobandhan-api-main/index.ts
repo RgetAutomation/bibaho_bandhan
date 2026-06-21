@@ -1,22 +1,19 @@
 import { config } from "./src/config/config.js";
 import { server } from "./src/server.js";
-//import express from "express";
-// import { toNodeHandler } from "better-auth/node";
-// import { auth } from "./src/utils/auth.js";
+import { autoCloseResolvedTickets } from "./src/controllers/others.controller.js";
 
 const port = config.port || 5000;
 
 const startServer = async () => {
-  // Handle auth
-  //const app = express();
   try {
     server.listen(port, () => {
       console.log(`✅ Server running at http://localhost:${port}`);
     });
-    //app.all("/api/auth/*splat", toNodeHandler(auth));
-    // app.listen(port, () => {
-    //   console.log(`✅ Server running at http://localhost:${port}`);
-    // });
+
+    // Run cron job immediately on startup, then every 24 hours
+    autoCloseResolvedTickets();
+    setInterval(autoCloseResolvedTickets, 24 * 60 * 60 * 1000);
+    console.log("⏰ Auto-close cron job scheduled (every 24 hours)");
   } catch (error) {
     if ((error as any).code === "EADDRINUSE") {
       console.error(`❌ Port ${port} is already in use.`);

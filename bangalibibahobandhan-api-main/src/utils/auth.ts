@@ -16,10 +16,10 @@ export const authTeam = betterAuth({
     "http://localhost:3001",
     "http://localhost:3002",
     "http://192.168.0.101:3000",
-    "https://bangalibibahobandhan.com",
-    "https://www.bangalibibahobandhan.com",
-    "https://team.bangalibibahobandhan.com",
-    "https://teamhead.bangalibibahobandhan.com",
+    "https://bibahobandhan.com",
+    "https://www.bibahobandhan.com",
+    "https://team.bibahobandhan.com",
+    "https://teamhead.bibahobandhan.com",
   ],
   plugins: [username()],
   emailAndPassword: {
@@ -107,6 +107,53 @@ export const authTeam = betterAuth({
   },
 });
 
+export const authSuperAdmin = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  advanced: {
+    cookiePrefix: "bbbsuperadmin",
+    crossSubDomainCookies: {
+      enabled: process.env.NODE_ENV === "production",
+      domain:
+        process.env.NODE_ENV === "production"
+          ? ".bibahobandhan.com"
+          : undefined,
+    },
+  },
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://192.168.0.101:3000",
+    "https://bibahobandhan.com",
+    "https://www.bibahobandhan.com",
+    "https://team.bibahobandhan.com",
+    "https://teamhead.bibahobandhan.com",
+  ],
+  plugins: [username()],
+  user: {
+    modelName: "Team",
+    fields: {
+      name: "firstName",
+      image: "avatar",
+    },
+    additionalFields: {
+      internalId: { type: "number", required: true },
+      middleName: { type: "string", required: false },
+      lastName: { type: "string", required: true },
+      gender: { type: "string", required: true },
+      phone: { type: "string", required: true },
+      role: { type: "string", required: true, input: false },
+      isProfileComplete: { type: "boolean", required: false, input: false },
+      blocked: { type: "boolean", required: false, input: false },
+    },
+  },
+  account: { modelName: "TeamAccount" },
+  session: { modelName: "TeamSession" },
+  verification: { modelName: "TeamVerification" },
+});
+
 export const authUser = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -118,7 +165,7 @@ export const authUser = betterAuth({
       enabled: process.env.NODE_ENV === "production",
       domain:
         process.env.NODE_ENV === "production"
-          ? ".bangalibibahobandhan.com"
+          ? ".bibahobandhan.com"
           : undefined,
     },
   },
@@ -127,8 +174,8 @@ export const authUser = betterAuth({
     "http://localhost:3001",
     "http://localhost:3002",
     "http://192.168.0.101:3000",
-    "https://bangalibibahobandhan.com",
-    "https://www.bangalibibahobandhan.com",
+    "https://bibahobandhan.com",
+    "https://www.bibahobandhan.com",
   ],
   emailAndPassword: {
     enabled: true,
@@ -170,6 +217,16 @@ export const authUser = betterAuth({
       },
       isProfileComplete: {
         type: "boolean",
+        required: false,
+        input: false,
+      },
+      hasUsedFreePlan: {
+        type: "boolean",
+        required: false,
+        input: false,
+      },
+      activePlanId: {
+        type: "string",
         required: false,
         input: false,
       },
@@ -255,12 +312,37 @@ export const authUser = betterAuth({
       if (ctx.path === "/sign-up/username" || ctx.path === "/sign-up/email") {
         // Find user by username
         const { username, gender } = ctx.body;
-        const userType =
-          gender === Gender.FEMALE ? UserType.PAID_USER : UserType.FREE_USER;
-        const userPlanExpiryDate =
-          gender === Gender.FEMALE
-            ? new Date(new Date().setFullYear(new Date().getFullYear() + 5))
-            : new Date();
+
+        let userType = UserType.FREE_USER;
+        let userPlanExpiryDate = new Date();
+        let totalLimit = 0;
+        let remainingLimit = 0;
+
+        if (gender === Gender.FEMALE) {
+          userType = UserType.PAID_USER;
+          userPlanExpiryDate = new Date(new Date().setFullYear(new Date().getFullYear() + 5));
+        } else {
+          // For Males: Look for an active Free Plan (price "0" or title contains "FREE")
+          const freePlan = await prisma.plan.findFirst({
+            where: {
+              status: true,
+              OR: [
+                { price: "0" },
+                { title: { contains: "FREE", mode: "insensitive" } }
+              ]
+            }
+          });
+
+          if (freePlan) {
+            userType = UserType.PAID_USER; // Grant full access like a paid plan
+            totalLimit = parseInt(freePlan.connection) || 0;
+            remainingLimit = parseInt(freePlan.connection) || 0;
+            
+            const durationDays = parseInt(freePlan.duration) || 0;
+            userPlanExpiryDate = new Date();
+            userPlanExpiryDate.setDate(userPlanExpiryDate.getDate() + durationDays);
+          }
+        }
 
         // Generate unique custom ID
         let customId = generateUniqueId();
@@ -285,8 +367,18 @@ export const authUser = betterAuth({
             publicId: customId,
             type: userType,
             planExpiryDate: userPlanExpiryDate,
+            totalLimit: totalLimit,
+            remainingLimit: remainingLimit,
           },
         });
+
+        if (userType === UserType.PAID_USER) {
+          try {
+            await prisma.$executeRawUnsafe(`UPDATE "User" SET "hasUsedFreePlan" = true WHERE "username" = $1`, username);
+          } catch (e) {
+            console.error("Failed to set hasUsedFreePlan in raw query", e);
+          }
+        }
       }
     }),
   },

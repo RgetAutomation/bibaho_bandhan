@@ -1,0 +1,48 @@
+Created At: 2026-06-07T00:39:13Z
+Completed At: 2026-06-07T00:39:13Z
+File Path: `file:///c:/xampp/htdocs/bbbrepo/bbb-superadmin-main/bbb-superadmin-main/src/app/dashboard/request/help/helpClient.tsx`
+Total Lines: 375
+Total Bytes: 12942
+Showing lines 1 to 40
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: "use client";
+2: 
+3: import { getAllHelpRequests } from "@/action/helpRequest";
+4: import { EpmptyList } from "@/components/emptyList";
+5: import { IHelpRequest } from "@/components/interface/IHelpRequest";
+6: import { IPaginatedResult } from "@/components/interface/IPagenation";
+7: import LoadingPage from "@/components/loader";
+8: import { Button } from "@/components/ui/button";
+9: import { Input } from "@/components/ui/input";
+10: import {
+11:   Select,
+12:   SelectContent,
+13:   SelectItem,
+14:   SelectTrigger,
+15:   SelectValue,
+16: } from "@/components/ui/select";
+17: import {
+18:   Pagination,
+19:   PaginationContent,
+20:   PaginationItem,
+21:   PaginationLink,
+22:   PaginationNext,
+23:   PaginationPrevious,
+24: } from "@/components/ui/pagination";
+25: import { isAxiosError } from "axios";
+26: import {
+27:   Check,
+28:   Clipboard,
+29:   Info,
+30:   MessageSquare,
+31:   Phone,
+32:   Reply,
+33:   UserRound,
+34: } from "lucide-react";
+35: import { useEffect, useMemo, useState } from "react";
+36: import { format } from "date-fns";
+37: import Link from "next/link";
+38: 
+39: export default function HelpClientPage() {
+40:   const [sortBy, setSortBy] = useState("LATEST");
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

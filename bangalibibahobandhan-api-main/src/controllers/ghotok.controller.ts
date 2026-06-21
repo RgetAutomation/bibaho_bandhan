@@ -255,6 +255,7 @@ export async function ghotokAllBrides(req: Request, res: Response) {
         },
         select: {
           id: true,
+          publicId: true,
           title: true,
           firstName: true,
           middleName: true,
@@ -321,6 +322,7 @@ export async function ghotokAllGrooms(req: Request, res: Response) {
         },
         select: {
           id: true,
+          publicId: true,
           title: true,
           firstName: true,
           middleName: true,
@@ -1240,10 +1242,20 @@ export async function getAllConnectionRequest(req: Request, res: Response) {
     const connectionRequest = await prisma.friendRequest.findMany({
       where: {
         status: "SENT",
-        receiver: {
-          isGhotokOwned: true,
-          ghotokId: currentUserId,
-        },
+        OR: [
+          {
+            receiver: {
+              isGhotokOwned: true,
+              ghotokId: currentUserId,
+            },
+          },
+          {
+            sender: {
+              isGhotokOwned: true,
+              ghotokId: currentUserId,
+            },
+          }
+        ]
       },
       select: {
         id: true,
@@ -1254,6 +1266,7 @@ export async function getAllConnectionRequest(req: Request, res: Response) {
             lastName: true,
             avatar: true,
             gender: true,
+            isGhotokOwned: true,
           },
         },
         receiver: {
@@ -1265,6 +1278,7 @@ export async function getAllConnectionRequest(req: Request, res: Response) {
             lastName: true,
             avatar: true,
             gender: true,
+            isGhotokOwned: true,
           },
         },
         createdAt: true,
@@ -2226,5 +2240,121 @@ export async function getBrideUserIdByProfileIdForGhotok(
   } catch (error) {
     console.log(error);
     return res.status(500).json(new ApiError(500, "Server error"));
+  }
+}
+
+
+export async function ghotokHomeBrides(req: Request, res: Response) {
+  try {
+    let { page = "1", limit = "10" } = req.query;
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [users, totalData] = await prisma.$transaction([
+      prisma.user.findMany({
+        where: {
+          gender: Gender.FEMALE,
+          isProfilePublic: true,
+          isGhotokOwned: false,
+        },
+        select: {
+          id: true, publicId: true, title: true, firstName: true, lastName: true, gender: true, avatar: true,
+        },
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.user.count({ where: { gender: Gender.FEMALE, isProfilePublic: true, isGhotokOwned: false } }),
+    ]);
+
+    const totalPages = Math.ceil(totalData / limitNum);
+    return res.status(200).json(new ApiResponse(200, "Success", { totalData, totalPages, currentPage: pageNum, pageSize: limitNum, data: users }));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, "Internal server error"));
+  }
+}
+
+export async function ghotokHomeGrooms(req: Request, res: Response) {
+  try {
+    let { page = "1", limit = "10" } = req.query;
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [users, totalData] = await prisma.$transaction([
+      prisma.user.findMany({
+        where: {
+          gender: Gender.MALE,
+          isProfilePublic: true,
+          isGhotokOwned: false,
+        },
+        select: {
+          id: true, publicId: true, title: true, firstName: true, lastName: true, gender: true, avatar: true,
+        },
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.user.count({ where: { gender: Gender.MALE, isProfilePublic: true, isGhotokOwned: false } }),
+    ]);
+
+    const totalPages = Math.ceil(totalData / limitNum);
+    return res.status(200).json(new ApiResponse(200, "Success", { totalData, totalPages, currentPage: pageNum, pageSize: limitNum, data: users }));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, "Internal server error"));
+  }
+}
+
+
+export async function ghotokSendConnectionRequest(req: Request, res: Response) {
+  try {
+    const currentUserId = req.systemUser?.id;
+    const { senderId, receiverId } = req.body;
+
+    if (!senderId || !receiverId) {
+      return res.status(400).json(new ApiError(400, "Sender and receiver IDs are required"));
+    }
+
+    // Verify the sender is owned by the current Ghotok
+    const sender = await prisma.user.findFirst({
+      where: {
+        id: senderId,
+        isGhotokOwned: true,
+        ghotokId: currentUserId,
+      }
+    });
+
+    if (!sender) {
+      return res.status(403).json(new ApiError(403, "You do not own the sender user"));
+    }
+
+    // Check if a request already exists
+    const existRequest = await prisma.friendRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: senderId, receiverId: receiverId },
+          { senderId: receiverId, receiverId: senderId },
+        ]
+      }
+    });
+
+    if (existRequest) {
+      return res.status(400).json(new ApiError(400, "Connection request already exists"));
+    }
+
+    // Create request
+    const request = await prisma.friendRequest.create({
+      data: {
+        senderId: senderId,
+        receiverId: receiverId,
+        status: ConnectionStatus.SENT,
+      }
+    });
+
+    return res.status(200).json(new ApiResponse(200, "Connection request sent successfully", request));
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(new ApiError(500, "Internal server error"));
   }
 }

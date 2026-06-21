@@ -13,6 +13,9 @@ import {
   getUserDetailsByIdForGhotok,
   ghotokAllGrooms,
   ghotokAllBrides,
+  ghotokHomeBrides,
+  ghotokHomeGrooms,
+  ghotokSendConnectionRequest,
   ghotokDashboard,
   ghotokUserProfileStatusAndImages,
   joinGhotokRequestUser,
@@ -51,6 +54,29 @@ ghotokRoute.get(
   "/dashboard",
   authorizeSystem([Role.GHOTOK]),
   asyncHandler(ghotokDashboard)
+);
+
+
+//api/v1/app/ghotok/home/brides
+ghotokRoute.get(
+  "/home/brides",
+  authorizeSystem([Role.GHOTOK]),
+  asyncHandler(ghotokHomeBrides)
+);
+
+//api/v1/app/ghotok/home/grooms
+ghotokRoute.get(
+  "/home/grooms",
+  authorizeSystem([Role.GHOTOK]),
+  asyncHandler(ghotokHomeGrooms)
+);
+
+
+//api/v1/app/ghotok/connection-request/send
+ghotokRoute.post(
+  "/connection-request/send",
+  authorizeSystem([Role.GHOTOK]),
+  asyncHandler(ghotokSendConnectionRequest)
 );
 
 //api/v1/app/ghotok/users/bride

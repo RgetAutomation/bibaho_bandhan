@@ -1,19 +1,20 @@
 import express from "express";
+import { getSystemSettings, updateSystemSettings } from "../controllers/settings.controller.js";
+import { authorizeSystem } from "../middlewares/authorize.middleware.js";
+import { Role } from "../types/roles.js";
 
-///api/v1/app/sa
 const superAdminRoute = express.Router();
 
-// superAdminRoute.get(
-//   "/plan",
-//   authorizeSystem([Role.SUPERADMIN]),
-//   asyncHandler(getPlansForSA)
-// );
+superAdminRoute.get(
+  "/settings",
+  authorizeSystem([Role.SUPERADMIN]),
+  getSystemSettings
+);
 
-// ///api/v1/app/sa/user/sa/conversation/:userId
-// superAdminRoute.get(
-//   "/user/sa/conversation/:userId",
-//   authorizeSystem([Role.SUPERADMIN]),
-//   asyncHandler(getOrCreateUserSAConversationForSA)
-// );
+superAdminRoute.put(
+  "/settings",
+  authorizeSystem([Role.SUPERADMIN]),
+  updateSystemSettings
+);
 
 export default superAdminRoute;

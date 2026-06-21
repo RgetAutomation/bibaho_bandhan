@@ -25,6 +25,7 @@ import {
   getAllHelpRequests,
   getSingleHelpRequestById,
   updateHelpRequestStatus,
+  sendAdminHelpMessage,
 } from "../controllers/auth.controller.js";
 
 //api/v1/app/admin
@@ -147,22 +148,29 @@ adminRoute.get(
 //api/v1/app/admin/request/help
 adminRoute.get(
   "/request/help",
-  authorizeSystem([Role.ADMIN]),
+  authorizeSystem([Role.ADMIN, Role.SUPERADMIN]),
   asyncHandler(getAllHelpRequests)
 );
 
 //api/v1/app/admin/request/help/:requstId
 adminRoute.get(
   "/request/help/:requestId",
-  authorizeSystem([Role.ADMIN]),
+  authorizeSystem([Role.ADMIN, Role.SUPERADMIN]),
   asyncHandler(getSingleHelpRequestById)
 );
 
 //api/v1/app/admin/request/help/update
 adminRoute.post(
   "/request/help/update",
-  authorizeSystem([Role.ADMIN]),
+  authorizeSystem([Role.ADMIN, Role.SUPERADMIN]),
   asyncHandler(updateHelpRequestStatus)
+);
+
+//api/v1/app/admin/request/help/:requestId/messages
+adminRoute.post(
+  "/request/help/:requestId/messages",
+  authorizeSystem([Role.ADMIN, Role.SUPERADMIN]),
+  asyncHandler(sendAdminHelpMessage)
 );
 
 export default adminRoute;
