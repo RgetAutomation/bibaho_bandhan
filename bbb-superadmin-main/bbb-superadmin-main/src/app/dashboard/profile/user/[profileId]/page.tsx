@@ -153,12 +153,20 @@ export default async function UserProfileId({
             </div>
             
             {data.profileImages && data.profileImages.length > 0 && (
-              <div className="flex gap-2 mt-1">
-                {data.profileImages.slice(0, 4).map((img: any, i: number) => (
-                  <div key={i} className="aspect-square flex-1 relative rounded-lg overflow-hidden border border-border bg-muted">
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                {data.profileImages.slice(0, 2).map((img: any, i: number) => (
+                  <div key={i} className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
                     <img src={img.url} className="w-full h-full object-cover" alt="Thumbnail" />
                   </div>
                 ))}
+                {data.profileImages.length > 2 && (
+                  <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
+                    <img src={data.profileImages[2].url} className="w-full h-full object-cover" alt="Thumbnail" />
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-bold pointer-events-none">
+                      +{data.profileImages.length - 2}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             
