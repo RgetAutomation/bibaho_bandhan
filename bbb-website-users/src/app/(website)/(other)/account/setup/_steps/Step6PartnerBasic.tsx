@@ -85,7 +85,7 @@ export default function Step6PartnerBasic({ onComplete, onBack }: { onComplete: 
               <FormField control={form.control} name="partnerMaritalStatus" render={({ field }) => (
                 <FormItem><FormLabel>Marital Status Preference (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="Never Married">Never Married</SelectItem>
@@ -112,7 +112,7 @@ export default function Step6PartnerBasic({ onComplete, onBack }: { onComplete: 
               <FormField control={form.control} name="partnerEmploymentType" render={({ field }) => (
                 <FormItem><FormLabel>Employment Type (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="Private Sector">Private Sector</SelectItem>
@@ -129,7 +129,7 @@ export default function Step6PartnerBasic({ onComplete, onBack }: { onComplete: 
               <FormField control={form.control} name="partnerAnnualIncome" render={({ field }) => (
                 <FormItem><FormLabel>Annual Income Range (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="3 - 5 Lakhs">3 - 5 Lakhs</SelectItem>

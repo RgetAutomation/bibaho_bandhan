@@ -97,7 +97,7 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
               <FormField control={form.control} name="myFamilyStatus" render={({ field }) => (
                 <FormItem><FormLabel>Family Status <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Middle Class">Middle Class</SelectItem>
                       <SelectItem value="Upper Middle Class">Upper Middle Class</SelectItem>
@@ -110,7 +110,7 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
               <FormField control={form.control} name="myFamilyType" render={({ field }) => (
                 <FormItem><FormLabel>Family Type <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Joint">Joint Family</SelectItem>
                       <SelectItem value="Nuclear">Nuclear Family</SelectItem>
@@ -123,7 +123,7 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
               <FormField control={form.control} name="myFamilyValues" render={({ field }) => (
                 <FormItem className="md:col-span-2"><FormLabel>Family Values (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Orthodox">Orthodox</SelectItem>
                       <SelectItem value="Traditional">Traditional</SelectItem>

@@ -96,7 +96,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="partnerEatingHabit" render={({ field }) => (
                 <FormItem><FormLabel>Eating Habit Preference (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="Vegetarian">Vegetarian</SelectItem>
@@ -109,7 +109,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="partnerDrinkingHabit" render={({ field }) => (
                 <FormItem><FormLabel>Drinking Habit Preference (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="No">No</SelectItem>
@@ -122,7 +122,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="partnerSmokingHabit" render={({ field }) => (
                 <FormItem><FormLabel>Smoking Habit Preference (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="No">No</SelectItem>
@@ -135,7 +135,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="partnerDisabilityAcceptable" render={({ field }) => (
                 <FormItem><FormLabel>Any Disability Acceptable? (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Yes">Yes</SelectItem>
                       <SelectItem value="No">No</SelectItem>
@@ -170,7 +170,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="familyStatusPreference" render={({ field }) => (
                 <FormItem><FormLabel>Family Status (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="Middle Class">Middle Class</SelectItem>
@@ -184,7 +184,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="familyTypePreference" render={({ field }) => (
                 <FormItem><FormLabel>Family Type (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="Nuclear">Nuclear</SelectItem>
@@ -197,7 +197,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
               <FormField control={form.control} name="familyValuesPreference" render={({ field }) => (
                 <FormItem><FormLabel>Family Values (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Doesn't Matter">Doesn't Matter</SelectItem>
                       <SelectItem value="Orthodox">Orthodox</SelectItem>

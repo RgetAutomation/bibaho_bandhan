@@ -75,7 +75,7 @@ export default function Step2Career({ onComplete, onBack }: { onComplete: () => 
               <FormField control={form.control} name="employmentType" render={({ field }) => (
                 <FormItem><FormLabel>Employment Type <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Private Sector">Private Sector</SelectItem>
                       <SelectItem value="Government/Public Sector">Government/Public Sector</SelectItem>
@@ -109,7 +109,7 @@ export default function Step2Career({ onComplete, onBack }: { onComplete: () => 
               <FormField control={form.control} name="monthlyIncome" render={({ field }) => (
                 <FormItem><FormLabel>Annual Income <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select income range" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select income range" /></SelectTrigger></FormControl>
                     <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Less than 5 lakh</SelectLabel>

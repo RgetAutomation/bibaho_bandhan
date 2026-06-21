@@ -87,7 +87,7 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="religion" render={({ field }) => (
                 <FormItem><FormLabel>Religion <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select religion" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select religion" /></SelectTrigger></FormControl>
                     <SelectContent>
                       {["HINDU", "CHRISTIAN", "MUSLIM", "SIKH", "BUDHIST", "SARNAISM", "JAIN", "OTHER"].map((r) => (
                         <SelectItem key={r} value={r}>{r}</SelectItem>
@@ -100,7 +100,7 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="caste" render={({ field }) => (
                 <FormItem><FormLabel>Caste (Recommended)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select caste" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select caste" /></SelectTrigger></FormControl>
                     <SelectContent>
                       {["GENERAL", "OBC", "SC", "ST", "OTHERS"].map((c) => (
                         <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -132,7 +132,7 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="manglik" render={({ field }) => (
                 <FormItem><FormLabel>Manglik Dosh (Optional)</FormLabel>
                   <Select onValueChange={(val) => field.onChange(val === "true")} defaultValue={field.value ? "true" : "false"}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="true">Yes</SelectItem>
                       <SelectItem value="false">No</SelectItem>

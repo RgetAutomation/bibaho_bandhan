@@ -138,7 +138,7 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
               <FormField control={form.control} name="height" render={({ field }) => (
                 <FormItem><FormLabel>Height <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select your height" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select your height" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Less than 5 feet</SelectLabel>
@@ -195,7 +195,7 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
               <FormField control={form.control} name="maritalStatus" render={({ field }) => (
                 <FormItem><FormLabel>Marital Status <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select marital status" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select marital status" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="NEVER MARRIED">NEVER MARRIED</SelectItem>
                       <SelectItem value="DIVORCED">DIVORCED</SelectItem>
@@ -219,7 +219,7 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
                 <FormField control={form.control} name="childrenLivingWith" render={({ field }) => (
                   <FormItem><FormLabel>Children Living With <span className="text-destructive">*</span></FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                       <SelectContent>
                         <SelectItem value="Me">Me</SelectItem>
                         <SelectItem value="Partner">Partner</SelectItem>
@@ -256,7 +256,7 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
               <FormField control={form.control} name="relationshipWithBrideGroom" render={({ field }) => (
                 <FormItem className="md:col-span-2"><FormLabel>Relationship with Bride/Groom <span className="text-destructive">*</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select relationship" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select relationship" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Self">Self</SelectItem>
                       <SelectItem value="Parent">Parent</SelectItem>

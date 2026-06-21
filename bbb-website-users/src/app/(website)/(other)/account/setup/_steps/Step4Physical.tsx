@@ -88,7 +88,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="eatingHabits" render={({ field }) => (
                 <FormItem><FormLabel>Eating Habits (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Non Vegetarian">Non Vegetarian</SelectItem>
                       <SelectItem value="Vegetarian">Vegetarian</SelectItem>
@@ -102,7 +102,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="drinkingHabits" render={({ field }) => (
                 <FormItem><FormLabel>Drinking Habits (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="No">No</SelectItem>
                       <SelectItem value="Yes">Yes</SelectItem>
@@ -115,7 +115,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="smokingHabits" render={({ field }) => (
                 <FormItem><FormLabel>Smoking Habits (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="No">No</SelectItem>
                       <SelectItem value="Yes">Yes</SelectItem>
@@ -135,7 +135,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="bodyType" render={({ field }) => (
                 <FormItem><FormLabel>Body Type (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select body type" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select body type" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Slim">Slim</SelectItem>
                       <SelectItem value="Average">Average</SelectItem>
@@ -152,7 +152,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="skinTone" render={({ field }) => (
                 <FormItem><FormLabel>Skin Tone (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select skin tone" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select skin tone" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Light"><div className="flex items-center gap-2"><div className="bg-[#f8d2b3] h-4 w-4 rounded-full" /><span>Light</span></div></SelectItem>
                       <SelectItem value="Fair"><div className="flex items-center gap-2"><div className="bg-[#ebb68f] h-4 w-4 rounded-full" /><span>Fair</span></div></SelectItem>
@@ -168,7 +168,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="bloodGroup" render={({ field }) => (
                 <FormItem><FormLabel>Blood Group (Optional)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl>
                     <SelectContent>
                       {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
                         <SelectItem key={bg} value={bg}>{bg}</SelectItem>
@@ -185,7 +185,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               <FormField control={form.control} name="speciallyAble" render={({ field }) => (
                 <FormItem><FormLabel>Any Disability? (Recommended)</FormLabel>
                   <Select onValueChange={(val) => field.onChange(val === "true")} defaultValue={field.value ? "true" : "false"}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="true">Yes</SelectItem>
                       <SelectItem value="false">No</SelectItem>
