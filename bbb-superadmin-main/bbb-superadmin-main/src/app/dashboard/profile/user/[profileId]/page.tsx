@@ -126,12 +126,12 @@ export default async function UserProfileId({
       {/* ================= HEADER ================= */}
       <Card className="rounded-3xl border shadow-md backdrop-blur">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="w-20 h-28 sm:w-[120px] sm:aspect-[4/5] relative shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white dark:border-zinc-800 bg-gray-100 dark:bg-zinc-900">
+          <div className="h-28 sm:h-32 relative shrink-0 flex items-center justify-center rounded-2xl overflow-hidden shadow-sm border-2 border-white dark:border-zinc-800 bg-gray-100 dark:bg-zinc-900">
             {data.avatar ? (
               <img
                 src={data.avatar}
                 alt={fullName}
-                className="w-full h-full object-contain"
+                className="h-full w-auto object-contain"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-muted-foreground">
