@@ -135,16 +135,16 @@ export default async function UserProfileId({
   return (
     <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-6">
       {/* ================= HEADER ================= */}
-      <Card className="rounded-2xl border shadow-sm bg-white overflow-hidden mb-6">
+      <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden mb-6">
         <div className="flex flex-col xl:flex-row">
           
           {/* Left Column - Media */}
-          <div className="w-full xl:w-[220px] p-5 border-b xl:border-b-0 xl:border-r border-gray-100 flex flex-col gap-3 shrink-0">
-            <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+          <div className="w-full xl:w-[220px] p-5 border-b xl:border-b-0 xl:border-r border-border flex flex-col gap-3 shrink-0">
+            <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-muted border border-border">
               {data.avatar ? (
                 <img src={data.avatar} alt={fullName} className="w-full h-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-gray-300">
+                <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-muted-foreground/30">
                   {data.firstName?.[0]?.toUpperCase()}
                 </div>
               )}
@@ -153,14 +153,14 @@ export default async function UserProfileId({
             {data.profileImages && data.profileImages.length > 0 && (
               <div className="flex gap-2 mt-1">
                 {data.profileImages.slice(0, 4).map((img: any, i: number) => (
-                  <div key={i} className="aspect-square flex-1 relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+                  <div key={i} className="aspect-square flex-1 relative rounded-lg overflow-hidden border border-border bg-muted">
                     <img src={img.url} className="w-full h-full object-cover" alt="Thumbnail" />
                   </div>
                 ))}
               </div>
             )}
             
-            <button className="w-full py-2.5 mt-1 text-sm font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors">
+            <button className="w-full py-2.5 mt-1 text-sm font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
               View All Photos ({data.profileImages?.length ? data.profileImages.length + (data.avatar ? 1 : 0) : (data.avatar ? 1 : 0)})
             </button>
           </div>
@@ -170,23 +170,23 @@ export default async function UserProfileId({
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 h-full">
               <div className="flex flex-col h-full w-full">
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 truncate">{fullName}</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground truncate">{fullName}</h1>
                   {data.blocked ? (
-                    <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold flex items-center gap-1 shrink-0">
+                    <span className="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-semibold flex items-center gap-1 shrink-0">
                       <Ban className="w-3 h-3" /> Blocked
                     </span>
                   ) : (
-                    <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold flex items-center gap-1 shrink-0">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-600" /> Active
+                    <span className="px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold flex items-center gap-1 shrink-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400" /> Active
                     </span>
                   )}
                 </div>
                 
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                   <span className="font-medium">Profile ID:</span>
-                  <span className="font-bold text-gray-900">{data.publicId}</span>
+                  <span className="font-bold text-foreground">{data.publicId}</span>
                   <CopyableComponent copyText={data.publicId}>
-                    <span className="text-gray-400 hover:text-gray-700 transition-colors cursor-pointer">
+                    <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                       <Copy className="w-4 h-4" />
                     </span>
                   </CopyableComponent>
@@ -195,54 +195,54 @@ export default async function UserProfileId({
                 {/* Badges */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {data.isProfileComplete && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-100 dark:border-emerald-800">
                       <BadgeCheck className="w-3.5 h-3.5" /> Verified
                     </span>
                   )}
                   {data.type === "PAID" && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold border border-purple-100">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 text-xs font-bold border border-purple-100 dark:border-purple-800">
                       <Crown className="w-3.5 h-3.5" /> Premium
                     </span>
                   )}
                   {data.isGhotokOwned && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 text-orange-700 text-xs font-bold border border-orange-100">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-xs font-bold border border-orange-100 dark:border-orange-800">
                       <Star className="w-3.5 h-3.5" /> Featured
                     </span>
                   )}
                 </div>
 
                 {/* Key Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 py-4 border-y border-gray-100 mb-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 py-4 border-y border-border mb-4">
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                       <Users className="w-4 h-4" />
                       <span className="text-xs font-medium uppercase tracking-wider">Age</span>
                     </div>
-                    <span className="font-semibold text-gray-900">{p?.dob ? `${new Date().getFullYear() - new Date(p.dob).getFullYear()} Yrs` : "—"}</span>
+                    <span className="font-semibold text-foreground">{p?.dob ? `${new Date().getFullYear() - new Date(p.dob).getFullYear()} Yrs` : "—"}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                       <Ruler className="w-4 h-4" />
                       <span className="text-xs font-medium uppercase tracking-wider">Height</span>
                     </div>
-                    <span className="font-semibold text-gray-900">{p?.height || "—"}</span>
+                    <span className="font-semibold text-foreground">{p?.height || "—"}</span>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                       <Book className="w-4 h-4" />
                       <span className="text-xs font-medium uppercase tracking-wider">Religion</span>
                     </div>
-                    <span className="font-semibold text-gray-900">{p?.religion || "—"}</span>
+                    <span className="font-semibold text-foreground">{p?.religion || "—"}</span>
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                       <Heart className="w-4 h-4" />
                       <span className="text-xs font-medium uppercase tracking-wider">Marital Status</span>
                     </div>
-                    <span className="font-semibold text-gray-900">{p?.maritalStatus || "—"}</span>
+                    <span className="font-semibold text-foreground">{p?.maritalStatus || "—"}</span>
                   </div>
                 </div>
 
@@ -250,13 +250,13 @@ export default async function UserProfileId({
                 <div className="flex flex-col lg:flex-row lg:items-center gap-6 justify-between mt-auto">
                   <div className="flex items-center gap-6 lg:gap-10">
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs text-gray-500">Mother Tongue</span>
-                      <span className="font-semibold text-sm text-gray-900">{p?.language || "—"}</span>
+                      <span className="text-xs text-muted-foreground">Mother Tongue</span>
+                      <span className="font-semibold text-sm text-foreground">{p?.language || "—"}</span>
                     </div>
                     
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> Location</span>
-                      <span className="font-semibold text-sm text-gray-900">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> Location</span>
+                      <span className="font-semibold text-sm text-foreground">
                         {p?.dist || p?.state ? [p?.dist, p?.state].filter(Boolean).join(", ") : "—"}
                       </span>
                     </div>
@@ -265,10 +265,10 @@ export default async function UserProfileId({
                   {/* Profile Completion */}
                   <div className="flex flex-col gap-2 min-w-[200px]">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-500">Profile Completion</span>
-                      <span className="font-bold text-gray-900">{calculateCompletion(p)}%</span>
+                      <span className="text-muted-foreground">Profile Completion</span>
+                      <span className="font-bold text-foreground">{calculateCompletion(p)}%</span>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${calculateCompletion(p)}%` }} />
                     </div>
                   </div>
@@ -279,50 +279,50 @@ export default async function UserProfileId({
           </div>
 
           {/* Right Column - Meta Details */}
-          <div className="w-full xl:w-[300px] p-5 lg:p-6 border-t xl:border-t-0 xl:border-l border-gray-100 bg-gray-50/50 flex flex-col shrink-0">
+          <div className="w-full xl:w-[300px] p-5 lg:p-6 border-t xl:border-t-0 xl:border-l border-border bg-muted/30 flex flex-col shrink-0">
             <div className="flex flex-col gap-4 flex-1">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Registration Date</span>
-                <span className="text-sm font-semibold text-gray-900">{formatDate(data.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">Registration Date</span>
+                <span className="text-sm font-semibold text-foreground">{formatDate(data.createdAt)}</span>
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Last Login</span>
-                <span className="text-sm font-semibold text-gray-900">{(data as any).updatedAt ? formatDate((data as any).updatedAt) : "—"}</span>
+                <span className="text-xs text-muted-foreground">Last Login</span>
+                <span className="text-sm font-semibold text-foreground">{(data as any).updatedAt ? formatDate((data as any).updatedAt) : "—"}</span>
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Membership Plan</span>
-                <span className="text-sm font-semibold text-gray-900">{data.type === "PAID" ? "Premium" : "Free"}</span>
+                <span className="text-xs text-muted-foreground">Membership Plan</span>
+                <span className="text-sm font-semibold text-foreground">{data.type === "PAID" ? "Premium" : "Free"}</span>
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Plan Expiry Date</span>
-                <span className="text-sm font-semibold text-gray-900">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
+                <span className="text-xs text-muted-foreground">Plan Expiry Date</span>
+                <span className="text-sm font-semibold text-foreground">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
               </div>
               
               {(data as any).assignedMatchmaker && (
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Assigned Matchmaker</span>
-                  <span className="text-sm font-semibold text-gray-900">{(data as any).assignedMatchmaker}</span>
+                  <span className="text-xs text-muted-foreground">Assigned Matchmaker</span>
+                  <span className="text-sm font-semibold text-foreground">{(data as any).assignedMatchmaker}</span>
                 </div>
               )}
               
               {(data as any).viewsCount !== undefined && (
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Profile Views</span>
-                  <span className="text-sm font-semibold text-gray-900">{(data as any).viewsCount}</span>
+                  <span className="text-xs text-muted-foreground">Profile Views</span>
+                  <span className="text-sm font-semibold text-foreground">{(data as any).viewsCount}</span>
                 </div>
               )}
             </div>
             
             <div className="mt-6 flex flex-col gap-3">
-              <a href={`https://bibahobandhan.com/profile/${data.publicId}`} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-sm rounded-lg border border-emerald-200 transition-colors">
+              <a href={`https://bibahobandhan.com/profile/${data.publicId}`} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 font-semibold text-sm rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors">
                 View Public Profile <ExternalLink className="w-4 h-4" />
               </a>
               
               {/* Action Buttons for Superadmin */}
-              <div className="flex gap-2 w-full mt-2 border-t border-gray-200 pt-4">
+              <div className="flex gap-2 w-full mt-2 border-t border-border pt-4">
                 <div className="flex-1">
                   <MarkButtonClient />
                 </div>
