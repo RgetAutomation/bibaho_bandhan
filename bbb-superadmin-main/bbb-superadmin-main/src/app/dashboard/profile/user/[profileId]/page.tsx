@@ -16,6 +16,7 @@ import ImageViewClient from "./imageViewClient";
 import ProfileCopyClient from "./profileCopyClient";
 import MarkButtonClient from "./markButtonClient";
 import SidebarEditButtonClient from "./sidebarEditButtonClient";
+import SharedProfileToggle from "./sharedProfileToggle";
 import UpdateProfileClient from "./updateProfileClient";
 import { SectionHistory } from "./sectionHistoryClient";
 import { Section, FieldRow } from "./profileGridComponents";
@@ -203,7 +204,7 @@ export default async function UserProfileId({
                 </div>
 
                 {/* Badges */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
+                <div className="flex flex-wrap items-center gap-1.5 mb-3">
                   {data.isProfileComplete && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-100 dark:border-emerald-800">
                       <BadgeCheck className="w-3.5 h-3.5" /> Verified
@@ -219,6 +220,8 @@ export default async function UserProfileId({
                       <Star className="w-3.5 h-3.5" /> Featured
                     </span>
                   )}
+                  
+                  <SharedProfileToggle />
                 </div>
 
                 {/* Key Stats Grid */}
