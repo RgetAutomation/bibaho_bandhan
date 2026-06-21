@@ -563,12 +563,9 @@ export default async function UserProfileId({
       <div className="w-full xl:w-[260px] 2xl:w-[320px] shrink-0 space-y-6">
         
         {/* Top Buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#8b5cf6] text-white hover:bg-[#7c3aed] font-semibold text-sm rounded-lg transition-colors shadow-sm">
             <Edit className="w-4 h-4" /> Edit Profile
-          </button>
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#10b981] text-white hover:bg-[#059669] font-semibold text-sm rounded-lg transition-colors shadow-sm">
-            <MessageSquare className="w-4 h-4" /> Send Message
           </button>
         </div>
 
