@@ -288,12 +288,10 @@ export default async function UserProfileId({
                 <span className="text-sm font-semibold text-foreground">{formatDate(data.createdAt)}</span>
               </div>
               
-              {(data as any).lastLogin && (
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Last Login</span>
-                  <span className="text-sm font-semibold text-foreground">{formatDate((data as any).lastLogin)}</span>
-                </div>
-              )}
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Last Login</span>
+                <span className="text-sm font-semibold text-foreground">{(data as any).lastLogin ? formatDate((data as any).lastLogin) : "—"}</span>
+              </div>
               
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Membership Plan</span>
@@ -305,19 +303,15 @@ export default async function UserProfileId({
                 <span className="text-sm font-semibold text-foreground">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
               </div>
               
-              {(data as any).assignedMatchmaker && (
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Assigned Matchmaker</span>
-                  <span className="text-sm font-semibold text-foreground">{(data as any).assignedMatchmaker}</span>
-                </div>
-              )}
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Assigned Matchmaker</span>
+                <span className="text-sm font-semibold text-foreground">{(data as any).assignedMatchmaker ? (data as any).assignedMatchmaker : "Not Assigned"}</span>
+              </div>
               
-              {(data as any).viewsCount !== undefined && (
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Profile Views</span>
-                  <span className="text-sm font-semibold text-foreground">{(data as any).viewsCount}</span>
-                </div>
-              )}
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Profile Views</span>
+                <span className="text-sm font-semibold text-foreground">{(data as any).viewsCount !== undefined && (data as any).viewsCount !== null ? (data as any).viewsCount : "0"}</span>
+              </div>
             </div>
             
             <div className="mt-6 flex flex-col gap-3">
