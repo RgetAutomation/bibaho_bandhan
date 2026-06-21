@@ -133,7 +133,7 @@ export default function CompleteProfilePage() {
           </div>
         </div>
 
-        <div className="mt-8 space-y-4 pt-8 border-t border-border">
+        <div className="mt-6 flex flex-col gap-4 pt-6 border-t border-border">
           {/* Need Help Card */}
           <div className="bg-[#fdf2f8]/50 dark:bg-pink-950/20 rounded-2xl p-5 border border-[#fce7f3] dark:border-pink-900/30">
             <h4 className="font-bold text-[16px] text-slate-800 dark:text-foreground mb-1 tracking-tight">Need Help?</h4>
