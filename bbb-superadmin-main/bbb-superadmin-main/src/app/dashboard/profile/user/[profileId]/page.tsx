@@ -325,12 +325,7 @@ export default async function UserProfileId({
                 View Public Profile <ExternalLink className="w-4 h-4" />
               </a>
               
-              {/* Action Buttons for Superadmin */}
-              <div className="flex gap-2 w-full mt-2 border-t border-border pt-4">
-                <div className="flex-1">
-                  <MarkButtonClient />
-                </div>
-              </div>
+              {/* Action Buttons removed from here, moved to right sidebar */}
             </div>
           </div>
           
@@ -562,8 +557,11 @@ export default async function UserProfileId({
       <div className="w-full xl:w-[260px] 2xl:w-[320px] shrink-0 space-y-6 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         
         {/* Top Buttons */}
-        <div className="flex flex-col gap-3">
-          <SidebarEditButtonClient />
+        <div className="grid grid-cols-2 gap-2">
+          <MarkButtonClient className="w-full h-10" />
+          <div className="w-full [&>button]:h-10">
+            <SidebarEditButtonClient />
+          </div>
         </div>
 
         {/* Verification Center */}

@@ -5,7 +5,7 @@ import { useProfileCopyStore } from "@/hooks/useProfileCopyStore";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
-export default function MarkButtonClient() {
+export default function MarkButtonClient({ className }: { className?: string }) {
   const { isMarkingMode, toggleMarkingMode, reset } = useProfileCopyStore();
   const params = useParams();
 
@@ -17,7 +17,7 @@ export default function MarkButtonClient() {
   return (
     <Button
       variant={isMarkingMode ? "destructive" : "default"}
-      className="font-semibold shadow-md"
+      className={`font-semibold shadow-md ${className || ""}`}
       onClick={toggleMarkingMode}
     >
       {isMarkingMode ? "Cancel Marking" : "Mark"}
