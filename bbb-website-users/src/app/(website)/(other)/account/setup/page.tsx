@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import { useCreateAccountStore } from "@/lib/createAccountStore";
-import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone, Users } from "lucide-react";
+import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone } from "lucide-react";
 
 // Import all the new step components
 import Step1Basic from "./_steps/Step1Basic";
@@ -100,47 +100,53 @@ export default function CompleteProfilePage() {
       </div>
 
       {/* Right side: Summary / Sidebar */}
-      <div className="hidden xl:flex w-[350px] 2xl:w-[400px] border-l border-border bg-card p-6 flex-col gap-6 overflow-y-auto custom-scrollbar">
+      <div className="hidden xl:flex w-[350px] 2xl:w-[400px] border-l border-border bg-card p-6 flex-col overflow-y-auto custom-scrollbar">
+        <h3 className="font-semibold text-lg mb-4 text-slate-800 dark:text-foreground">Why complete your profile?</h3>
         
-        {/* Card 1: Need Help? */}
-        <div className="border border-primary/10 bg-card rounded-2xl p-5 shadow-sm">
-          <h3 className="font-semibold text-lg text-foreground">Need Help?</h3>
-          <p className="text-sm text-muted-foreground mt-1 mb-4">Our support team is here to help you</p>
-          <div className="flex gap-3">
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-primary/5 transition-colors">
-              <MessageCircle className="w-4 h-4" /> Live Chat
-            </button>
-            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-primary/5 transition-colors">
-              <Phone className="w-4 h-4" /> Contact Support
-            </button>
+        <div className="space-y-6">
+          <div className="flex gap-4 items-start">
+            <div className="bg-primary/10 p-2 rounded-full text-primary shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-foreground">Get Verified Matches</h4>
+              <p className="text-xs text-muted-foreground mt-1">Complete profiles get up to 5x more responses and verified badges.</p>
+            </div>
           </div>
-        </div>
-
-        {/* Card 2: Privacy */}
-        <div className="border border-primary/10 bg-card rounded-2xl p-5 shadow-sm relative overflow-hidden flex items-center">
-          <div className="w-2/3 relative z-10">
-            <h3 className="font-semibold text-lg text-foreground">Your Privacy Matters</h3>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">We respect your privacy and keep your information safe.</p>
+          <div className="flex gap-4 items-start">
+            <div className="bg-primary/10 p-2 rounded-full text-primary shrink-0">
+              <Heart className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-foreground">Better Compatibility</h4>
+              <p className="text-xs text-muted-foreground mt-1">Our AI algorithm uses these details to find your perfect partner.</p>
+            </div>
           </div>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-90 translate-x-4">
-            <div className="bg-primary/10 p-5 rounded-full relative">
-               <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-               <ShieldCheck className="w-16 h-16 text-primary drop-shadow-md relative z-10 stroke-[1.5]" />
+          <div className="flex gap-4 items-start">
+            <div className="bg-primary/10 p-2 rounded-full text-primary shrink-0">
+              <UserCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-medium text-sm text-foreground">Trust & Safety</h4>
+              <p className="text-xs text-muted-foreground mt-1">Face verification ensures you only connect with real, genuine people.</p>
             </div>
           </div>
         </div>
 
-        {/* Card 3: Trusted */}
-        <div className="border border-primary/10 bg-card rounded-2xl p-5 shadow-sm flex items-center gap-4">
-          <div className="bg-primary/10 p-3.5 rounded-full shrink-0">
-            <Users className="w-7 h-7 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-base text-foreground">Trusted by Millions</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">Join thousands of happy members</p>
+        <div className="mt-8 pt-8 border-t border-border">
+          <div className="bg-[#fdf2f8]/50 dark:bg-pink-950/20 rounded-2xl p-5 border border-[#fce7f3] dark:border-pink-900/30">
+            <h4 className="font-bold text-[16px] text-slate-800 dark:text-foreground mb-1 tracking-tight">Need Help?</h4>
+            <p className="text-xs text-muted-foreground mb-4 font-medium">Our support team is here to help you</p>
+            <div className="flex gap-3">
+              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[12px] font-bold hover:bg-[#e11d48]/5 transition-colors">
+                <MessageCircle className="w-4 h-4" /> Live Chat
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[12px] font-bold hover:bg-[#e11d48]/5 transition-colors">
+                <Phone className="w-4 h-4" /> Contact Support
+              </button>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   );
