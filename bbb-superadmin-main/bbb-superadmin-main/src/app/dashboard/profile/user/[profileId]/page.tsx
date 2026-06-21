@@ -560,7 +560,7 @@ export default async function UserProfileId({
       </div> {/* End Left Column */}
 
       {/* Right Column (Sidebar) */}
-      <div className="w-full xl:w-[260px] 2xl:w-[320px] shrink-0 space-y-6">
+      <div className="w-full xl:w-[260px] 2xl:w-[320px] shrink-0 space-y-6 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         
         {/* Top Buttons */}
         <div className="flex flex-col gap-3">
