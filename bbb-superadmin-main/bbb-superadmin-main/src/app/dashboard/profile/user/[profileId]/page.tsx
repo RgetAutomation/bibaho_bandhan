@@ -138,10 +138,10 @@ export default async function UserProfileId({
       <div className="flex-1 space-y-4 sm:space-y-6 min-w-0">
       {/* ================= HEADER ================= */}
       <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden mb-6">
-        <div className="flex flex-col xl:flex-row">
+        <div className="flex flex-col lg:flex-row">
           
           {/* Left Column - Media */}
-          <div className="w-full xl:w-[220px] p-5 border-b xl:border-b-0 xl:border-r border-border flex flex-col gap-3 shrink-0">
+          <div className="w-full lg:w-[160px] 2xl:w-[220px] p-5 border-b lg:border-b-0 lg:border-r border-border flex flex-col gap-3 shrink-0">
             <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-muted border border-border">
               {data.avatar ? (
                 <img src={data.avatar} alt={fullName} className="w-full h-full object-cover" />
@@ -281,7 +281,7 @@ export default async function UserProfileId({
           </div>
 
           {/* Right Column - Meta Details */}
-          <div className="w-full xl:w-[300px] p-5 lg:p-6 border-t xl:border-t-0 xl:border-l border-border bg-muted/30 flex flex-col shrink-0">
+          <div className="w-full lg:w-[240px] 2xl:w-[280px] p-5 lg:p-6 border-t lg:border-t-0 lg:border-l border-border bg-muted/30 flex flex-col shrink-0">
             <div className="flex flex-col gap-4 flex-1">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Registration Date</span>
@@ -560,7 +560,7 @@ export default async function UserProfileId({
       </div> {/* End Left Column */}
 
       {/* Right Column (Sidebar) */}
-      <div className="w-full xl:w-[350px] shrink-0 space-y-6">
+      <div className="w-full xl:w-[260px] 2xl:w-[320px] shrink-0 space-y-6">
         
         {/* Top Buttons */}
         <div className="grid grid-cols-2 gap-3">
