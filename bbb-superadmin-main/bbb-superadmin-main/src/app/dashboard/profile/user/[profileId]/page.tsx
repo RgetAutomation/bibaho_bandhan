@@ -16,6 +16,7 @@ import ImageViewClient from "./imageViewClient";
 import ProfileCopyClient from "./profileCopyClient";
 import MarkButtonClient from "./markButtonClient";
 import EditButtonClient from "./editButtonClient";
+import SidebarEditButtonClient from "./sidebarEditButtonClient";
 import UpdateProfileClient from "./updateProfileClient";
 import { SectionHistory } from "./sectionHistoryClient";
 import { Section, FieldRow } from "./profileGridComponents";
@@ -566,9 +567,7 @@ export default async function UserProfileId({
         
         {/* Top Buttons */}
         <div className="flex flex-col gap-3">
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#8b5cf6] text-white hover:bg-[#7c3aed] font-semibold text-sm rounded-lg transition-colors shadow-sm">
-            <Edit className="w-4 h-4" /> Edit Profile
-          </button>
+          <SidebarEditButtonClient />
         </div>
 
         {/* Verification Center */}
