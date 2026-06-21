@@ -4,9 +4,11 @@ import { useState } from "react";
 import StepActions from "./StepActions";
 import ImagesUploadComponent from "@/components/ui-custom/imagesUploedComponent";
 import { ImageIcon } from "lucide-react";
+import { useTemporaryPhotoStore } from "@/lib/temporaryPhotoStore";
 
 export default function Step8Photos({ onComplete, onBack }: { onComplete: () => void, onBack: () => void }) {
   const [loading, setLoading] = useState(false);
+  const setPhotos = useTemporaryPhotoStore((state) => state.setPhotos);
 
   const handleComplete = () => {
     setLoading(true);
@@ -36,7 +38,12 @@ export default function Step8Photos({ onComplete, onBack }: { onComplete: () => 
             </div>
           </div>
           
-          <ImagesUploadComponent refetch={() => {}} />
+          <ImagesUploadComponent 
+            refetch={() => {}} 
+            onCustomUpload={async (blobs) => {
+              setPhotos(blobs);
+            }}
+          />
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleComplete(); }}>

@@ -16,8 +16,10 @@ import { isRawOrPsdFile, extractEmbeddedJpeg } from "../system/fileParsers";
 
 export default function ImagesUploadComponent({
   refetch,
+  onCustomUpload,
 }: {
   refetch: () => void;
+  onCustomUpload?: (blobs: Blob[]) => Promise<void>;
 }) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -86,6 +88,16 @@ export default function ImagesUploadComponent({
   const uploadProcessedBlobs = async (blobs: Blob[]) => {
     setIsUploading(true);
     try {
+      if (onCustomUpload) {
+        await onCustomUpload(blobs);
+        toast.success(`${blobs.length} image(s) processed successfully!`);
+        setIsUploading(false);
+        setEditQueue([]);
+        setEditKeys([]);
+        setProcessedBlobs([]);
+        return;
+      }
+
       const formData = new FormData();
       
       for (let i = 0; i < blobs.length; i++) {

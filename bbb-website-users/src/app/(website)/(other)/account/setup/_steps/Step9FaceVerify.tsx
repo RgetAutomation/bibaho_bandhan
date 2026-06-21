@@ -12,6 +12,7 @@ import { usePasswordStore } from "@/lib/passwordStore";
 import { authClient } from "@/lib/auth-client";
 import api from "@/lib/axiosInstance";
 import { LoadingButton } from "@/components/loadingButton";
+import { useTemporaryPhotoStore } from "@/lib/temporaryPhotoStore";
 
 export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   const passwordStore = usePasswordStore();
   const accountStore = useCreateAccountStore();
   const profileStore = useUpdatingProfileStore();
+  const { photos, clearPhotos } = useTemporaryPhotoStore();
 
   type CustomSignUpInput = Parameters<typeof authClient.signUp.email>[0] & {
     title: string;
@@ -68,6 +70,22 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
       const profileResponse = await api.post("/users/profile/update", { ...profileStore }, { withCredentials: true });
 
       if (profileResponse.data.success || profileResponse.status === 200) {
+        
+        // Upload any profile photos if they exist
+        if (photos.length > 0) {
+          try {
+            const formData = new FormData();
+            photos.forEach((blob, i) => {
+              formData.append("files", new File([blob], `gallery-${Date.now()}-${i}.jpg`, { type: "image/jpeg" }));
+            });
+            await api.post("/users/profile/update/images", formData, { withCredentials: true });
+            clearPhotos();
+          } catch (imgError) {
+            console.error("Failed to upload profile photos during setup", imgError);
+            toast.error("Account created, but profile photos failed to upload.");
+          }
+        }
+
         passwordStore.clearPassword();
         toast.success("Account created and profile fully completed!");
         router.replace("/users/home");
