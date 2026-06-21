@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import { getUserById } from "@/action/users";
 import { getProfileEditHistory } from "@/action/adminProfileEdit";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ban, Calendar, Hash, ShieldAlert, ShieldCheck } from "lucide-react";
@@ -127,12 +126,19 @@ export default async function UserProfileId({
       {/* ================= HEADER ================= */}
       <Card className="rounded-3xl border shadow-md backdrop-blur">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <Avatar className="h-20 w-20 shrink-0">
-            <AvatarImage src={data.avatar || ""} alt={fullName} />
-            <AvatarFallback className="text-xl font-bold">
-              {data.firstName?.[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <div className="w-24 h-32 sm:w-[150px] sm:aspect-[4/5] relative shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white dark:border-zinc-800 bg-gray-100 dark:bg-zinc-900">
+            {data.avatar ? (
+              <img
+                src={data.avatar}
+                alt={fullName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-muted-foreground">
+                {data.firstName?.[0]?.toUpperCase()}
+              </div>
+            )}
+          </div>
 
           <div className="min-w-0 flex-1">
             <CardTitle className="truncate text-2xl font-semibold">
