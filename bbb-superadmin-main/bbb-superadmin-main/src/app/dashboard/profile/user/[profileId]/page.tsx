@@ -289,36 +289,36 @@ export default async function UserProfileId({
           </div>
 
           {/* Right Column - Meta Details */}
-          <div className="w-full lg:w-[240px] 2xl:w-[280px] p-5 lg:p-6 border-t lg:border-t-0 lg:border-l border-border bg-muted/30 flex flex-col shrink-0">
+          <div className="w-full lg:w-[260px] 2xl:w-[300px] p-5 lg:p-6 border-t lg:border-t-0 lg:border-l border-border bg-muted/30 flex flex-col shrink-0">
             <div className="flex flex-col gap-4 flex-1">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Registration Date</span>
-                <span className="text-sm font-semibold text-foreground">{formatDate(data.createdAt)}</span>
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs text-muted-foreground mt-0.5">Registration Date</span>
+                <span className="text-sm font-semibold text-foreground text-right">{formatDate(data.createdAt)}</span>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Last Login</span>
-                <span className="text-sm font-semibold text-foreground">{(data as any).lastLogin ? formatDate((data as any).lastLogin) : "—"}</span>
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs text-muted-foreground mt-0.5">Last Login</span>
+                <span className="text-sm font-semibold text-foreground text-right">{(data as any).lastLogin ? formatDate((data as any).lastLogin) : "—"}</span>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Membership Plan</span>
-                <span className="text-sm font-semibold text-foreground">{data.type === "PAID" ? "Premium" : "Free"}</span>
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs text-muted-foreground mt-0.5">Membership Plan</span>
+                <span className="text-sm font-semibold text-foreground text-right">{data.type === "PAID" ? "Premium" : "Free"}</span>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Plan Expiry Date</span>
-                <span className="text-sm font-semibold text-foreground">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs text-muted-foreground mt-0.5">Plan Expiry Date</span>
+                <span className="text-sm font-semibold text-foreground text-right">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Assigned Matchmaker</span>
-                <span className="text-sm font-semibold text-foreground">{(data as any).assignedMatchmaker ? (data as any).assignedMatchmaker : "Not Assigned"}</span>
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs text-muted-foreground mt-0.5">Assigned Matchmaker</span>
+                <span className="text-sm font-semibold text-foreground text-right">{(data as any).assignedMatchmaker ? (data as any).assignedMatchmaker : "Not Assigned"}</span>
               </div>
               
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Profile Views</span>
-                <span className="text-sm font-semibold text-foreground">{(data as any).viewsCount !== undefined && (data as any).viewsCount !== null ? (data as any).viewsCount : "0"}</span>
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-xs text-muted-foreground mt-0.5">Profile Views</span>
+                <span className="text-sm font-semibold text-foreground text-right">{(data as any).viewsCount !== undefined && (data as any).viewsCount !== null ? (data as any).viewsCount : "0"}</span>
               </div>
             </div>
             
