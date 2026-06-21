@@ -4,7 +4,7 @@ import { getUserById } from "@/action/users";
 import { getProfileEditHistory } from "@/action/adminProfileEdit";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ban, Calendar, Hash, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Ban, Calendar, Hash, ShieldAlert, ShieldCheck, Users, Ruler, Book, Heart, MapPin, ExternalLink, Crown, BadgeCheck, Star, Copy } from "lucide-react";
 import { headers } from "next/headers";
 import { checkAuthAndGetSession } from "@/components/helper/checkAuthAndGetSession";
 import UserProfileClient, {
@@ -104,6 +104,17 @@ export default async function UserProfileId({
     if (isEmpty(v)) missing.push({ label });
   };
 
+  const calculateCompletion = (p: any) => {
+    if (!p) return 0;
+    const fields = [
+      data.firstName, data.lastName, data.gender, p.dob, p.maritalStatus, p.religion, p.caste,
+      p.height, p.weight, p.education, p.profession, p.state, p.dist, p.aboutMyself,
+      p.fatherProfession, p.mothersOccupation, p.noOfBrothers, p.noOfSisters
+    ];
+    const filled = fields.filter((f) => f !== null && f !== undefined && f !== "").length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
   // Check key profile fields for empties
   const p = data.profile;
   addIfMissing("Alternate Phone", p?.alternatePhone);
@@ -124,91 +135,205 @@ export default async function UserProfileId({
   return (
     <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-6">
       {/* ================= HEADER ================= */}
-      <Card className="rounded-3xl border shadow-md backdrop-blur">
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <div className="w-24 h-32 sm:w-[140px] sm:h-[180px] relative shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white dark:border-zinc-800 bg-gray-100 dark:bg-zinc-900">
-            {data.avatar ? (
-              <img
-                src={data.avatar}
-                alt={fullName}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-muted-foreground">
-                {data.firstName?.[0]?.toUpperCase()}
+      <Card className="rounded-2xl border shadow-sm bg-white overflow-hidden mb-6">
+        <div className="flex flex-col xl:flex-row">
+          
+          {/* Left Column - Media */}
+          <div className="w-full xl:w-[280px] p-5 border-b xl:border-b-0 xl:border-r border-gray-100 flex flex-col gap-3 shrink-0">
+            <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+              {data.avatar ? (
+                <img src={data.avatar} alt={fullName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-gray-300">
+                  {data.firstName?.[0]?.toUpperCase()}
+                </div>
+              )}
+            </div>
+            
+            {data.profileImages && data.profileImages.length > 0 && (
+              <div className="flex gap-2 mt-1">
+                {data.profileImages.slice(0, 4).map((img: any, i: number) => (
+                  <div key={i} className="aspect-square flex-1 relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+                    <img src={img.url} className="w-full h-full object-cover" alt="Thumbnail" />
+                  </div>
+                ))}
               </div>
             )}
+            
+            <button className="w-full py-2.5 mt-1 text-sm font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors">
+              View All Photos ({data.profileImages?.length ? data.profileImages.length + (data.avatar ? 1 : 0) : (data.avatar ? 1 : 0)})
+            </button>
           </div>
 
-          <div className="min-w-0 flex-1">
-            <CardTitle className="truncate text-2xl font-semibold">
-              {fullName}
-            </CardTitle>
+          {/* Middle Column - Core Info */}
+          <div className="flex-1 p-5 md:p-6 lg:p-8 flex flex-col min-w-0">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 h-full">
+              <div className="flex flex-col h-full w-full">
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 truncate">{fullName}</h1>
+                  {data.blocked ? (
+                    <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold flex items-center gap-1 shrink-0">
+                      <Ban className="w-3 h-3" /> Blocked
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold flex items-center gap-1 shrink-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-600" /> Active
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                  <span className="font-medium">Profile ID:</span>
+                  <span className="font-bold text-gray-900">{data.publicId}</span>
+                  <CopyableComponent copyText={data.publicId}>
+                    <button className="text-gray-400 hover:text-gray-700 transition-colors">
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </CopyableComponent>
+                </div>
 
-            <div className="mt-2 flex flex-wrap gap-2">
-              <StatusBadge
-                className={
-                  data.type === "PAID"
-                    ? "bg-emerald-600 text-white"
-                    : "bg-muted"
-                }
-              >
-                {data.type}
-              </StatusBadge>
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {data.isProfileComplete && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-100">
+                      <BadgeCheck className="w-3.5 h-3.5" /> Verified
+                    </span>
+                  )}
+                  {data.type === "PAID" && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold border border-purple-100">
+                      <Crown className="w-3.5 h-3.5" /> Premium
+                    </span>
+                  )}
+                  {data.isGhotokOwned && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 text-orange-700 text-xs font-bold border border-orange-100">
+                      <Star className="w-3.5 h-3.5" /> Featured
+                    </span>
+                  )}
+                </div>
 
-              {data.blocked ? (
-                <StatusBadge className="bg-red-600 text-white">
-                  <Ban className="mr-1 h-3 w-3" /> Blocked
-                </StatusBadge>
-              ) : (
-                <StatusBadge className="bg-emerald-600 text-white">
-                  <ShieldCheck className="mr-1 h-3 w-3" /> Active
-                </StatusBadge>
+                {/* Key Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 py-5 border-y border-gray-100 mb-5">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                      <Users className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase tracking-wider">Age</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{p?.dob ? `${new Date().getFullYear() - new Date(p.dob).getFullYear()} Yrs` : "—"}</span>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                      <Ruler className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase tracking-wider">Height</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{p?.height || "—"}</span>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                      <Book className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase tracking-wider">Religion</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{p?.religion || "—"}</span>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 text-gray-500 mb-1">
+                      <Heart className="w-4 h-4" />
+                      <span className="text-xs font-medium uppercase tracking-wider">Marital Status</span>
+                    </div>
+                    <span className="font-semibold text-gray-900">{p?.maritalStatus || "—"}</span>
+                  </div>
+                </div>
+
+                {/* Bottom Info */}
+                <div className="flex flex-col lg:flex-row lg:items-center gap-6 justify-between mt-auto">
+                  <div className="flex items-center gap-6 lg:gap-10">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-gray-500">Mother Tongue</span>
+                      <span className="font-semibold text-sm text-gray-900">{p?.language || "—"}</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> Location</span>
+                      <span className="font-semibold text-sm text-gray-900">
+                        {p?.dist || p?.state ? [p?.dist, p?.state].filter(Boolean).join(", ") : "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Profile Completion */}
+                  <div className="flex flex-col gap-2 min-w-[200px]">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-500">Profile Completion</span>
+                      <span className="font-bold text-gray-900">{calculateCompletion(p)}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${calculateCompletion(p)}%` }} />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Meta Details */}
+          <div className="w-full xl:w-[320px] p-5 md:p-6 lg:p-8 border-t xl:border-t-0 xl:border-l border-gray-100 bg-gray-50/50 flex flex-col shrink-0">
+            <div className="flex flex-col gap-4 flex-1">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Registration Date</span>
+                <span className="text-sm font-semibold text-gray-900">{formatDate(data.createdAt)}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Last Login</span>
+                <span className="text-sm font-semibold text-gray-900">{data.updatedAt ? formatDate(data.updatedAt) : "—"}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Membership Plan</span>
+                <span className="text-sm font-semibold text-gray-900">{data.type === "PAID" ? "Premium" : "Free"}</span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500">Plan Expiry Date</span>
+                <span className="text-sm font-semibold text-gray-900">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
+              </div>
+              
+              {data.assignedMatchmaker && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">Assigned Matchmaker</span>
+                  <span className="text-sm font-semibold text-gray-900">{data.assignedMatchmaker}</span>
+                </div>
               )}
-
-              {data.isProfileComplete ? (
-                <StatusBadge className="bg-emerald-100 text-emerald-700">
-                  Profile Complete
-                </StatusBadge>
-              ) : (
-                <StatusBadge className="bg-amber-100 text-amber-700">
-                  Incomplete
-                </StatusBadge>
-              )}
-
-              <StatusBadge className="bg-secondary">{data.gender}</StatusBadge>
-              {data.isGhotokOwned && (
-                <StatusBadge className="bg-primary">Ghotok</StatusBadge>
+              
+              {data.viewsCount !== undefined && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">Profile Views</span>
+                  <span className="text-sm font-semibold text-gray-900">{data.viewsCount}</span>
+                </div>
               )}
             </div>
-
-            <div className="text-muted-foreground mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                Created {formatDate(data.createdAt)}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                Expires {formatDate(data.planExpiryDate)}
-              </span>
-              <CopyableComponent copyText={data.publicId}>
-                <span className="flex items-center gap-1 text-green-500">
-                  <Hash className="h-3 w-3" />
-                  {data.publicId}
-                </span>
-              </CopyableComponent>
-              <span className="flex items-center gap-1">
-                <ShieldAlert className="h-3 w-3" />
-                {data.id}
-              </span>
+            
+            <div className="mt-6 flex flex-col gap-3">
+              <a href={`https://bibahobandhan.com/profile/${data.publicId}`} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold text-sm rounded-lg border border-emerald-200 transition-colors">
+                View Public Profile <ExternalLink className="w-4 h-4" />
+              </a>
+              
+              {/* Action Buttons for Superadmin */}
+              <div className="flex gap-2 w-full mt-2 border-t border-gray-200 pt-4">
+                <div className="flex-1">
+                  <MarkButtonClient />
+                </div>
+                <div className="flex-1 flex justify-end">
+                  <EditButtonClient />
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="shrink-0 flex items-center gap-2 justify-end md:ml-4 mt-4 sm:mt-0 w-full sm:w-auto">
-            <MarkButtonClient />
-            <EditButtonClient />
-          </div>
-        </CardHeader>
+          
+        </div>
       </Card>
 
       {/* ================= SECTIONS ================= */}
