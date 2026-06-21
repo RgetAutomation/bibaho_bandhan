@@ -162,7 +162,7 @@ export default async function UserProfileId({
               </div>
             )}
             
-            <button className="w-full py-2.5 mt-1 text-sm font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
+            <button className="w-full py-2 mt-1 text-[12px] font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
               View All Photos ({data.profileImages?.length ? data.profileImages.length + (data.avatar ? 1 : 0) : (data.avatar ? 1 : 0)})
             </button>
           </div>
