@@ -288,6 +288,13 @@ export default async function UserProfileId({
                 <span className="text-sm font-semibold text-foreground">{formatDate(data.createdAt)}</span>
               </div>
               
+              {(data as any).lastLogin && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Last Login</span>
+                  <span className="text-sm font-semibold text-foreground">{formatDate((data as any).lastLogin)}</span>
+                </div>
+              )}
+              
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Membership Plan</span>
                 <span className="text-sm font-semibold text-foreground">{data.type === "PAID" ? "Premium" : "Free"}</span>
