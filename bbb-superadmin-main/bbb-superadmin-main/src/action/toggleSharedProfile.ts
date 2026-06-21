@@ -6,7 +6,7 @@ export async function toggleSharedProfile(userId: string, isShared: boolean) {
   try {
     await prisma.user.update({
       where: { id: userId },
-      data: { isSharedProfile: isShared } as any, // as any to avoid type errors until prisma generate is successful
+      data: { allowSocialPublish: isShared },
     });
     return { success: true };
   } catch (error) {

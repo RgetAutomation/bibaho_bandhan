@@ -221,7 +221,7 @@ export default async function UserProfileId({
                     </span>
                   )}
                   
-                  <SharedProfileToggle userId={data.id} initialValue={(data as any).isSharedProfile} />
+                  <SharedProfileToggle userId={data.id} initialValue={data.allowSocialPublish} />
                 </div>
 
                 {/* Key Stats Grid */}

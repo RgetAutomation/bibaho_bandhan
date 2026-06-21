@@ -197,7 +197,6 @@ model User {
   isGhotokOwned      Boolean @default(false)
   isProfilePublic    Boolean @default(false)
   allowSocialPublish Boolean @default(false)
-  isSharedProfile    Boolean @default(false)
 
   payments               Payment[]
   conversations          Conversation[]  @relation("ConversationParticipants")
