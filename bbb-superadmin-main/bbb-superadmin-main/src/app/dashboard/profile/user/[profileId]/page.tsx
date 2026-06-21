@@ -125,8 +125,8 @@ export default async function UserProfileId({
     <div className="mx-auto w-full max-w-7xl space-y-4 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-6">
       {/* ================= HEADER ================= */}
       <Card className="rounded-3xl border shadow-md backdrop-blur">
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="w-20 h-28 sm:w-[120px] sm:aspect-[3/4] relative shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white dark:border-zinc-800 bg-gray-100 dark:bg-zinc-900">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="w-24 h-32 sm:w-[140px] sm:h-[180px] relative shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white dark:border-zinc-800 bg-gray-100 dark:bg-zinc-900">
             {data.avatar ? (
               <img
                 src={data.avatar}
