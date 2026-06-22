@@ -25,7 +25,7 @@ export default function VerifyProfilesPage() {
   const fetchVerifications = async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ success: boolean; data: VerificationRequest[] }>("/sa/verifications");
+      const res = await api.get<{ success: boolean; data: VerificationRequest[] }>("/app/sa/verifications");
       if (res.data.success) {
         setRequests(res.data.data);
       }
@@ -43,7 +43,7 @@ export default function VerifyProfilesPage() {
 
   const handleAction = async (userId: string, action: "approve" | "reject") => {
     try {
-      const res = await api.post(`/sa/verifications/${userId}/${action}`);
+      const res = await api.post(`/app/sa/verifications/${userId}/${action}`);
       if (res.data.success) {
         toast.success(`Profile ${action}d successfully`);
         setRequests(requests.filter((r) => r.id !== userId));
