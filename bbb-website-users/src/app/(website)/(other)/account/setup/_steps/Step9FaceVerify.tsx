@@ -42,7 +42,7 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const MODEL_URL = "/models";
+        const MODEL_URL = "/face-models";
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
