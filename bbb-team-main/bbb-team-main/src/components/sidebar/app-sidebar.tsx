@@ -192,6 +192,12 @@ const data: MainMenuProps = {
           role: [Role.MODERATOR], // Only Admin and User can access this
         },
         {
+          title: "Verify Profiles",
+          url: "/dashboard/verify-profiles",
+          icon: ShieldBan,
+          role: [Role.ADMIN, Role.MODERATOR],
+        },
+        {
           title: GHOTOK_MENU_CONNECTION_REQUEST_TITLE,
           url: GHOTOK_MENU_CONNECTION_REQUEST_PATH,
           icon: Users,

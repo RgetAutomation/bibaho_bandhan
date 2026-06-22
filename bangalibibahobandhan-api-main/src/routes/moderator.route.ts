@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import asyncHandler from "../utils/asyncHandler.js";
 import {
   createMatchingConversationsForModerator,
@@ -16,6 +16,11 @@ import {
   reportedBridesByModerator,
   starMarkConversation,
 } from "../controllers/moderator.controller.js";
+import {
+  getPendingVerifications,
+  approveVerification,
+  rejectVerification,
+} from "../controllers/profile-verification.controller.js";
 import { authorizeSystem } from "../middlewares/authorize.middleware.js";
 import { Role } from "../types/roles.js";
 
@@ -125,6 +130,31 @@ moderatorRoute.get(
   "/messages/rejected/templates",
   authorizeSystem([Role.MODERATOR]),
   asyncHandler(getAllRejectedTemplates)
+);
+
+//api/v1/app/moderator/verifications
+moderatorRoute.get(
+  "/verifications",
+  authorizeSystem([Role.MODERATOR]),
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    req.query.gender = "FEMALE"; // Moderators only see Bride (Female)
+    next();
+  }),
+  getPendingVerifications
+);
+
+//api/v1/app/moderator/verifications/:userId/approve
+moderatorRoute.post(
+  "/verifications/:userId/approve",
+  authorizeSystem([Role.MODERATOR]),
+  approveVerification
+);
+
+//api/v1/app/moderator/verifications/:userId/reject
+moderatorRoute.post(
+  "/verifications/:userId/reject",
+  authorizeSystem([Role.MODERATOR]),
+  rejectVerification
 );
 
 export default moderatorRoute;

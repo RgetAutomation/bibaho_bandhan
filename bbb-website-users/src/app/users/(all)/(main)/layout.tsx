@@ -4,6 +4,7 @@ import FooterSection from "@/components/dashboard/footer";
 import TopNavbarSection from "@/components/dashboard/TopNavbarSection";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { ProfileCompleteGuard } from "@/components/profileCompleteGuard";
+import VerificationBanner from "@/components/VerificationBanner";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { Suspense, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
@@ -35,6 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ref={containerRef}
           className="flex flex-col flex-1 min-w-0 overflow-y-auto"
         >
+          <VerificationBanner />
           <main className="flex flex-col flex-1 min-h-0">
             <ProfileCompleteGuard
               session={session}

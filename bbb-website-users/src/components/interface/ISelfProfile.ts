@@ -1,6 +1,7 @@
 export interface UserProfileSelf {
   isProfilePublic: boolean;
   allowSocialPublish: boolean;
+  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
   dob: string; // ISO date string (use Date if you prefer strict typing)
   maritalStatus: "SINGLE" | "DIVORCED" | "WIDOWED" | "MARRIED"; // restrict to allowed values
   children: number;

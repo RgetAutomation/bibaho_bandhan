@@ -1,5 +1,7 @@
 "use client";
 
+import { useAuthSession } from "@/hooks/useAuthSession";
+
 import { useMessages } from "@/hooks/useMessages";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useNotificationStore } from "@/hooks/useNotificationStore";
@@ -38,6 +40,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const { sockets } = useSocket();
   const socket = sockets["/"];
   const teamUserSocket = sockets["/teamuser"];
+  const { user } = useAuthSession();
+  const isPendingVerification = user?.verificationStatus !== "APPROVED";
 
   const readSentRef = useRef<Set<string>>(new Set());
 
@@ -362,11 +366,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       </div>
 
       {/* Input */}
-      <MessageInput
-        onSendMessage={handleSendMessage}
-        onInputChange={handleInputChange}
-        disabled={!participant?.id}
-      />
+      {isPendingVerification ? (
+        <div className="p-4 bg-amber-50 border-t text-amber-700 text-center text-sm font-medium">
+          You cannot send messages until your profile verification is approved.
+        </div>
+      ) : (
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          onInputChange={handleInputChange}
+          disabled={!participant?.id}
+        />
+      )}
     </div>
   );
 };

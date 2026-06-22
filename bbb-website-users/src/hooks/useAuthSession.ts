@@ -26,6 +26,7 @@ export interface ExtendedUser {
   isGhotokOwned?: boolean;
   isProfilePublic?: boolean;
   allowSocialPublish?: boolean;
+  verificationStatus?: "PENDING" | "APPROVED" | "REJECTED";
   totalLimit?: number;
   remainingLimit?: number;
   planStartDate?: string;

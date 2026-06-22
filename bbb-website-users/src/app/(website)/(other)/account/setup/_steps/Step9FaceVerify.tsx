@@ -22,6 +22,7 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   const [faceVerified, setFaceVerified] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [selfieImage, setSelfieImage] = useState<string | null>(null);
   const [isMatching, setIsMatching] = useState(false);
   const [matchError, setMatchError] = useState<string | null>(null);
 
@@ -134,6 +135,7 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
 
       if (distance < threshold) {
         setFaceVerified(true);
+        setSelfieImage(imageSrc);
         setIsScanning(false);
         toast.success("Face Verification Successful!");
       } else {
@@ -194,6 +196,20 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
           } catch (imgError) {
             console.error("Failed to upload profile photos during setup", imgError);
             toast.error("Account created, but profile photos failed to upload.");
+          }
+        }
+
+        // Upload verification selfie
+        if (selfieImage) {
+          try {
+            const res = await fetch(selfieImage);
+            const blob = await res.blob();
+            const formData = new FormData();
+            formData.append("file", new File([blob], `selfie-${Date.now()}.jpg`, { type: "image/jpeg" }));
+            await api.post("/users/profile/update/selfie", formData, { withCredentials: true });
+          } catch (selfieError) {
+            console.error("Failed to upload selfie", selfieError);
+            toast.error("Account created, but verification selfie failed to upload.");
           }
         }
 

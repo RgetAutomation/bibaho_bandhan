@@ -50,6 +50,7 @@ import {
   sendMessage,
   updateProfile,
   updateProfileAvatar,
+  updateProfileSelfie,
   uploadImages,
   getVipProfiles,
   getMySubscriptions,
@@ -120,6 +121,14 @@ userRoute.post(
   authorize([UserType.FREE_USER, UserType.PAID_USER]),
   uploadFileMiddleware(20480, ["image/png", "image/jpeg", "image/jpg"]),
   asyncHandler(updateProfileAvatar)
+);
+
+//api/v1/users/profile/update/selfie
+userRoute.post(
+  "/profile/update/selfie",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  uploadFileMiddleware(20480, ["image/png", "image/jpeg", "image/jpg"]),
+  asyncHandler(updateProfileSelfie)
 );
 
 //api/v1/users/profile/update/images

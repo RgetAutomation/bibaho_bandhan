@@ -220,6 +220,11 @@ export const authUser = betterAuth({
         required: false,
         input: false,
       },
+      verificationStatus: {
+        type: "string",
+        required: false,
+        input: false,
+      },
       hasUsedFreePlan: {
         type: "boolean",
         required: false,

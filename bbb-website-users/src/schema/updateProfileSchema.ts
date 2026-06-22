@@ -8,6 +8,8 @@ export const updateProfileSchema = object({
   //   .optional()
   //   .default(""),
   profileImages: string().optional(),
+  avatar: string().optional(),
+  verificationSelfieUrl: string().optional(),
   
   // Basic Info additions
   firstName: string().optional(),

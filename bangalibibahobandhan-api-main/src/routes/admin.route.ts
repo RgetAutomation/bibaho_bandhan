@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { Role } from "../types/roles.js";
 import {
   adminDashboard,
@@ -19,6 +19,11 @@ import {
   paidMatching,
   reportedGroomByAdmin,
 } from "../controllers/admin.controller.js";
+import {
+  getPendingVerifications,
+  approveVerification,
+  rejectVerification,
+} from "../controllers/profile-verification.controller.js";
 import { authorizeSystem } from "../middlewares/authorize.middleware.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import {
@@ -171,6 +176,31 @@ adminRoute.post(
   "/request/help/:requestId/messages",
   authorizeSystem([Role.ADMIN, Role.SUPERADMIN]),
   asyncHandler(sendAdminHelpMessage)
+);
+
+//api/v1/app/admin/verifications
+adminRoute.get(
+  "/verifications",
+  authorizeSystem([Role.ADMIN]),
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    req.query.gender = "MALE"; // Admins only see Groom (Male)
+    next();
+  }),
+  getPendingVerifications
+);
+
+//api/v1/app/admin/verifications/:userId/approve
+adminRoute.post(
+  "/verifications/:userId/approve",
+  authorizeSystem([Role.ADMIN]),
+  approveVerification
+);
+
+//api/v1/app/admin/verifications/:userId/reject
+adminRoute.post(
+  "/verifications/:userId/reject",
+  authorizeSystem([Role.ADMIN]),
+  rejectVerification
 );
 
 export default adminRoute;

@@ -198,6 +198,9 @@ model User {
   isProfilePublic    Boolean @default(false)
   allowSocialPublish Boolean @default(false)
 
+  verificationStatus ModerationStatus @default(PENDING)
+  verificationSelfieUrl String?
+
   payments               Payment[]
   conversations          Conversation[]  @relation("ConversationParticipants")
   sentMessages           Message[]       @relation("SentMessages")

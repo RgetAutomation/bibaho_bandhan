@@ -121,6 +121,7 @@ export async function getAllUsers(req: Request, res: Response) {
     const userFilter: any = {
       gender: targetGender,
       isProfileComplete: true,
+      verificationStatus: "APPROVED",
       id: { notIn: [currentUser.id, ...excludedUserIds] },
     };
 
@@ -553,6 +554,7 @@ export async function getSelfDetails(req: Request, res: Response) {
       select: {
         allowSocialPublish: true,
         isProfilePublic: true,
+        verificationStatus: true,
         profile: {
           select: {
             dob: true,
@@ -605,6 +607,7 @@ export async function getSelfDetails(req: Request, res: Response) {
     const formattedData = {
       isProfilePublic: user?.isProfilePublic,
       allowSocialPublish: user?.allowSocialPublish,
+      verificationStatus: user?.verificationStatus,
       ...user?.profile,
     };
 
@@ -814,6 +817,47 @@ export async function updateProfileAvatar(req: Request, res: Response) {
       .json(new ApiResponse(200, "Avatar updated successfully", url));
   } catch (error) {
     console.log("Error in update profile avatar", error);
+    return res.status(500).json(new ApiError(500, "Internal server error"));
+  }
+}
+
+export async function updateProfileSelfie(req: Request, res: Response) {
+  try {
+    const userId = req.user?.id;
+    const file = req.file;
+
+    if (!userId) {
+      return res.status(400).json(new ApiError(400, "User not found"));
+    }
+    if (!file) {
+      return res.status(400).json(new ApiError(400, "No file uploaded"));
+    }
+
+    const existingData = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { verificationSelfieUrl: true },
+    });
+
+    if (existingData?.verificationSelfieUrl) {
+      await storageProvider.delete(existingData.verificationSelfieUrl, "images/selfies");
+    }
+
+    const url = await storageProvider.upload(file, "images/selfies");
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        verificationSelfieUrl: url,
+        // Since they just uploaded it, it's pending review
+        verificationStatus: "PENDING",
+      },
+    });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Selfie uploaded successfully", url));
+  } catch (error) {
+    console.log("Error in update profile selfie", error);
     return res.status(500).json(new ApiError(500, "Internal server error"));
   }
 }
@@ -1367,6 +1411,7 @@ export async function getPublicProfile(req: Request, res: Response) {
           gender: "FEMALE",
           blocked: false,
           isProfilePublic: true,
+          verificationStatus: "APPROVED",
         },
         select: {
           id: true,
@@ -1385,6 +1430,7 @@ export async function getPublicProfile(req: Request, res: Response) {
           gender: "MALE",
           blocked: false,
           isProfilePublic: true,
+          verificationStatus: "APPROVED",
         },
         select: {
           id: true,
@@ -1421,6 +1467,7 @@ export async function getAllPublicProfile(req: Request, res: Response) {
           gender: "FEMALE",
           blocked: false,
           isProfilePublic: true,
+          verificationStatus: "APPROVED",
         },
         select: {
           id: true,
@@ -1439,6 +1486,7 @@ export async function getAllPublicProfile(req: Request, res: Response) {
           gender: "MALE",
           blocked: false,
           isProfilePublic: true,
+          verificationStatus: "APPROVED",
         },
         select: {
           id: true,
@@ -2156,6 +2204,13 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json(new ApiResponse(400, "Message too long", null));
+    }
+
+    const sender = await prisma.user.findUnique({ where: { id: senderId } });
+    if (sender?.verificationStatus !== "APPROVED") {
+      return res
+        .status(403)
+        .json(new ApiResponse(403, "Profile verification pending. You cannot send messages until your profile is approved.", null));
     }
 
     // 2. Prevent spoofing
