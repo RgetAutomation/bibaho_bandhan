@@ -289,7 +289,20 @@ export default function AdvancedImageEditor({
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Apply CSS and SVG filters to the canvas before drawing
-        const svgFilters = `url(#sharpen-filter) url(#color-balance-filter) url(#exposure-filter) url(#soft-focus-filter) url(#teeth-whitening-filter) url(#eye-enhancement-filter) url(#curves-filter-r) url(#curves-filter-g) url(#curves-filter-b) url(#creative-blur-filter) ${presetFilter === 'cartoon' ? 'url(#cartoon-filter)' : ''} ${presetFilter === 'sketch' ? 'url(#sketch-filter)' : ''}`;
+        const svgFiltersArr = [];
+        if (sharpness !== 0) svgFiltersArr.push("url(#sharpen-filter)");
+        if (redBalance !== 1 || greenBalance !== 1 || blueBalance !== 1) svgFiltersArr.push("url(#color-balance-filter)");
+        if (exposure !== 1) svgFiltersArr.push("url(#exposure-filter)");
+        if (skinSmoothing > 0) svgFiltersArr.push("url(#soft-focus-filter)");
+        if (teethWhitening > 0) svgFiltersArr.push("url(#teeth-whitening-filter)");
+        if (eyeEnhancement > 0) svgFiltersArr.push("url(#eye-enhancement-filter)");
+        if (shadowsR !== 0 || midtonesR !== 0 || highlightsR !== 0 || curvesPoints.length > 3) svgFiltersArr.push("url(#curves-filter-r)");
+        if (shadowsG !== 0 || midtonesG !== 0 || highlightsG !== 0 || curvesPoints.length > 3) svgFiltersArr.push("url(#curves-filter-g)");
+        if (shadowsB !== 0 || midtonesB !== 0 || highlightsB !== 0 || curvesPoints.length > 3) svgFiltersArr.push("url(#curves-filter-b)");
+        if (creativeBlur > 0) svgFiltersArr.push("url(#creative-blur-filter)");
+        if (presetFilter === 'cartoon') svgFiltersArr.push("url(#cartoon-filter)");
+        if (presetFilter === 'sketch') svgFiltersArr.push("url(#sketch-filter)");
+        const svgFilters = svgFiltersArr.join(" ");
         
         const presetCSS = (() => {
           switch (presetFilter) {
@@ -396,8 +409,23 @@ export default function AdvancedImageEditor({
     }
   })();
 
+  const svgFiltersArr = [];
+  if (sharpness !== 0) svgFiltersArr.push("url(#sharpen-filter)");
+  if (redBalance !== 1 || greenBalance !== 1 || blueBalance !== 1) svgFiltersArr.push("url(#color-balance-filter)");
+  if (exposure !== 1) svgFiltersArr.push("url(#exposure-filter)");
+  if (skinSmoothing > 0) svgFiltersArr.push("url(#soft-focus-filter)");
+  if (teethWhitening > 0) svgFiltersArr.push("url(#teeth-whitening-filter)");
+  if (eyeEnhancement > 0) svgFiltersArr.push("url(#eye-enhancement-filter)");
+  if (shadowsR !== 0 || midtonesR !== 0 || highlightsR !== 0 || curvesPoints.length > 3) svgFiltersArr.push("url(#curves-filter-r)");
+  if (shadowsG !== 0 || midtonesG !== 0 || highlightsG !== 0 || curvesPoints.length > 3) svgFiltersArr.push("url(#curves-filter-g)");
+  if (shadowsB !== 0 || midtonesB !== 0 || highlightsB !== 0 || curvesPoints.length > 3) svgFiltersArr.push("url(#curves-filter-b)");
+  if (creativeBlur > 0) svgFiltersArr.push("url(#creative-blur-filter)");
+  if (presetFilter === 'cartoon') svgFiltersArr.push("url(#cartoon-filter)");
+  if (presetFilter === 'sketch') svgFiltersArr.push("url(#sketch-filter)");
+  const svgFiltersStr = svgFiltersArr.join(" ");
+
   const filterStyle = {
-    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) grayscale(${grayscale}%) sepia(${sepia}%) blur(${blur}px) hue-rotate(${hueRotate}deg) ${presetCSS} url(#sharpen-filter) url(#color-balance-filter) url(#exposure-filter) url(#soft-focus-filter) url(#teeth-whitening-filter) url(#eye-enhancement-filter) url(#curves-filter-r) url(#curves-filter-g) url(#curves-filter-b) url(#creative-blur-filter) ${presetFilter === 'cartoon' ? 'url(#cartoon-filter)' : ''} ${presetFilter === 'sketch' ? 'url(#sketch-filter)' : ''}`,
+    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) grayscale(${grayscale}%) sepia(${sepia}%) blur(${blur}px) hue-rotate(${hueRotate}deg) ${presetCSS} ${svgFiltersStr}`.trim(),
     transform: `scale(${(1 - faceSlimming * 0.001) * (flipH ? -1 : 1)}, ${flipV ? -1 : 1})`,
   };
 
