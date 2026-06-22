@@ -61,11 +61,11 @@ export default function Step8Photos({ onComplete, onBack }: { onComplete: () => 
             </div>
 
             {previewUrls.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
+              <div className="flex flex-wrap justify-center gap-4 mb-8">
                 {previewUrls.map((url, idx) => (
                   <div 
                     key={idx} 
-                    className="relative w-full aspect-square rounded-2xl overflow-hidden border border-[#F0E8E8] dark:border-zinc-800 shadow-xs group bg-gray-50 dark:bg-zinc-800" 
+                    className="relative w-36 sm:w-44 md:w-48 aspect-square rounded-2xl overflow-hidden border border-[#F0E8E8] dark:border-zinc-800 shadow-xs group bg-gray-50 dark:bg-zinc-800 shrink-0" 
                   >
                     <img
                       src={url}
