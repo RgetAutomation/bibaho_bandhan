@@ -71,7 +71,7 @@ export default function FeedbackPage() {
   };
   return (
     <div className="flex items-center justify-center px-2 py-12 md:px-4 md:py-14 lg:px-6 lg:py-16 bg-gray-50 dark:bg-background">
-      <div className="max-w-xl mx-auto bg-white dark:bg-muted p-2 md:p-4 lg:p-6 rounded-2xl shadow-md">
+      <div className="max-w-xl mx-auto bg-transparent md:bg-white dark:md:bg-muted p-0 md:p-4 lg:p-6 rounded-none md:rounded-2xl shadow-none md:shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
           We value your feedback
         </h2>
@@ -79,7 +79,7 @@ export default function FeedbackPage() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="p-5 space-y-6"
+            className="p-0 md:p-5 space-y-6"
           >
             <FormField
               control={form.control}

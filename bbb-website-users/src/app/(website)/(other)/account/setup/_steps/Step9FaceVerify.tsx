@@ -15,6 +15,7 @@ import { LoadingButton } from "@/components/loadingButton";
 import { useTemporaryPhotoStore } from "@/lib/temporaryPhotoStore";
 import Webcam from "react-webcam";
 import * as faceapi from "@vladmandic/face-api";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   const router = useRouter();
@@ -63,28 +64,14 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
       toast.error("Please wait for models to load...");
       return;
     }
-    if (photos.length === 0) {
-      toast.error("You must upload at least one profile photo to verify against.");
-      onBack();
-      return;
-    }
+
     setIsScanning(true);
     setMatchError(null);
   };
 
-  const getFaceDescriptor = async (imageElement: HTMLImageElement | HTMLCanvasElement) => {
-    const detection = await faceapi.detectSingleFace(imageElement).withFaceLandmarks().withFaceDescriptor();
-    return detection?.descriptor;
-  };
 
-  const createBlobImageElement = (blob: Blob): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(blob);
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-    });
-  };
+
+
 
   const createBase64ImageElement = (base64: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
@@ -108,52 +95,29 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
     setMatchError(null);
 
     try {
-      // 1. Get descriptor for uploaded profile photo (photos[0])
-      const profileImg = await createBlobImageElement(photos[0]);
-      const profileDescriptor = await getFaceDescriptor(profileImg);
-
-      if (!profileDescriptor) {
-        setMatchError("No face detected in your uploaded profile photo. Please go back and upload a clearer photo.");
-        setIsScanning(false);
-        setIsMatching(false);
-        return;
-      }
-
-      // 2. Get descriptor for live selfie
+      // Just detect if there is a face in the live image
       const liveImg = await createBase64ImageElement(imageSrc);
-      const liveDescriptor = await getFaceDescriptor(liveImg);
+      const detection = await faceapi.detectSingleFace(liveImg);
 
-      if (!liveDescriptor) {
+      if (!detection) {
         setMatchError("No face detected in the live camera. Please look directly at the camera and ensure good lighting.");
         setIsMatching(false);
         return;
       }
 
-      // 3. Compare faces
-      const distance = faceapi.euclideanDistance(profileDescriptor, liveDescriptor);
-      const threshold = 0.55; // Lower is stricter. 0.6 is default, 0.55 is recommended.
-
-      if (distance < threshold) {
-        setFaceVerified(true);
-        setSelfieImage(imageSrc);
-        setIsScanning(false);
-        toast.success("Face Verification Successful!");
-      } else {
-        setMatchError("Face does not match the uploaded profile photo. Please try again.");
-      }
+      setFaceVerified(true);
+      setSelfieImage(imageSrc);
+      setIsScanning(false);
+      toast.success("Face Detected Successfully!");
     } catch (err) {
       console.error(err);
       setMatchError("An error occurred during verification. Please try again.");
     } finally {
       setIsMatching(false);
     }
-  }, [photos]);
+  }, []);
 
   const handleFinalSubmit = async () => {
-    if (!faceVerified) {
-      toast.error("Please complete face verification first.");
-      return;
-    }
     if (!passwordStore.password) {
       toast.error("Session expired. Please start over.");
       router.replace("/account");
@@ -229,13 +193,13 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white dark:bg-card rounded-[2rem] shadow-sm border p-6 md:p-10">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 bg-transparent md:bg-white dark:md:bg-card md:rounded-[2rem] shadow-none md:shadow-sm border-0 md:border p-0 md:p-10">
       <div className="max-w-md mx-auto text-center space-y-6">
         <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
           <ShieldCheck size={32} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight mb-2">Verify Your Identity</h2>
+          <h2 className="text-2xl font-bold tracking-tight mb-2 flex items-center justify-center">Verify Your Identity<FormBadge type="recommended" /></h2>
           <p className="text-muted-foreground text-sm">We require a quick face scan to ensure the authenticity of profiles and keep our community safe.</p>
         </div>
 
@@ -290,10 +254,10 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
         )}
 
         <div className="flex flex-col gap-3 pt-2">
-          <Button className="w-full rounded-full h-12 font-semibold" onClick={handleFinalSubmit} disabled={!faceVerified || loading}>
+          <Button className="w-full rounded-full h-12 font-semibold" onClick={handleFinalSubmit} disabled={loading}>
             {loading ? <LoadingButton title="Creating Account..." /> : "Finish & Create Account"}
           </Button>
-          <p className="text-xs text-muted-foreground">Your account will only be created after this step is complete.</p>
+          <p className="text-xs text-muted-foreground">You can skip this step and verify your identity later.</p>
           <Button type="button" variant="ghost" className="rounded-full" onClick={onBack} disabled={isScanning}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Photos
           </Button>

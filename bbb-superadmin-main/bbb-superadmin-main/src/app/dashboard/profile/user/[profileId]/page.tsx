@@ -16,7 +16,7 @@ import ImageViewClient from "./imageViewClient";
 import ProfileCopyClient from "./profileCopyClient";
 import MarkButtonClient from "./markButtonClient";
 import SidebarEditButtonClient from "./sidebarEditButtonClient";
-import SharedProfileToggle from "./sharedProfileToggle";
+
 import UpdateProfileClient from "./updateProfileClient";
 import { SectionHistory } from "./sectionHistoryClient";
 import { Section, FieldRow } from "./profileGridComponents";
@@ -221,7 +221,7 @@ export default async function UserProfileId({
                     </span>
                   )}
                   
-                  <SharedProfileToggle userId={data.id} initialValue={data.allowSocialPublish} />
+
                 </div>
 
                 {/* Key Stats Grid */}
@@ -330,7 +330,13 @@ export default async function UserProfileId({
                 View Public Profile <ExternalLink className="w-4 h-4" />
               </a>
               
-              {/* Action Buttons removed from here, moved to right sidebar */}
+              {/* Mark & Edit Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <MarkButtonClient className="w-full h-10" />
+                <div className="w-full [&>button]:h-10">
+                  <SidebarEditButtonClient />
+                </div>
+              </div>
             </div>
           </div>
           
@@ -556,175 +562,6 @@ export default async function UserProfileId({
       {/* Floating save button — shows when a section is being edited */}
       <UpdateProfileClient profileId={p?.id ?? ""} />
       
-      </div> {/* End Left Column */}
-
-      {/* Right Column (Sidebar) */}
-      <div className="w-full xl:w-[260px] 2xl:w-[320px] shrink-0 space-y-6 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        
-        {/* Top Buttons */}
-        <div className="grid grid-cols-2 gap-2">
-          <MarkButtonClient className="w-full h-10" />
-          <div className="w-full [&>button]:h-10">
-            <SidebarEditButtonClient />
-          </div>
-        </div>
-
-        {/* Verification Center */}
-        <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden">
-          <CardHeader className="pb-3 border-b border-border bg-muted/20">
-            <CardTitle className="text-[15px] flex items-center gap-2 font-bold text-foreground">
-              <ShieldCheck className="w-5 h-5 text-indigo-500" /> Verification Center
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3.5 pt-4">
-            <div className="flex justify-between items-center text-sm font-medium text-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Mobile Verified
-              </div>
-              <span className="text-muted-foreground">{data.phone ? "Verified" : "Pending"}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm font-medium text-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Email Verified
-              </div>
-              <span className="text-muted-foreground">{data.email ? "Verified" : "Pending"}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm font-medium text-foreground">
-              <div className="flex items-center gap-2">
-                {data.avatar ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-orange-500" />} Photo Verified
-              </div>
-              <span className={data.avatar ? "text-muted-foreground" : "text-orange-500 font-semibold"}>{data.avatar ? "Verified" : "Pending"}</span>
-            </div>
-            {(data as any).isAadhaarVerified !== undefined && (
-              <div className="flex justify-between items-center text-sm font-medium text-foreground">
-                <div className="flex items-center gap-2">
-                  {(data as any).isAadhaarVerified ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-orange-500" />} Aadhaar Verified
-                </div>
-                <span className={(data as any).isAadhaarVerified ? "text-muted-foreground" : "text-orange-500 font-semibold"}>{(data as any).isAadhaarVerified ? "Verified" : "Pending"}</span>
-              </div>
-            )}
-            {(data as any).isPanVerified !== undefined && (
-              <div className="flex justify-between items-center text-sm font-medium text-foreground">
-                <div className="flex items-center gap-2">
-                  {(data as any).isPanVerified ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-orange-500" />} PAN Verified
-                </div>
-                <span className={(data as any).isPanVerified ? "text-muted-foreground" : "text-orange-500 font-semibold"}>{(data as any).isPanVerified ? "Verified" : "Pending"}</span>
-              </div>
-            )}
-            {(data as any).isAddressVerified !== undefined && (
-              <div className="flex justify-between items-center text-sm font-medium text-foreground">
-                <div className="flex items-center gap-2">
-                  {(data as any).isAddressVerified ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-orange-500" />} Address Verified
-                </div>
-                <span className={(data as any).isAddressVerified ? "text-muted-foreground" : "text-orange-500 font-semibold"}>{(data as any).isAddressVerified ? "Verified" : "Pending"}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* AI Intelligence (Dynamic) */}
-        {(data as any).profileQualityScore !== undefined && (
-          <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden">
-            <CardHeader className="pb-3 border-b border-border flex flex-row items-center justify-between bg-muted/20">
-              <CardTitle className="text-[15px] flex items-center gap-2 font-bold text-foreground">
-                <BrainCircuit className="w-5 h-5 text-indigo-500" /> AI Intelligence
-              </CardTitle>
-              <span className="text-xs text-muted-foreground font-medium">Updated: Today</span>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 pt-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Profile Quality Score</span>
-                <span className="text-emerald-600 font-bold">{(data as any).profileQualityScore}%</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Trust Score</span>
-                <span className="text-emerald-600 font-bold">{(data as any).trustScore || '94'}%</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Risk Score</span>
-                <span className="text-emerald-600 font-bold">{(data as any).riskScore || '06'}%</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Engagement Score</span>
-                <span className="text-emerald-600 font-bold">High</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Marriage Readiness</span>
-                <span className="text-emerald-600 font-bold">High</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Premium Upgrade Chance</span>
-                <span className="text-emerald-600 font-bold">{(data as any).premiumUpgradeChance || '78'}%</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Assigned Matchmaker (Dynamic) */}
-        {(data as any).assignedMatchmaker && (
-          <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden">
-            <CardHeader className="pb-3 border-b border-border bg-muted/20">
-              <CardTitle className="text-[15px] flex items-center gap-2 font-bold text-foreground">
-                <UserCog className="w-5 h-5 text-indigo-500" /> Assigned Matchmaker
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4 pt-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full overflow-hidden bg-muted shrink-0 border border-border">
-                  <img src="https://ui-avatars.com/api/?name=Match+Maker&background=random" alt="Matchmaker" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-bold text-foreground text-sm">{(data as any).assignedMatchmaker}</span>
-                  <span className="text-xs text-muted-foreground font-medium">Support Team</span>
-                  <div className="text-xs mt-1">
-                    <span className="text-muted-foreground">Success Rate: </span><span className="text-emerald-600 font-bold">92%</span>
-                  </div>
-                  <div className="text-xs">
-                    <span className="text-muted-foreground">Total Matches: </span><span className="font-bold text-foreground">245</span>
-                  </div>
-                </div>
-              </div>
-              <button className="w-full py-2 bg-transparent text-indigo-600 dark:text-indigo-400 font-semibold text-sm rounded-lg border border-indigo-200 dark:border-indigo-800/50 transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
-                View Matchmaker Profile
-              </button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Action Menus */}
-        <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden">
-          <CardHeader className="pb-3 border-b border-border bg-muted/20">
-            <CardTitle className="text-[15px] flex items-center gap-2 font-bold text-foreground">
-              <Activity className="w-5 h-5 text-indigo-500" /> Action Menus
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 pt-4">
-            <div className="grid grid-cols-2 gap-2">
-              <button className="flex items-center justify-center gap-1.5 py-2 px-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-semibold text-xs rounded border border-emerald-200 dark:border-emerald-800 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/40">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Approve Profile
-              </button>
-              <button className="flex items-center justify-center gap-1.5 py-2 px-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold text-xs rounded border border-blue-200 dark:border-blue-800 transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/40">
-                <ShieldCheck className="w-3.5 h-3.5" /> Verify Profile
-              </button>
-              <button className="flex items-center justify-center gap-1.5 py-2 px-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-semibold text-xs rounded border border-indigo-200 dark:border-indigo-800 transition-colors hover:bg-indigo-100 dark:hover:bg-indigo-900/40">
-                <Users className="w-3.5 h-3.5" /> Assign Matchmaker
-              </button>
-              <button className="flex items-center justify-center gap-1.5 py-2 px-2 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 font-semibold text-xs rounded border border-orange-200 dark:border-orange-800 transition-colors hover:bg-orange-100 dark:hover:bg-orange-900/40">
-                <Bell className="w-3.5 h-3.5" /> Send Notification
-              </button>
-              <button className="flex items-center justify-center gap-1.5 py-2 px-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold text-xs rounded border border-red-200 dark:border-red-800 transition-colors hover:bg-red-100 dark:hover:bg-red-900/40">
-                <PauseCircle className="w-3.5 h-3.5" /> Suspend Profile
-              </button>
-              <button className="flex items-center justify-center gap-1.5 py-2 px-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-semibold text-xs rounded border border-red-200 dark:border-red-800 transition-colors hover:bg-red-100 dark:hover:bg-red-900/40">
-                <Ban className="w-3.5 h-3.5" /> Block Profile
-              </button>
-            </div>
-            <button className="w-full flex items-center justify-center gap-1.5 mt-1 py-2 px-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold text-xs rounded border border-red-200 dark:border-red-800 transition-colors hover:bg-red-100 dark:hover:bg-red-900/40">
-              <Trash2 className="w-3.5 h-3.5" /> Delete Profile
-            </button>
-          </CardContent>
-        </Card>
-        
       </div>
     </div>
   );

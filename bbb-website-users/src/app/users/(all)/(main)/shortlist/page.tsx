@@ -11,6 +11,7 @@ import api from "@/lib/axiosInstance";
 import { PaginationResponse } from "@/components/interface/AxiosResponse";
 import { AllUsers } from "@/components/interface/user";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,11 @@ import {
   Clock,
   Send,
   LineChart,
-  Lightbulb
+  Lightbulb,
+  Eye,
+  Ruler,
+  Search,
+  Filter
 } from "lucide-react";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
@@ -60,6 +65,7 @@ export default function ShortlistPage() {
   const [activeTab, setActiveTab] = useState("Shortlisted by Me");
   const [visibleCount, setVisibleCount] = useState(4);
   const [sortBy, setSortBy] = useState("recent");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     setVisibleCount(4);
@@ -117,6 +123,14 @@ export default function ShortlistPage() {
 
   const sortedDisplayUsers = useMemo(() => {
     let users = [...displayUsers];
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase();
+      users = users.filter(u => {
+        const fullName = `${u.title || ""} ${u.lastName || ""}`.toLowerCase();
+        return fullName.includes(q);
+      });
+    }
+
     if (sortBy === "match") {
        users.sort((a, b) => {
           const getScore = (u: any) => {
@@ -141,7 +155,7 @@ export default function ShortlistPage() {
        }
     }
     return users;
-  }, [displayUsers, sortBy, user, shortlistedIds, activeTab]);
+  }, [displayUsers, sortBy, user, shortlistedIds, activeTab, searchQuery]);
 
   if (isPending) return <LoadingPage />;
 
@@ -149,11 +163,11 @@ export default function ShortlistPage() {
     <div className="flex flex-col h-[calc(100vh-80px)] bg-gray-50/50 dark:bg-zinc-950">
       
       {/* Static Header Section */}
-      <div className="w-full px-4 md:px-6 xl:px-8 pt-4 pb-2 shrink-0 z-30 relative bg-gray-50/50 dark:bg-zinc-950 border-b border-transparent">
-        <div className="w-full max-w-6xl mx-auto flex flex-col xl:flex-row items-center gap-4 relative justify-center pb-2 pt-2">
+      <div className="w-full px-4 md:px-6 xl:px-8 pt-2 md:pt-4 pb-2 shrink-0 z-30 relative bg-gray-50/50 dark:bg-zinc-950 border-b border-transparent">
+        <div className="w-full max-w-6xl mx-auto flex flex-col xl:flex-row items-center gap-4 relative justify-center w-full">
           
           {/* Left: Heading */}
-          <div className="w-full xl:w-auto xl:absolute xl:left-0 z-0 flex flex-col items-center xl:items-start text-center xl:text-left">
+          <div className="hidden md:flex w-full xl:w-auto xl:absolute xl:left-0 z-0 flex-col items-center xl:items-start text-center xl:text-left">
             <h1 className="text-xl md:text-[22px] font-extrabold text-gray-900 dark:text-white flex items-center gap-2 justify-center xl:justify-start">
               <Star className="w-6 h-6 md:w-7 md:h-7 stroke-[#E51E44] fill-none stroke-[2.5px]" />
               My Shortlist ({shortlistedUsers.length})
@@ -184,14 +198,28 @@ export default function ShortlistPage() {
             </button>
           </div>
 
-          {/* Right: Sort By */}
-          <div className="w-full md:w-auto xl:absolute xl:right-0 z-10 flex justify-center">
-            <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 rounded-xl p-0.5 shadow-sm border border-gray-100 dark:border-zinc-800">
-              <span className="text-[12px] font-bold text-gray-500 whitespace-nowrap pl-2.5">Sort:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[110px] h-7 bg-transparent text-[12px] text-gray-900 dark:text-white border-none rounded-lg font-bold shadow-none focus:ring-0 px-2">
-                  <SelectValue />
-                </SelectTrigger>
+          {/* Right: Search & Sort By */}
+          <div className="w-full md:w-auto xl:absolute xl:right-0 z-10">
+            <div className="flex gap-2 items-center w-full justify-between md:justify-center">
+              <div className="relative flex-1 md:hidden">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by name..."
+                  className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all shadow-sm"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 bg-transparent sm:bg-white sm:dark:bg-zinc-900 sm:rounded-xl sm:p-0.5 sm:shadow-sm sm:border sm:border-gray-100 sm:dark:border-zinc-800 shrink-0">
+                <span className="text-[12px] font-bold text-gray-500 whitespace-nowrap pl-2.5 hidden sm:block">Sort:</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-auto h-auto p-2 sm:p-0 sm:w-[110px] sm:h-7 bg-white dark:bg-zinc-900 sm:bg-transparent border border-gray-200 dark:border-zinc-800 sm:border-none rounded-xl sm:rounded-lg text-[12px] text-gray-900 dark:text-white font-bold shadow-sm sm:shadow-none focus:ring-0 sm:px-2 flex items-center justify-center [&>svg:last-child]:hidden sm:[&>svg:last-child]:block">
+                    <div className="hidden sm:block w-full text-left">
+                      <SelectValue />
+                    </div>
+                    <Filter className="w-[18px] h-[18px] sm:hidden text-gray-500 dark:text-gray-400 shrink-0" />
+                  </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="recent" className="text-[12px] font-bold">Recent</SelectItem>
                   <SelectItem value="match" className="text-[12px] font-bold">Match Score</SelectItem>
@@ -199,13 +227,14 @@ export default function ShortlistPage() {
                 </SelectContent>
               </Select>
             </div>
+            </div>
           </div>
 
         </div>
       </div>
 
       {/* Main Scrolling Area */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 xl:px-8 pb-6 flex flex-col xl:flex-row items-start gap-6 relative z-0">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 xl:px-8 pb-24 md:pb-6 flex flex-col xl:flex-row items-start gap-6 relative z-0">
         
         {/* Main Column */}
         <div className="flex-1 flex flex-col space-y-6 min-w-0 pt-2 w-full max-w-4xl mx-auto xl:mx-0">
@@ -217,9 +246,9 @@ export default function ShortlistPage() {
               <div key={i} className="h-[200px] bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs animate-pulse" />
             ))}
           </div>
-        ) : displayUsers.length === 0 ? (
+        ) : sortedDisplayUsers.length === 0 ? (
           <motion.div 
-            key={`empty-${activeTab}`}
+            key={`empty-${activeTab}-${searchQuery ? "search" : "all"}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -229,14 +258,20 @@ export default function ShortlistPage() {
               <Star className="w-8 h-8 text-[#E51E44]" />
             </div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              {activeTab === "Shortlisted by Me" ? "Your shortlist is empty" : "No one has shortlisted you yet"}
+              {searchQuery.trim() !== "" 
+                ? "No matching profiles found"
+                : activeTab === "Shortlisted by Me" 
+                  ? "Your shortlist is empty" 
+                  : "No one has shortlisted you yet"}
             </h2>
             <p className="text-sm font-medium text-gray-500 dark:text-zinc-400 max-w-md mx-auto mb-6">
-              {activeTab === "Shortlisted by Me" 
-                ? "You haven't saved any profiles yet. Go to your matches and click the Shortlist button to save profiles you like."
-                : "Keep your profile updated and send interests to get noticed by more matches!"}
+              {searchQuery.trim() !== ""
+                ? "We couldn't find anyone matching your search query. Try a different name."
+                : activeTab === "Shortlisted by Me" 
+                  ? "You haven't saved any profiles yet. Go to your matches and click the Shortlist button to save profiles you like."
+                  : "Keep your profile updated and send interests to get noticed by more matches!"}
             </p>
-            {activeTab === "Shortlisted by Me" && (
+            {activeTab === "Shortlisted by Me" && searchQuery.trim() === "" && (
               <Button 
                 onClick={() => router.push('/users/matching')}
                 className="bg-[#E51E44] hover:bg-[#C81A3C] text-white rounded-xl font-bold px-6"
@@ -293,8 +328,81 @@ export default function ShortlistPage() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 flex flex-col md:flex-row gap-5 shadow-sm hover:shadow-md transition-shadow relative"
+                  className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-0 md:p-4 flex flex-col md:flex-row gap-0 md:gap-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden md:overflow-visible"
                 >
+                  {/* Mobile View */}
+                  <div className="flex md:hidden items-center justify-between p-3 w-full gap-3">
+                    {/* Mobile Left: Avatar */}
+                    <div className="relative w-[52px] h-[52px] shrink-0" onClick={() => router.push(`/users/profile/${match.id}`)}>
+                      <div className="relative w-full h-full rounded-full overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm cursor-pointer">
+                        <Image
+                          src={match.avatar || (match.gender === "MALE" ? "/groom.webp" : "/bride.webp")}
+                          alt="avatar" fill className="object-cover"
+                        />
+                      </div>
+                      {match.isGhotokOwned && (
+                        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-600 via-emerald-600/80 to-transparent backdrop-blur-[2px] text-white text-[6px] font-bold py-0.5 px-1.5 rounded-sm z-10 pointer-events-none shadow-sm whitespace-nowrap">
+                          Matchmaker
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Mobile Middle: Info */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+                      <div className="flex items-center gap-1.5 mb-0.5 cursor-pointer" onClick={() => router.push(`/users/profile/${match.id}`)}>
+                        {idx < 2 && <span className="bg-rose-100 text-[#E51E44] text-[8px] font-bold px-1.5 py-0.5 rounded-sm shrink-0">NEW</span>}
+                        <h1 className="text-[13px] font-bold text-gray-900 dark:text-white truncate">
+                          {match.title} {match.lastName}
+                        </h1>
+                      </div>
+                      <span className="text-[10px] font-medium text-gray-500 truncate">{age ? `${age} Years, ` : ""}{dist}</span>
+                      {(education || height) && (
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                          {education && (
+                            <div className="flex items-center gap-1 text-[9px] font-medium text-gray-500 truncate max-w-[120px]">
+                              <GraduationCap className="w-2.5 h-2.5 shrink-0" /> {education}
+                            </div>
+                          )}
+                          {height && (
+                            <div className="flex items-center gap-1 text-[9px] font-medium text-gray-500 shrink-0">
+                              <Ruler className="w-2.5 h-2.5 shrink-0" /> {height}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-[9px] font-semibold text-gray-400 mt-0.5">
+                        <Clock className="w-2.5 h-2.5" /> {daysAgo} days ago
+                      </div>
+                    </div>
+
+                    {/* Mobile Right: Actions */}
+                    <div className="flex flex-col gap-1.5 shrink-0 w-[100px]">
+                      <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold text-[#E51E44] border-[#E51E44]/30 hover:bg-rose-50 rounded-md flex items-center justify-center gap-1 w-full">
+                        <Link href={`/users/profile/${match.id}`}><Eye className="w-3 h-3" /> Profile</Link>
+                      </Button>
+
+                      {statusObj.text === 'Mutual Interest' ? (
+                        <Button size="sm" onClick={() => router.push(`/users/chat`)} className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
+                          <MessageSquare className="w-3 h-3" /> Message
+                        </Button>
+                      ) : match.isInterestSent ? (
+                        <Button disabled size="sm" className="h-7 px-2 text-[9px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-50 rounded-md flex items-center justify-center gap-1 w-full shrink-0 cursor-not-allowed">
+                          <Send className="w-3 h-3" /> Sent
+                        </Button>
+                      ) : (
+                        <Button size="sm" onClick={() => handleSendInterest(match.id!)} className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
+                          <Heart className="w-3 h-3 fill-current" /> Interest
+                        </Button>
+                      )}
+
+                      <Button variant="outline" size="sm" className="h-7 px-2 text-[9px] font-bold text-amber-600 border-amber-200 hover:bg-amber-50 rounded-md flex items-center justify-center gap-1 w-full">
+                        <Bookmark className="w-3 h-3" /> Notes
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Desktop View Wrapper */}
+                  <div className="hidden md:flex flex-row gap-5 relative w-full">
                   
                   {/* Left: Image */}
                   <div className="relative w-[130px] h-[170px] shrink-0 rounded-xl overflow-hidden shadow-sm">
@@ -449,6 +557,7 @@ export default function ShortlistPage() {
                     </div>
                   </div>
                   
+                  </div>
                 </motion.div>
               );
             })}

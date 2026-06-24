@@ -5,6 +5,7 @@ type UpdatingProfileState = Partial<UpdateProfileSchema> & {
   hydrated: boolean;
   setHydrated: (hydrated: boolean) => void;
   setData: (data: Partial<UpdateProfileSchema>) => void;
+  clearData: () => void;
 };
 
 export const useUpdatingProfileStore = create<UpdatingProfileState>()(
@@ -13,6 +14,12 @@ export const useUpdatingProfileStore = create<UpdatingProfileState>()(
       hydrated: false,
       setHydrated: (value) => set({ hydrated: value }),
       setData: (data: Partial<UpdateProfileSchema>) => set(data),
+      clearData: () => set((state) => ({
+        hydrated: state.hydrated,
+        setHydrated: state.setHydrated,
+        setData: state.setData,
+        clearData: state.clearData
+      }), true),
     }),
     {
       name: "update-profile-storage",

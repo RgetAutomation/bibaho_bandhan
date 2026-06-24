@@ -111,9 +111,9 @@ export default function ChatPage() {
 
   return (
     <div
-      className={"w-full flex flex-col flex-1 items-center justify-center p-5"}
+      className={"w-full flex flex-col flex-1 items-center justify-center p-2 md:p-5"}
     >
-      <div className="w-full max-w-lg mx-auto space-y-6 p-6 border rounded-2xl shadow-sm bg-card">
+      <div className="w-full max-w-lg mx-auto space-y-6 p-0 md:p-6 border-0 md:border rounded-none md:rounded-2xl shadow-none md:shadow-sm bg-transparent md:bg-card">
         <div className="flex flex-col items-center justify-center space-y-1 text-center">
           <h2 className="text-2xl font-semibold tracking-tight">Need Help?</h2>
           <p className="text-sm text-muted-foreground w-4/5">
@@ -313,10 +313,9 @@ export default function ChatPage() {
       </div>
 
 
-      {/* Right Side */}
-      <div className="flex flex-1 items-center justify-center gap-2 mt-5">
-        <span>You already submitted a request?</span>
-        <Button asChild variant={"outline"} className="rounded-full">
+      <div className="flex items-center justify-center gap-2 mt-5 w-full">
+        <span className="text-[11px] sm:text-base whitespace-nowrap">You already submitted a request?</span>
+        <Button asChild variant={"outline"} className="rounded-full h-8 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm">
           <Link href="/helpcenter/search">View Status</Link>
         </Button>
       </div>

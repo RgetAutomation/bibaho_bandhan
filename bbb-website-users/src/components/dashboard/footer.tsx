@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   Crown,
+  Flame,
   Home,
   LucideIcon,
   MessageCircle,
@@ -32,6 +33,12 @@ const navItems: MenuProps[] = [
     userType: [UserType.PAID_USER, UserType.FREE_USER],
   },
   {
+    href: "/users/matching",
+    label: "Matches",
+    icon: Flame,
+    userType: [UserType.PAID_USER, UserType.FREE_USER],
+  },
+  {
     href: "/users/interests",
     label: "Interests",
     icon: MessageCircleHeart,
@@ -49,13 +56,6 @@ const navItems: MenuProps[] = [
     label: "Membership",
     icon: Crown,
     userType: [UserType.PAID_USER, UserType.FREE_USER],
-  },
-  {
-    href: "/users/account",
-    label: "Account",
-    icon: UserRound,
-    userType: [UserType.PAID_USER, UserType.FREE_USER],
-    badgeKey: "accountBadge",
   },
 ];
 
@@ -116,7 +116,7 @@ export default function FooterSection() {
                       <Icon size={22} strokeWidth={2} />
                     </div>
 
-                    <span className="text-xs">{item.label}</span>
+                    <span className="text-[10px]">{item.label}</span>
                   </Link>
                 </li>
               );

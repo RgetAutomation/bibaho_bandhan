@@ -6,7 +6,7 @@ import { generateOTP, sendEmailOtp, sendMobileOtp } from "../utils/otp.js";
 
 // In-memory store for OTPs (Key: email or mobile, Value: { otp, expiresAt })
 // In production, consider using Redis.
-const otpStore = new Map<string, { otp: string; expiresAt: number }>();
+export const otpStore = new Map<string, { otp: string; expiresAt: number }>();
 
 const OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 

@@ -5,6 +5,7 @@ import StepActions from "./StepActions";
 import ImagesUploadComponent from "@/components/ui-custom/imagesUploedComponent";
 import { X } from "lucide-react";
 import { useTemporaryPhotoStore } from "@/lib/temporaryPhotoStore";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export default function Step8Photos({ onComplete, onBack }: { onComplete: () => void, onBack: () => void }) {
   const [loading, setLoading] = useState(false);
@@ -39,14 +40,14 @@ export default function Step8Photos({ onComplete, onBack }: { onComplete: () => 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Profile Photos</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">Upload your best photos to attract more matches</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Profile Photos<FormBadge type="recommended" /></h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">Upload your best photos to attract more matches</p>
       </div>
 
       <div className="space-y-6">
-        <div className="bg-white dark:bg-zinc-900 border border-[#F0E8E8] dark:border-zinc-800 shadow-sm rounded-3xl overflow-hidden">
-          <div className="p-6 md:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-[#F0E8E8] dark:border-zinc-800">
+        <div className="bg-transparent md:bg-white dark:md:bg-zinc-900 border-0 md:border border-[#F0E8E8] dark:border-zinc-800 shadow-none md:shadow-sm md:rounded-3xl overflow-hidden">
+          <div className="p-0 md:p-8">
+            <div className="hidden sm:flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-[#F0E8E8] dark:border-zinc-800">
               <div className="space-y-1">
                 <h2 className="text-xl font-extrabold text-gray-900 dark:text-zinc-100">Photo Gallery</h2>
                 <p className="text-sm text-gray-500 dark:text-zinc-400 font-medium">

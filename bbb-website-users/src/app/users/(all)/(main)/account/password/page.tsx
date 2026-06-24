@@ -65,14 +65,7 @@ export default function ChangePassword() {
   }
   return (
     <div className="flex flex-col h-[calc(100vh-1px)] bg-[#FCFAF8] dark:bg-zinc-950">
-      <DashboardHeader
-        title={
-          <div className="w-full flex items-center justify-center gap-2 bg-primary/20 p-4 md:p-6">
-            <h1 className="font-semibold text-xl">Account Security</h1>
-          </div>
-        }
-        backLink="/users/account"
-      />
+
       <div className="flex-1 flex flex-col items-center justify-start p-4 md:p-8 overflow-y-auto">
         <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-[#F0E8E8] dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden flex flex-col mt-4 md:mt-8">
           {/* Header Area */}

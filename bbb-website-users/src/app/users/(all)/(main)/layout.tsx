@@ -2,6 +2,7 @@
 
 import FooterSection from "@/components/dashboard/footer";
 import TopNavbarSection from "@/components/dashboard/TopNavbarSection";
+import MobileHeader from "@/components/dashboard/MobileHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { ProfileCompleteGuard } from "@/components/profileCompleteGuard";
 import VerificationBanner from "@/components/VerificationBanner";
@@ -14,6 +15,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const isTeamPage = pathname === "/users/team" || pathname.startsWith("/users/team/");
+  const isIndividualChat = pathname.startsWith("/users/chat/") && pathname !== "/users/chat";
+  const isHelpCenterChat = pathname.includes("/users/helpcenter/") && pathname.includes("/chat");
+  const hideMobileNavs = isTeamPage || isIndividualChat || isHelpCenterChat;
+
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
@@ -22,8 +28,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50/50 dark:bg-zinc-950 overflow-hidden">
-      {/* Top Navbar (hidden on xl, replaced by sidebar logo) */}
+      {/* Top Navbar (Desktop) */}
       <TopNavbarSection />
+      
+      {/* Top Navbar (Mobile) */}
+      {!hideMobileNavs && <MobileHeader />}
 
       <div className="flex flex-1 w-full overflow-hidden">
         {/* Persistent Left Sidebar */}
@@ -36,7 +45,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ref={containerRef}
           className="flex flex-col flex-1 min-w-0 overflow-y-auto"
         >
-          <VerificationBanner />
           <main className="flex flex-col flex-1 min-h-0">
             <ProfileCompleteGuard
               session={session}
@@ -48,7 +56,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </main>
 
           {/* Bottom Navigation (mobile) */}
-          <FooterSection />
+          {!hideMobileNavs && <FooterSection />}
         </div>
       </div>
     </div>

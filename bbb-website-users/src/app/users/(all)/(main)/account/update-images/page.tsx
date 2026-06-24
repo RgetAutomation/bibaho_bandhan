@@ -292,14 +292,7 @@ export default function FinleProfilePage() {
 
   return (
     <div className="flex flex-col h-dvh overflow-hidden">
-      <DashboardHeader
-        title={
-          <div className="w-full flex items-center justify-center gap-2 bg-primary/20 p-4 md:p-6">
-            <h1 className="font-semibold text-xl">Update Image</h1>
-          </div>
-        }
-        backLink="/users/account"
-      />
+
       {isLoading || isPending ? (
         <div className="flex flex-1 items-center justify-center">
           <LoadingPage />

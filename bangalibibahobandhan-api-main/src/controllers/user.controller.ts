@@ -322,6 +322,8 @@ export async function getUserById(req: Request, res: Response) {
           email: true,
           phone: true,
           isGhotokOwned: true,
+          verificationStatus: true,
+          ghotokId: true,
           ghotok: {
             select: {
               ghotokPublicId: true,
@@ -475,10 +477,10 @@ export async function getUserById(req: Request, res: Response) {
     const basicInfo = {
       id: targetUser.id,
       publicId: targetUser.publicId,
+      age: age,
       title: targetUser.title,
       lastName: targetUser.lastName,
       gender: targetUser.gender,
-      age: age,
       avatar: targetUser?.avatar,
       profileImages: targetUser.profile?.profileImages,
       maritalStatus: targetUser.profile?.maritalStatus,
@@ -498,6 +500,7 @@ export async function getUserById(req: Request, res: Response) {
       phone: !!bothAreFriends ? targetUser.phone : null,
       email: !!bothAreFriends ? targetUser.email : null,
       status,
+      verificationStatus: targetUser.verificationStatus,
       height: targetUser.profile?.height,
       education: targetUser.profile?.education,
       profession: targetUser.profile?.profession,
@@ -1102,6 +1105,7 @@ export async function isProfileCompleted(req: Request, res: Response) {
       where: { id: currentUserId },
       select: {
         isProfileComplete: true,
+        verificationStatus: true,
       },
     });
 
@@ -1112,7 +1116,10 @@ export async function isProfileCompleted(req: Request, res: Response) {
       new ApiResponse(
         200,
         "Profile completion status",
-        targetUser.isProfileComplete
+        {
+          isProfileComplete: targetUser.isProfileComplete,
+          verificationStatus: targetUser.verificationStatus,
+        }
       )
     );
   } catch (err) {

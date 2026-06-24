@@ -26,7 +26,7 @@ export default function ImagesUploadComponent({
   const [editQueue, setEditQueue] = useState<string[]>([]);
   const [editKeys, setEditKeys] = useState<string[]>([]);
   const [processedBlobs, setProcessedBlobs] = useState<Blob[]>([]);
-  const maxSizeMB = 5;
+  const maxSizeMB = 20;
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();

@@ -93,11 +93,15 @@ authRoute.post(
 //authRoute.get("/system/logout", asyncHandler(logoutSystemUser));
 
 import { sendVerificationOtp, verifyOtp } from "../controllers/verification.controller.js";
+import { resetPassword } from "../controllers/auth.controller.js";
 
 //  /api/v1/auth/send-otp
 authRoute.post("/send-otp", sendVerificationOtp);
 
 //  /api/v1/auth/verify-otp
 authRoute.post("/verify-otp", verifyOtp);
+
+//  /api/v1/auth/reset-password
+authRoute.post("/reset-password", resetPassword);
 
 export default authRoute;

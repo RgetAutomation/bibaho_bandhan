@@ -22,6 +22,7 @@ import {
   Clock,
   AlertTriangle,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import CopyButton from "@/components/landing/copyButton";
 import {
@@ -96,13 +97,26 @@ export default function HelpRequestStatusClient({
       />
     );
   return (
-    <div className="py-6">
+    <div className="py-0 md:py-6 md:min-h-[calc(100vh-5rem)] md:flex md:items-center md:justify-center w-full">
       <HelpTicketCard data={data} />
     </div>
   );
 }
 
 function HelpTicketCard({ data }: { data: IHelpTicket }) {
+  const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileDetailsOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileDetailsOpen]);
+
   const statusColors: Record<string, string> = {
     PENDING: "bg-yellow-500",
     INPROGRESS: data.isReopened ? "bg-purple-500" : "bg-blue-500",
@@ -118,21 +132,42 @@ function HelpTicketCard({ data }: { data: IHelpTicket }) {
   };
 
   return (
-    <div className="m-4 flex w-full max-w-6xl mx-auto flex-col gap-6 md:flex-row items-stretch h-[calc(100vh-8rem)]">
+    <div className="m-0 md:m-4 flex w-full max-w-6xl mx-auto flex-col gap-6 md:flex-row items-stretch h-[calc(100vh-8rem)]">
       {/* Left/Middle Column - Chat Box */}
-      <div className="flex-1 flex flex-col rounded-2xl border bg-card shadow-lg overflow-hidden">
-        <div className="bg-muted p-4 border-b">
-          <h2 className="text-lg font-bold">Chat with Support</h2>
-          <p className="text-sm text-muted-foreground">Support thread for request #{data.id.slice(-6)}</p>
+      <div className="flex-1 flex flex-col rounded-none md:rounded-2xl border-0 md:border bg-background md:bg-card shadow-none md:shadow-lg overflow-hidden">
+        <div className="bg-muted p-4 border-b flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-bold">Chat with Support</h2>
+            <p className="text-sm text-muted-foreground">Support thread</p>
+          </div>
+          <Button variant="outline" size="sm" className="md:hidden flex items-center gap-1 bg-background" onClick={() => setIsMobileDetailsOpen(true)}>
+            <Info className="h-4 w-4" /> <span className="text-xs">Details</span>
+          </Button>
         </div>
         <div className="flex-1 overflow-hidden p-4 bg-background flex flex-col">
           <GuestHelpChatBox requestId={data.id} isResolved={data.status === "RESOLVED" || data.status === "CLOSED"} />
         </div>
       </div>
 
+      {/* Overlay for mobile */}
+      {isMobileDetailsOpen && (
+        <div 
+          className="fixed top-[65px] bottom-0 left-0 right-0 bg-black/50 z-40 md:hidden" 
+          onClick={() => setIsMobileDetailsOpen(false)}
+        />
+      )}
+      
       {/* Right Column - User Details and Feedback Form */}
-      <div className="flex w-full flex-col gap-4 md:w-[320px] shrink-0 overflow-y-auto pb-4 pr-1">
-        <div className="bg-card flex flex-col rounded-2xl border p-4 shadow-lg">
+      <div className={`flex w-full flex-col gap-4 md:w-[320px] shrink-0 overflow-y-auto pb-4 pr-1 max-md:fixed max-md:top-[65px] max-md:bottom-0 max-md:right-0 max-md:z-50 max-md:w-[85vw] max-md:bg-background max-md:p-4 max-md:transition-transform max-md:duration-300 max-md:shadow-2xl ${
+        isMobileDetailsOpen ? "max-md:translate-x-0" : "max-md:translate-x-full"
+      }`}>
+        <div className="md:hidden flex justify-between items-center mb-2">
+          <h2 className="text-lg font-bold">Ticket Details</h2>
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileDetailsOpen(false)}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="bg-transparent md:bg-card flex flex-col rounded-none md:rounded-2xl border-0 md:border p-0 md:p-4 shadow-none md:shadow-lg">
           {/* Header */}
           <div className="mb-4 flex items-start justify-between">
             <h3 className="text-lg font-semibold">Ticket Details</h3>
@@ -146,32 +181,25 @@ function HelpTicketCard({ data }: { data: IHelpTicket }) {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            <div className="divide-border bg-card flex flex-col divide-y overflow-hidden rounded-xl border shadow-sm">
-              <div className="flex items-center gap-2 p-3">
+            <div className="divide-border bg-transparent md:bg-card flex flex-col divide-y overflow-hidden rounded-none md:rounded-xl border-0 md:border shadow-none md:shadow-sm">
+              <div className="flex items-center gap-2 p-0 py-3 md:p-3">
                 <CheckCircle2 className="size-4 text-green-600" />
                 <div className="text-md flex-1 font-bold break-all">
                   Thank you, {data.name}
                 </div>
               </div>
 
-              {/* Ticket ID */}
-              <div className="flex items-center gap-2 px-3 py-1 bg-muted/50">
-                <Info className="size-4 text-muted-foreground" />
-                <div className="flex-1 text-xs font-mono break-all">
-                  ID: {data.id}
-                </div>
-                <CopyButton text={data.id} />
-              </div>
+
 
               {/* Phone */}
-              <div className="flex items-center gap-2 px-3 py-2">
+              <div className="flex items-center gap-2 px-0 md:px-3 py-2">
                 <Phone className="size-4 text-muted-foreground" />
                 <div className="flex-1 text-sm break-all">+91 {data.phone}</div>
               </div>
 
               {/* Email */}
               {data.email && (
-                <div className="flex items-center gap-2 px-3 py-2">
+                <div className="flex items-center gap-2 px-0 md:px-3 py-2">
                   <Mail className="size-4 text-muted-foreground" />
                   <div className="flex-1 text-sm break-all text-gray-700 dark:text-gray-200">
                     {data.email}
@@ -181,7 +209,7 @@ function HelpTicketCard({ data }: { data: IHelpTicket }) {
             </div>
 
             {/* Reason */}
-            <div className="flex flex-col gap-2 rounded-xl border bg-gray-50 p-3 shadow-sm transition-shadow duration-200 hover:shadow-md dark:bg-zinc-800">
+            <div className="flex flex-col gap-2 rounded-none md:rounded-xl border-0 border-y md:border bg-transparent md:bg-gray-50 py-3 px-0 md:p-3 shadow-none md:shadow-sm md:transition-shadow md:duration-200 md:hover:shadow-md md:dark:bg-zinc-800">
               <div className="flex items-center gap-2">
                 <div className="text-muted-foreground flex items-center gap-2">
                   <Info className="h-4 w-4 shrink-0" />
@@ -204,7 +232,7 @@ function HelpTicketCard({ data }: { data: IHelpTicket }) {
             </div>
 
             {data.adminNote && (
-              <div className="bg-muted mt-1 flex flex-col gap-2 rounded-xl border p-3 text-sm">
+              <div className="bg-transparent md:bg-muted mt-1 flex flex-col gap-2 rounded-none md:rounded-xl border-0 border-y md:border p-0 py-3 md:p-3 text-sm">
                 <div className="flex items-start gap-3">
                   <Reply className="text-muted-foreground mt-1 h-4 w-4 shrink-0" />
                   <span className="text-muted-foreground font-medium text-nowrap">
@@ -216,7 +244,7 @@ function HelpTicketCard({ data }: { data: IHelpTicket }) {
             )}
 
             {data.feedback && data.status === "RESOLVED" && (
-              <div className="bg-muted mt-1 flex flex-col gap-2 rounded-xl border p-3 text-sm">
+              <div className="bg-transparent md:bg-muted mt-1 flex flex-col gap-2 rounded-none md:rounded-xl border-0 border-y md:border p-0 py-3 md:p-3 text-sm">
                 <div className="flex items-start gap-3">
                   <StarsIcon className="text-muted-foreground mt-1 h-4 w-4 shrink-0" />
                   <span className="text-muted-foreground font-medium text-nowrap">
@@ -231,7 +259,7 @@ function HelpTicketCard({ data }: { data: IHelpTicket }) {
 
         {/* Reopen button: only shown when RESOLVED and within 7-day window */}
         {data.status === "RESOLVED" && (
-          <div className="bg-card flex flex-col rounded-2xl border p-4 shadow-lg">
+          <div className="bg-transparent md:bg-card flex flex-col rounded-none md:rounded-2xl border-0 md:border p-0 md:p-4 shadow-none md:shadow-lg">
             <ReopenButton ticketId={data.id} resolvedAt={data.resolvedAt} />
           </div>
         )}

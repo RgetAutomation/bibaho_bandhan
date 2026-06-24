@@ -146,6 +146,8 @@ export function ProfileRedesigned({
 }: ProfileRedesignedProps) {
   const { user } = useAuthSession();
   const isOwnProfile = user?.id === data.id;
+  const isProfileVerified = data.verificationStatus === "APPROVED";
+
   const hasValue = (val: any): boolean => {
     if (val === null || val === undefined) return false;
     if (typeof val === "string") {
@@ -290,13 +292,13 @@ export function ProfileRedesigned({
           {/* Middle column: Profile summary and Tabs */}
           <div className="flex-1 space-y-6 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pr-2 pb-10">
             {/* Top Profile Summary Card */}
-            <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-gradient-to-br from-rose-50/80 to-pink-50/80 dark:from-zinc-950 dark:to-zinc-950 rounded-[2rem] overflow-hidden p-0 gap-0 flex flex-col relative">
+            <Card className="border-0 shadow-none bg-transparent md:border md:border-[#F0E8E8] dark:md:border-zinc-800 md:shadow-sm md:bg-gradient-to-br md:from-rose-50/80 md:to-pink-50/80 dark:md:from-zinc-950 dark:md:to-zinc-950 rounded-none md:rounded-[2rem] overflow-visible md:overflow-hidden p-0 gap-0 flex flex-col relative">
               {/* Subtle background decoration */}
-              <div className="absolute top-0 right-0 w-full h-full opacity-40 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/floral-motif.png')] mix-blend-overlay" />
+              <div className="hidden md:block absolute top-0 right-0 w-full h-full opacity-40 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/floral-motif.png')] mix-blend-overlay" />
               
-              <div className="flex flex-col lg:flex-row p-4 md:p-5 gap-4 md:gap-6 relative z-10">
+              <div className="flex flex-row p-0 md:p-5 gap-4 relative z-10">
                 {/* Photo Column */}
-                <div className="w-full lg:w-[180px] relative aspect-square lg:aspect-[4/5] bg-gray-100 dark:bg-zinc-900 flex-shrink-0 rounded-[1.5rem] overflow-hidden shadow-md border-4 border-white dark:border-zinc-800 group">
+                <div className="w-[115px] sm:w-[130px] md:w-[140px] lg:w-[180px] shrink-0 relative aspect-square lg:aspect-[4/5] bg-gray-100 dark:bg-zinc-900 rounded-2xl md:rounded-[1.5rem] overflow-hidden md:shadow-md border-0 md:border-4 border-white dark:border-zinc-800 group">
                   <Image
                     src={activePhoto || primaryPhoto || "/placeholder-user.jpg"}
                     alt={displayName}
@@ -305,6 +307,12 @@ export function ProfileRedesigned({
                     priority
                     onClick={() => setIsPhotoModalOpen(true)}
                   />
+                  {!isProfileVerified && (
+                    <div className="absolute top-2 left-2 bg-amber-500/90 text-white px-2.5 py-1 rounded-full shadow-lg border border-amber-400 backdrop-blur-sm text-[10px] font-bold flex items-center gap-1.5 z-10 pointer-events-none">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                      Pending
+                    </div>
+                  )}
                   {/* Camera icon floating */}
                   <div 
                     className="absolute bottom-3 right-3 bg-white dark:bg-zinc-800 rounded-xl p-2.5 shadow-lg border border-gray-100 dark:border-zinc-700 cursor-pointer hover:scale-110 transition-transform" 
@@ -316,14 +324,14 @@ export function ProfileRedesigned({
                 </div>
 
                 {/* Info Details Column */}
-                <div className="w-full lg:flex-1 flex flex-col min-w-0 justify-center">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="flex-1 flex flex-col min-w-0 justify-center">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
                     
                     <div className="flex flex-col">
                       {/* Name and Verified */}
-                      <h2 className="text-xl md:text-[22px] font-extrabold text-[#1a1b4b] dark:text-zinc-100 flex items-center gap-2">
-                        {displayName}
-                        {data.status === "ACTIVE" && (
+                      <h2 className="text-lg sm:text-xl md:text-[22px] font-extrabold text-[#1a1b4b] dark:text-zinc-100 flex items-center gap-1.5 flex-wrap leading-tight">
+                        <span className="truncate">{displayName}</span>
+                        {isProfileVerified && (
                           <div className="bg-amber-500 rounded-full p-0.5 shadow-sm">
                              <CheckCircle2 className="w-4 h-4 text-white" />
                           </div>
@@ -331,13 +339,15 @@ export function ProfileRedesigned({
                       </h2>
 
                       {/* Gold Verified Badge */}
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-lg text-[11px] font-extrabold w-fit border border-amber-200 dark:border-amber-800/50 shadow-sm">
-                        <ShieldCheck className="w-4 h-4" /> Gold Verified
-                      </div>
+                      {isProfileVerified && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-lg text-[11px] font-extrabold w-fit border border-amber-200 dark:border-amber-800/50 shadow-sm">
+                          <ShieldCheck className="w-4 h-4" /> Gold Verified
+                        </div>
+                      )}
 
                       {/* Profile ID */}
-                      <div className="mt-3 flex items-center gap-2">
-                        <span className="text-[13px] font-bold text-[#1a1b4b] dark:text-zinc-300">
+                      <div className="mt-1 md:mt-3 flex items-center gap-2">
+                        <span className="text-[11px] md:text-[13px] font-bold text-[#1a1b4b] dark:text-zinc-300">
                           Profile ID: {data.publicId || data.id}
                         </span>
                         <button 
@@ -377,10 +387,10 @@ export function ProfileRedesigned({
                       </div>
 
                       {/* Status and Member Since */}
-                      <div className="flex flex-col gap-2 mt-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-500/40" />
-                          <span className="text-[13px] font-bold text-green-600">Active Now</span>
+                      <div className="flex flex-col gap-1 md:gap-2 mt-2 md:mt-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-500/40" />
+                          <span className="text-[11px] md:text-[13px] font-bold text-green-600">Active Now</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-500 dark:text-zinc-400 mt-1">
                           <Calendar className="w-4 h-4" />
@@ -410,7 +420,7 @@ export function ProfileRedesigned({
 
               {/* Actions row spanning full width (Only for other users) */}
               {!isOwnProfile && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3 border-t border-[#F0E8E8] dark:border-zinc-800 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md mt-auto relative z-10">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-0 md:p-3 pt-3 md:pt-3 border-none md:border-t border-[#F0E8E8] dark:border-zinc-800 bg-transparent md:bg-white/60 dark:md:bg-zinc-950/60 md:backdrop-blur-md mt-4 md:mt-auto relative z-10">
                 {data?.alreadyFriend === true ? (
                   <Link href="/users/chat" className="w-full">
                     <Button className="w-full rounded-xl bg-[#9B1C31] hover:bg-[#801426] text-white flex items-center justify-center gap-2 font-bold py-2 text-xs shadow-sm h-auto">
@@ -759,7 +769,7 @@ export function ProfileRedesigned({
           </div>
 
           {/* ──── RIGHT COLUMN: Contact + Completion + Gallery ──── */}
-          <div className="w-full xl:w-[280px] shrink-0 space-y-5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-2 pb-10">
+          <div className="hidden xl:block w-full xl:w-[280px] shrink-0 space-y-5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-2 pb-10">
 
             {/* Profile Completeness Checklist */}
             {(() => {
@@ -768,7 +778,7 @@ export function ProfileRedesigned({
               const isEducationComplete = hasValue(data.education) && hasValue(data.profession);
               const isFamilyComplete = hasValue(data.fatherProfession) && hasValue(data.mothersOccupation) && hasValue(data.noOfBrothers) && hasValue(data.noOfSisters) && hasValue(data.familyStatus) && hasValue(data.familyType) && hasValue(data.familyValues) && hasValue(data.eatingHabits);
               const isPhotosComplete = Boolean(profileImages && profileImages.length > 0);
-              const isIdVerified = isOwnProfile ? Boolean(user?.isProfileComplete) : data.status === "VERIFIED";
+              const isIdVerified = isProfileVerified;
 
               return (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-4">

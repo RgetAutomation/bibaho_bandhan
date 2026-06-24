@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
 import StepActions from "./StepActions";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export const step2Schema = updateProfileSchema.pick({
   employmentType: true,
@@ -61,19 +62,19 @@ export default function Step2Career({ onComplete, onBack }: { onComplete: () => 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Education & Career</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">My Professional & Education Details</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Education & Career</h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">My Professional & Education Details</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
           {/* My Professional */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Professional</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="employmentType" render={({ field }) => (
-                <FormItem><FormLabel>Employment Type <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Employment Type<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -89,25 +90,25 @@ export default function Step2Career({ onComplete, onBack }: { onComplete: () => 
                 </FormItem>
               )} />
               <FormField control={form.control} name="profession" render={({ field }) => (
-                <FormItem><FormLabel>Occupation <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g. Software Engineer" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Occupation<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="e.g. Software Engineer" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="occupationDetails" render={({ field }) => (
-                <FormItem><FormLabel>Occupation Details (Recommended)</FormLabel><FormControl><Input placeholder="More details about occupation" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Occupation Details<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="More details about occupation" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="designation" render={({ field }) => (
-                <FormItem><FormLabel>Designation (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Senior Manager" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Designation<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Senior Manager" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="workExperience" render={({ field }) => (
-                <FormItem><FormLabel>Work Experience (Years) (Recommended)</FormLabel><FormControl><Input type="number" placeholder="e.g. 5" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Work Experience (Years)<FormBadge type="recommended" /></FormLabel><FormControl><Input type="number" placeholder="e.g. 5" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="organizationName" render={({ field }) => (
-                <FormItem><FormLabel>Organization Name (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Google" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Organization Name<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Google" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="companyName" render={({ field }) => (
-                <FormItem><FormLabel>Company / Business Name (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Alphabet Inc." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Company / Business Name<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Alphabet Inc." {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="monthlyIncome" render={({ field }) => (
-                <FormItem><FormLabel>Annual Income <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Annual Income<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select income range" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -165,17 +166,17 @@ export default function Step2Career({ onComplete, onBack }: { onComplete: () => 
           </div>
 
           {/* My Education */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Education</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="education" render={({ field }) => (
-                <FormItem><FormLabel>Highest Qualification <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g. Master's Degree" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Highest Qualification<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="e.g. Master's Degree" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="collegeInstitution" render={({ field }) => (
-                <FormItem><FormLabel>College / Institution (Recommended)</FormLabel><FormControl><Input placeholder="e.g. XYZ University" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>College / Institution<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. XYZ University" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="fieldOfStudy" render={({ field }) => (
-                <FormItem><FormLabel>Field of Study (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Computer Science" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Field of Study<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Computer Science" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>

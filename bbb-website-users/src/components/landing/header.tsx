@@ -125,13 +125,16 @@ export default function HeaderComponent({
                 </Button>
                 <Button
                   asChild
-                  className="flex items-center justify-center rounded-lg bg-[#E51E44] text-white hover:bg-[#E51E44]/90 h-8 md:h-9 px-4 md:px-6"
+                  className="hidden sm:flex items-center justify-center rounded-lg bg-[#E51E44] text-white hover:bg-[#E51E44]/90 h-8 md:h-9 px-4 md:px-6"
                 >
                   <Link
                     href={"/"}
                     className="flex items-center justify-center transition-all duration-300"
                   >
-                    <span className="text-sm md:text-base font-semibold">Register Free</span>
+                    <span className="text-sm md:text-base font-semibold">
+                      <span className="hidden sm:inline">Register Free</span>
+                      <span className="inline sm:hidden">Register</span>
+                    </span>
                   </Link>
                 </Button>
               </>
@@ -154,11 +157,7 @@ export default function HeaderComponent({
             )}
             <span className="sr-only">Toggle theme</span>
           </Button>
-          {pathname.includes("/account/setup") && (
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-              <span className="font-bold text-lg sm:text-xl text-slate-800 dark:text-white">Complete Profile</span>
-            </div>
-          )}
+
           {pathname === "/auth/login" && (
             <>
               <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300 hidden sm:inline-block">New to Bangali Bibaho Bandhan?</span>
@@ -168,7 +167,10 @@ export default function HeaderComponent({
                 className="flex items-center justify-center rounded-lg border border-[#E51E44] text-[#E51E44] hover:bg-[#E51E44]/10 hover:text-[#E51E44] h-8 md:h-9 px-4 bg-transparent"
               >
                 <Link href="/" className="flex items-center justify-center transition-all duration-300">
-                  <span className="text-sm font-semibold">Create Account</span>
+                  <span className="text-sm font-semibold">
+                    <span className="hidden sm:inline">Create Account</span>
+                    <span className="inline sm:hidden">Create</span>
+                  </span>
                 </Link>
               </Button>
             </>

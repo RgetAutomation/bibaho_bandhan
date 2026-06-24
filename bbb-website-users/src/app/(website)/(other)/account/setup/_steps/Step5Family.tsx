@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
 import StepActions from "./StepActions";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export const step5Schema = updateProfileSchema.pick({
   fathersOccupation: true,
@@ -64,38 +65,38 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Family Details</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">My Family Background and Values</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Family Details</h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">My Family Background and Values</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
           {/* Basic Family */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">Basic My Family</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="fathersOccupation" render={({ field }) => (
-                <FormItem><FormLabel>Father&apos;s Occupation (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Business" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Father&apos;s Occupation<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Business" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="mothersOccupation" render={({ field }) => (
-                <FormItem><FormLabel>Mother&apos;s Occupation (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Homemaker" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Mother&apos;s Occupation<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Homemaker" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="noOfBrothers" render={({ field }) => (
-                <FormItem><FormLabel>No. of Brothers (Recommended)</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>No. of Brothers<FormBadge type="recommended" /></FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="brothersMarriedCount" render={({ field }) => (
-                <FormItem><FormLabel>Brothers Married Count (Optional)</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Brothers Married Count<FormBadge type="optional" /></FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="noOfSisters" render={({ field }) => (
-                <FormItem><FormLabel>No. of Sisters (Recommended)</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>No. of Sisters<FormBadge type="recommended" /></FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="sistersMarriedCount" render={({ field }) => (
-                <FormItem><FormLabel>Sisters Married Count (Optional)</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Sisters Married Count<FormBadge type="optional" /></FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               
               <FormField control={form.control} name="myFamilyStatus" render={({ field }) => (
-                <FormItem><FormLabel>Family Status <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Family Status<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -108,7 +109,7 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
                 </FormItem>
               )} />
               <FormField control={form.control} name="myFamilyType" render={({ field }) => (
-                <FormItem><FormLabel>Family Type <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Family Type<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -121,7 +122,7 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
                 </FormItem>
               )} />
               <FormField control={form.control} name="myFamilyValues" render={({ field }) => (
-                <FormItem className="md:col-span-2"><FormLabel>Family Values (Recommended)</FormLabel>
+                <FormItem className="md:col-span-2"><FormLabel>Family Values<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -138,17 +139,17 @@ export default function Step5Family({ onComplete, onBack }: { onComplete: () => 
           </div>
 
           {/* About My Family */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">About My Family</h3>
             <FormField control={form.control} name="familyDescription" render={({ field }) => (
-              <FormItem><FormLabel>Family Description (Optional)</FormLabel><FormControl><Textarea className="h-24 resize-none" placeholder="Write about your family..." {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Family Description<FormBadge type="optional" /></FormLabel><FormControl><Textarea className="h-24 resize-none" placeholder="Write about your family..." {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="familyBackground" render={({ field }) => (
-                <FormItem><FormLabel>Family Background (Optional)</FormLabel><FormControl><Input placeholder="e.g. Business background" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Family Background<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="e.g. Business background" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="culturalValues" render={({ field }) => (
-                <FormItem><FormLabel>Cultural Values (Optional)</FormLabel><FormControl><Input placeholder="e.g. Traditional, Liberal" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Cultural Values<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="e.g. Traditional, Liberal" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>

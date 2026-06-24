@@ -55,25 +55,13 @@ export const updateUserProfileSchema = object({
   eatingHabits: string().optional(),
   smokingHabits: string().optional(),
   drinkingHabits: string().optional(),
-  addressLine1: string({
-    required_error: "Address line 1 is required",
-  }).min(3, { message: "Address line 1 must be at least 3 characters" }),
+  addressLine1: string().optional().default(""),
   addressLine2: string().optional(),
-  postOffice: string({
-    required_error: "Post office is required",
-  }).min(3, { message: "Post office must be at least 3 characters" }),
-  policeStation: string({
-    required_error: "Police station is required",
-  }).min(3, { message: "Police station must be at least 3 characters" }),
-  dist: string({
-    required_error: "District is required",
-  }).min(3, { message: "District must be at least 3 characters" }),
-  state: string({
-    required_error: "State is required",
-  }).min(2, { message: "State must be at least 2 characters" }),
-  pinCode: string({
-    required_error: "Pincode is required",
-  }).min(6, { message: "Pin code must be 6 digits" }).max(6, { message: "Pin code must be 6 digits" }),
+  postOffice: string().optional().default(""),
+  policeStation: string().optional().default(""),
+  dist: string().optional().default(""),
+  state: string().optional().default(""),
+  pinCode: string().optional().default(""),
   aboutMyself: string().optional(),
   profession: string({
     required_error: "Profession is required",

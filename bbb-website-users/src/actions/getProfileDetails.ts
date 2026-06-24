@@ -124,6 +124,7 @@ export interface ProfileProps {
   isGhotokOwned: boolean;
   ghotokPublicId: string;
   status: string;
+  verificationStatus: string;
 }
 
 export interface IProfileImage {

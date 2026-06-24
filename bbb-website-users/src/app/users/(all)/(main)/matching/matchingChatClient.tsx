@@ -4,6 +4,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import MobileHeader from "@/components/dashboard/MobileHeader";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -20,6 +22,8 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  Bell,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -275,7 +279,7 @@ export const MatchingChatClient: React.FC<ChatContainerProps> = ({
   }
 
   return (
-    <div className="flex flex-1 min-h-0 overflow-hidden w-full">
+    <div className="flex flex-1 min-h-0 overflow-hidden w-full fixed top-0 left-0 right-0 h-[100dvh] z-40 md:relative md:h-auto md:z-auto bg-white dark:bg-zinc-950">
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? "w-72" : "w-[80px]"} border-r border-zinc-100 dark:border-zinc-800 flex flex-col bg-white dark:bg-zinc-950 hidden md:flex shrink-0 transition-all duration-300`}>
         {isSidebarOpen ? (
@@ -369,15 +373,15 @@ export const MatchingChatClient: React.FC<ChatContainerProps> = ({
       {/* Right Chat Area */}
       <div className="flex flex-col flex-1 min-w-0 bg-zinc-50/30 dark:bg-zinc-900/50">
         {/* Top bar */}
-        <div className="flex items-center gap-4 p-4 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+        <div className="flex items-center gap-2.5 md:gap-4 py-2.5 px-3 md:p-4 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0">
         <Button
           onClick={() => router.back()}
           variant={"ghost"}
-          className="rounded-full w-8 h-8"
+          className="rounded-full w-8 h-8 p-0 shrink-0"
         >
-          <ArrowLeft className="size-6" />
+          <ArrowLeft className="size-5 md:size-6" />
         </Button>
-        <Avatar className="h-12 w-12 bg-card border ring-1 ring-rose-400 ring-offset-2 ring-offset-card">
+        <Avatar className="h-9 w-9 md:h-12 md:w-12 bg-card border ring-1 ring-rose-400 ring-offset-2 ring-offset-card shrink-0">
           <AvatarImage
             src={"/groom.webp"}
             alt="Avatar"
@@ -387,13 +391,16 @@ export const MatchingChatClient: React.FC<ChatContainerProps> = ({
           <AvatarFallback>SA</AvatarFallback>
         </Avatar>
 
-        <div className="flex flex-col">
-          <h1 className="text-lg font-semibold">{activeGroup ? activeGroup.profile?.userName : "Match Notice"}</h1>
+        <div className="flex flex-col min-w-0 flex-1">
+          <h1 className="text-base md:text-lg font-semibold truncate">{activeGroup ? activeGroup.profile?.userName : "Match Notice"}</h1>
           {/*<OnlineStatus
             userId={participants?.id || ""}
             typing={isReceiverTyping}
           />*/}
         </div>
+
+        {/* Quick mobile navigation since the main nav is hidden */}
+        <MobileHeader hideLogo={true} className="flex md:hidden items-center ml-auto shrink-0 z-40 bg-transparent border-none p-0" />
       </div>
 
       {/* Messages */}

@@ -198,6 +198,9 @@ model User {
   isProfilePublic    Boolean @default(false)
   allowSocialPublish Boolean @default(false)
 
+  verificationStatus ModerationStatus @default(PENDING)
+  verificationSelfieUrl String?
+
   payments               Payment[]
   conversations          Conversation[]  @relation("ConversationParticipants")
   sentMessages           Message[]       @relation("SentMessages")
@@ -1002,6 +1005,7 @@ model BroadcastMessage {
   id           String    @id @default(cuid())
   content      String
   targetGender String?
+  imageUrl     String?
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   expiresAt    DateTime?

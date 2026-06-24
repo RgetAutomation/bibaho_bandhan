@@ -42,15 +42,7 @@ export default function AllPaymentList() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-1px)]">
-      <DashboardHeader
-        title={
-          <div className="w-full flex items-center justify-center gap-2 bg-primary/20 p-4">
-            <h1 className="font-semibold text-lg md:text-xl">
-              Payment History
-            </h1>
-          </div>
-        }
-      />
+
 
       <div className="flex flex-col flex-1 gap-2 p-4  overflow-y-auto">
         {data?.length === 0 ? (

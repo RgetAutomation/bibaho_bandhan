@@ -25,24 +25,11 @@ export const registerUserSchema = object({
       message: "Mobile number should be at most 15 characters",
     }),
   email: string().optional(),
-  password: string()
-    .min(8, {
-      message: "Password at least 8 characters",
-    })
-    .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter",
-    })
-    .regex(/[0-9]/, {
-      message: "Password must contain at least one number",
-    })
-    .regex(/[@$!%*?&]/, {
-      message: "Password must contain at least one special character",
-    }),
-  confirmPassword: string().min(8, {
-    message: "Confirm password at least 8 characters",
+  password: string().min(6, {
+    message: "Password at least 6 characters",
+  }),
+  confirmPassword: string().min(6, {
+    message: "Confirm password at least 6 characters",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
@@ -59,24 +46,11 @@ export const registerUserHalfSchema = object({
       message: "Mobile number should be at most 15 characters",
     }),
   email: string().optional(),
-  password: string()
-    .min(8, {
-      message: "Password at least 8 characters",
-    })
-    .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter",
-    })
-    .regex(/[0-9]/, {
-      message: "Password must contain at least one number",
-    })
-    .regex(/[@$!%*?&]/, {
-      message: "Password must contain at least one special character",
-    }),
-  confirmPassword: string().min(8, {
-    message: "Confirm password at least 8 characters",
+  password: string().min(6, {
+    message: "Password at least 6 characters",
+  }),
+  confirmPassword: string().min(6, {
+    message: "Confirm password at least 6 characters",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",

@@ -102,7 +102,7 @@ export default function LoginClientPage() {
     <div className="flex flex-col p-5 sm:p-6 lg:p-8 w-full md:min-w-[420px] lg:min-w-[460px] max-w-[480px] mx-auto">
       {/* Top Header Section */}
       <div className="flex flex-col items-center justify-center text-center mb-6 mt-1">
-        <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950 flex items-center justify-center mb-3 border border-rose-100 dark:border-rose-900">
+        <div className="hidden sm:flex w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950 items-center justify-center mb-3 border border-rose-100 dark:border-rose-900">
           <UserRound className="w-6 h-6 text-[#E51E44] dark:text-rose-500" strokeWidth={1.5} />
         </div>
         <h1 className="text-xl sm:text-2xl font-bold text-[#E51E44]">Welcome Back!</h1>

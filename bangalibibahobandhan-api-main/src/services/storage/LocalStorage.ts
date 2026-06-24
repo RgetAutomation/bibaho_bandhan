@@ -1,4 +1,5 @@
 import * as path from "path";
+import sharp from "sharp";
 import * as fs from "fs";
 import { IStorageService } from "./IStorageService.js";
 import { randomUUID } from "crypto";
@@ -16,7 +17,7 @@ export class LocalStorage implements IStorageService {
   }
 
   private buildKey(file: Express.Multer.File, folder?: string): string {
-    const ext = path.extname(file.originalname);
+    const ext = file.mimetype.startsWith("image/") ? ".webp" : path.extname(file.originalname);
     const filename = `${randomUUID()}${ext}`;
     return folder ? `${folder}/${filename}` : filename;
   }
@@ -31,7 +32,20 @@ export class LocalStorage implements IStorageService {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    fs.writeFileSync(fullPath, file.buffer);
+    if (file.mimetype.startsWith("image/")) {
+      try {
+        await sharp(file.buffer)
+          .resize(1080, null, { withoutEnlargement: true }) // Resize width to 1080px max
+          .webp({ quality: 80 }) // Convert to WebP with 80% quality
+          .toFile(fullPath);
+      } catch (err) {
+        console.error("Sharp compression failed, saving original buffer.", err);
+        fs.writeFileSync(fullPath, file.buffer);
+      }
+    } else {
+      fs.writeFileSync(fullPath, file.buffer);
+    }
+    
     // Return full URL so Next.js <Image> can fetch it from the backend
     return `${BACKEND_URL}/${key}`;
   }

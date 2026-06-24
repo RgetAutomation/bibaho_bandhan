@@ -102,6 +102,7 @@ export default function UsersPage() {
   const [mounted, setMounted] = useState(false);
   const [interestTab, setInterestTab] = useState<"received" | "sent">("received");
   const [messageFilter, setMessageFilter] = useState<"all" | "unread" | "online" | "verified">("all");
+  const [showAllStats, setShowAllStats] = useState(false);
 
   const { userConversationIds } = useNotificationStore();
 
@@ -164,6 +165,11 @@ export default function UsersPage() {
   const isPhotoVerified = !!(user as any).avatar || !!user.image;
   const isIdVerified = user.isProfileComplete;
 
+  // Approximate profile completion percentage
+  const completionPercentage = user.isProfileComplete 
+    ? 100 
+    : Math.min(90, 40 + (isMobileVerified ? 10 : 0) + (isEmailVerified ? 10 : 0) + (isPhotoVerified ? 15 : 0));
+
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
@@ -190,7 +196,7 @@ export default function UsersPage() {
       <div className="flex-1 space-y-4 md:space-y-5 min-w-0 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-24 md:pb-10">
 
         {/* Mobile Header Bar */}
-        <div className="flex xl:hidden items-center justify-between bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 p-4 rounded-2xl shadow-xs">
+        <div className="hidden items-center justify-between bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 p-4 rounded-2xl shadow-xs">
           <div className="flex items-center">
             <Image
               src="/logo/logo_light.svg"
@@ -291,8 +297,8 @@ export default function UsersPage() {
 
 
 
-          {/* Right: Checklist */}
-          <div className="bg-white/80 dark:bg-zinc-800/80 p-3 rounded-xl shadow-sm flex flex-col justify-center min-w-[220px] border border-white dark:border-zinc-700/50">
+          {/* Right: Checklist (Desktop) */}
+          <div className="hidden md:flex bg-white/80 dark:bg-zinc-800/80 p-3 rounded-xl shadow-sm flex-col justify-center min-w-[220px] border border-white dark:border-zinc-700/50">
             <p className="text-[10px] text-gray-600 dark:text-zinc-400 font-medium mb-2">Complete these to get better matches</p>
             <div className="space-y-2">
               <Link href="/users/account" className="flex items-center justify-between text-[11px] font-semibold text-gray-800 dark:text-zinc-200 hover:text-[#C81A3C] transition-colors group">
@@ -320,17 +326,41 @@ export default function UsersPage() {
           </div>
         </div>
 
+        {/* Mobile Profile Completeness */}
+        <div className="md:hidden text-card-foreground flex flex-col p-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-gray-900 dark:text-white">Profile Completeness</span>
+              <span className="text-[10px] text-gray-500">Complete your profile to get better matches</span>
+            </div>
+            <CircularProgress percentage={completionPercentage} size={45} strokeWidth={4} />
+          </div>
+          
+          {completionPercentage < 100 && (
+            <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
+              <Link href="/users/account" className="flex items-center justify-between text-[11px] font-semibold text-gray-800 dark:text-zinc-200 hover:text-[#C81A3C]">
+                <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-[#C81A3C]" /> Add Family Details</span>
+                <ChevronRight className="w-3 h-3 text-[#C81A3C]" />
+              </Link>
+              <Link href="/users/account" className="flex items-center justify-between text-[11px] font-semibold text-gray-800 dark:text-zinc-200 hover:text-[#C81A3C]">
+                <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-[#C81A3C]" /> Add Partner Preference</span>
+                <ChevronRight className="w-3 h-3 text-[#C81A3C]" />
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* Dynamic Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
           {[
             {
-              label: "Profile Views",
-              val: 456,
-              icon: Eye,
-              col: "text-purple-600 bg-purple-50 dark:bg-purple-950/30",
-              href: "#",
-              trend: "↑ 18 this week",
-              trendCol: "text-green-500"
+              label: "Shortlisted Profiles",
+              val: 0, 
+              icon: Star,
+              col: "text-orange-500 bg-orange-50 dark:bg-orange-950/30",
+              href: "/users/home",
+              trend: "View Shortlist",
+              trendCol: "text-orange-500 hover:underline"
             },
             {
               label: "Received Interests",
@@ -360,21 +390,23 @@ export default function UsersPage() {
               trendCol: "text-blue-500 hover:underline"
             },
             {
-              label: "Shortlisted Profiles",
-              val: 0, 
-              icon: Star,
-              col: "text-orange-500 bg-orange-50 dark:bg-orange-950/30",
-              href: "/users/home",
-              trend: "View Shortlist",
-              trendCol: "text-orange-500 hover:underline"
+              label: "Profile Views",
+              val: 456,
+              icon: Eye,
+              col: "text-purple-600 bg-purple-50 dark:bg-purple-950/30",
+              href: "#",
+              trend: "↑ 18 this week",
+              trendCol: "text-green-500"
             }
           ].map((stat, i) => {
             const SIcon = stat.icon;
+            const isHiddenMobile = !showAllStats && stat.label === "Profile Views";
+            
             return (
               <Link
                 key={i}
                 href={stat.href}
-                className="p-2.5 md:p-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-xl shadow-xs flex items-center gap-2.5 md:gap-3 hover:border-[#9B1C31]/30 transition-all cursor-pointer hover:shadow-sm"
+                className={`p-2.5 md:p-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-xl shadow-xs flex items-center gap-2.5 md:gap-3 hover:border-[#9B1C31]/30 transition-all cursor-pointer hover:shadow-sm ${isHiddenMobile ? 'hidden md:flex' : 'flex'}`}
               >
                 <div className={`p-2 md:p-2.5 rounded-full shrink-0 ${stat.col}`}>
                   <SIcon className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
@@ -394,6 +426,16 @@ export default function UsersPage() {
             );
           })}
         </div>
+        
+        {/* Mobile View All / Show Less Toggle */}
+        <div className="flex justify-center md:hidden mt-2">
+          <button
+            onClick={() => setShowAllStats(!showAllStats)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 font-bold text-xs hover:bg-rose-100 transition-colors"
+          >
+            {showAllStats ? "Show Less" : "View All Stats"}
+          </button>
+        </div>
 
         {/* Recommended Matches Section */}
         <div className="space-y-3">
@@ -401,7 +443,7 @@ export default function UsersPage() {
             <div>
               <h2 className="font-extrabold text-base text-gray-900 dark:text-white">Recommended Matches for You</h2>
             </div>
-            <Link href="/users/home" className="text-xs font-bold text-[#9B1C31] hover:underline flex items-center gap-1">
+            <Link href="/users/matching" className="text-xs font-bold text-[#9B1C31] hover:underline flex items-center gap-1">
               View All <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -417,8 +459,11 @@ export default function UsersPage() {
               No recommended matches found at the moment.
             </div>
           ) : (
-            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 sm:overflow-visible">
-              {recommendedMatches.slice(0, 4).map((match) => {
+            <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-4 pb-2 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 sm:overflow-visible">
+              {recommendedMatches
+                .filter(match => !sentInterests?.some(i => i.receiver?.id === match.id) && !receivedInterests?.some(i => i.sender?.id === match.id))
+                .slice(0, 4)
+                .map((match) => {
                 const age = match.profile.age || 27;
                 const education = match.profile.education || "B.Sc";
                 const profession = match.profile.profession || "Profession Not Set";
@@ -427,7 +472,11 @@ export default function UsersPage() {
                   : "Location Not Set";
 
                 return (
-                  <Card key={match.id} className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow shrink-0 w-[260px] sm:w-auto snap-start p-0 gap-0">
+                  <Card 
+                    key={match.id} 
+                    onClick={() => router.push(`/users/profile/${match.id}`)}
+                    className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow shrink-0 w-[260px] sm:w-auto snap-start p-0 gap-0 cursor-pointer"
+                  >
                     {/* Image */}
                     <div className="relative aspect-square w-full bg-gray-100 dark:bg-zinc-800 shrink-0">
                       <Image
@@ -443,24 +492,10 @@ export default function UsersPage() {
                         </span>
                       )}
 
-                      {/* Heart Button Overlay */}
-                      <button
-                        onClick={() => handleSendInterest(match.id!)}
-                        className="absolute top-2 right-2 p-1 transition-transform hover:scale-110 drop-shadow-md outline-none focus:outline-none"
-                      >
-                        <Heart 
-                          strokeWidth={1.5}
-                          className={`w-6 h-6 ${
-                            match.isInterestSent
-                              ? "fill-[#9B1C31] text-white"
-                              : "fill-black/40 text-white hover:fill-black/60"
-                          }`} 
-                        />
-                      </button>
 
                       {/* Matchmaker Banner */}
                       {match.isGhotokOwned && (
-                        <div className="absolute bottom-1.5 left-0 right-0 bg-gradient-to-r from-emerald-600 via-emerald-600/80 to-transparent backdrop-blur-[2px] text-white text-[9px] md:text-[10px] font-bold py-1 px-2 leading-none flex items-center">
+                        <div className="absolute bottom-1.5 left-0 right-0 bg-gradient-to-r from-emerald-600 via-emerald-600/80 to-transparent backdrop-blur-[2px] text-white text-[10px] font-bold py-1.5 px-2 leading-none flex items-center">
                           Managed by a Matchmaker
                         </div>
                       )}
@@ -491,15 +526,22 @@ export default function UsersPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => router.push(`/users/chat`)}
-                          className="rounded-xl text-xs py-1.5 text-[#E51E44] hover:text-[#C81A3C] border-[#E51E44]/30 hover:bg-rose-50 h-auto font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSendInterest(match.id!);
+                          }}
+                          disabled={match.isInterestSent}
+                          className="rounded-xl text-xs py-1.5 text-[#E51E44] hover:text-[#C81A3C] border-[#E51E44]/30 hover:bg-rose-50 h-auto font-bold flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
                         >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          Chat
+                          <HeartHandshake className="w-3.5 h-3.5" />
+                          {match.isInterestSent ? "Sent" : "Interest"}
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => router.push(`/users/profile/${match.id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/users/profile/${match.id}`);
+                          }}
                           className="rounded-xl text-xs py-1.5 bg-[#E51E44] hover:bg-[#C81A3C] text-white h-auto border-none shadow-sm font-bold"
                         >
                           View

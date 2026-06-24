@@ -29,6 +29,7 @@ import {
   ShieldPlus,
   Search,
   ArrowRight,
+  ArrowDown,
   ChevronDown,
   MapPin,
   Briefcase
@@ -209,8 +210,6 @@ function LandingPageComponent() {
             background-position: top center !important;
           }
           .romantic-text {
-            font-size: 1.6rem !important;
-            line-height: 1.2 !important;
             font-weight: 400 !important;
           }
         }
@@ -220,78 +219,78 @@ function LandingPageComponent() {
       <div className="relative z-5 min-h-screen w-full flex flex-col md:flex-row items-center justify-between px-4 md:px-10 lg:px-20 pb-10 pt-10 mt-10 md:mt-0">
         
         {/* Left Side Text */}
-        <div className="w-full md:w-[45%] lg:w-[48%] flex flex-col justify-center items-center md:items-end self-start md:self-center mb-6 md:mb-0 mt-[60vw] sm:mt-[70vw] md:mt-0 translate-y-0 md:-translate-y-8 md:translate-x-10 lg:translate-x-20 xl:translate-x-32 z-10 relative">
+        <div className="absolute -top-6 sm:-top-4 right-2 sm:right-4 left-auto md:relative md:top-auto md:right-auto md:left-auto md:px-0 w-auto md:w-[45%] lg:w-[48%] flex flex-col justify-center items-end self-start md:self-center mb-6 md:mb-0 translate-y-0 md:-translate-y-8 md:translate-x-10 lg:translate-x-20 xl:translate-x-32 z-10">
           
-          <h1 className="hidden md:block text-3xl sm:text-4xl md:text-[36px] lg:text-[44px] font-serif font-bold leading-tight text-[#0f172a] mb-2 md:text-right">
+          <h1 className="text-[18px] sm:text-[22px] md:text-[36px] lg:text-[44px] font-serif font-bold leading-tight text-[#0f172a] mb-0 md:mb-2 text-right md:text-right drop-shadow-sm md:drop-shadow-none">
             Find Your <span className="text-[#E51E44]">Perfect</span> <br />
             Life Partner
           </h1>
-          <p className="hidden md:block romantic-text text-3xl md:text-[32px] text-rose-500 font-medium mb-8 md:text-right">
+          <p className="romantic-text text-[14px] sm:text-[18px] md:text-[32px] text-rose-500 font-medium mb-2 md:mb-8 text-right md:text-right drop-shadow-sm md:drop-shadow-none">
             Start Your Journey of Forever
           </p>
 
           {/* Vertical Feature Cards */}
-          <div className="hidden md:flex flex-col gap-2.5 w-full max-w-[210px] lg:max-w-[230px] mb-6">
-            <div className="flex w-full items-center justify-end bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:shadow-none dark:border dark:border-zinc-800 p-2.5">
-              <div className="flex flex-col text-right">
-                <span className="text-[12px] lg:text-[13px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">100% Verified Profiles</span>
-                <span className="text-[10px] lg:text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Trusted & genuine profiles</span>
+          <div className="flex flex-col gap-1 md:gap-2.5 w-full max-w-[140px] sm:max-w-[170px] md:max-w-[200px] lg:max-w-[230px] mb-2 md:mb-6">
+            <div className="flex w-full items-center justify-end md:justify-end bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-lg md:rounded-2xl shadow-sm md:shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:border dark:border-zinc-800 p-1 md:p-2.5">
+              <div className="flex flex-col text-right md:text-right ml-0 md:ml-0">
+                <span className="text-[9px] sm:text-[10px] md:text-[11px] lg:text-[13px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">100% Verified Profiles</span>
+                <span className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[11px] text-zinc-500 dark:text-zinc-400 mt-[1px] md:mt-0.5">Trusted & genuine profiles</span>
               </div>
-              <div className="bg-rose-600 text-white p-2 rounded-full flex-shrink-0 ml-2.5">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-            </div>
-
-            <div className="flex w-full items-center justify-end bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:shadow-none dark:border dark:border-zinc-800 p-2.5">
-              <div className="flex flex-col text-right">
-                <span className="text-[12px] lg:text-[13px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">Privacy Protected</span>
-                <span className="text-[10px] lg:text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Your privacy is our priority</span>
-              </div>
-              <div className="bg-rose-600 text-white p-2 rounded-full flex-shrink-0 ml-2.5">
-                <LockKeyholeIcon className="w-4 h-4" />
+              <div className="bg-rose-600 text-white p-1 md:p-2 rounded-full flex-shrink-0 order-last md:order-last ml-1.5 md:ml-2.5">
+                <ShieldCheck className="w-2.5 h-2.5 md:w-4 md:h-4" />
               </div>
             </div>
 
-            <div className="flex w-full items-center justify-end bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:shadow-none dark:border dark:border-zinc-800 p-2.5">
-              <div className="flex flex-col text-right">
-                <span className="text-[12px] lg:text-[13px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">Best Matches</span>
-                <span className="text-[10px] lg:text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">AI Powered match suggestions</span>
+            <div className="flex w-full items-center justify-end md:justify-end bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-lg md:rounded-2xl shadow-sm md:shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:border dark:border-zinc-800 p-1 md:p-2.5">
+              <div className="flex flex-col text-right md:text-right ml-0 md:ml-0">
+                <span className="text-[9px] sm:text-[10px] md:text-[11px] lg:text-[13px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">Privacy Protected</span>
+                <span className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[11px] text-zinc-500 dark:text-zinc-400 mt-[1px] md:mt-0.5">Your privacy is our priority</span>
               </div>
-              <div className="bg-rose-600 text-white p-2 rounded-full flex-shrink-0 ml-2.5">
-                <Users className="w-4 h-4" />
+              <div className="bg-rose-600 text-white p-1 md:p-2 rounded-full flex-shrink-0 order-last md:order-last ml-1.5 md:ml-2.5">
+                <LockKeyholeIcon className="w-2.5 h-2.5 md:w-4 md:h-4" />
+              </div>
+            </div>
+
+            <div className="flex w-full items-center justify-end md:justify-end bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-lg md:rounded-2xl shadow-sm md:shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:border dark:border-zinc-800 p-1 md:p-2.5">
+              <div className="flex flex-col text-right md:text-right ml-0 md:ml-0">
+                <span className="text-[9px] sm:text-[10px] md:text-[11px] lg:text-[13px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">Best Matches</span>
+                <span className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[11px] text-zinc-500 dark:text-zinc-400 mt-[1px] md:mt-0.5">AI Powered match suggestions</span>
+              </div>
+              <div className="bg-rose-600 text-white p-1 md:p-2 rounded-full flex-shrink-0 order-last md:order-last ml-1.5 md:ml-2.5">
+                <Users className="w-2.5 h-2.5 md:w-4 md:h-4" />
               </div>
             </div>
           </div>
 
           {/* Stats Box */}
-          <div className="hidden md:flex justify-between items-center w-full max-w-[340px] lg:max-w-[380px] bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-none dark:border dark:border-zinc-800 p-3 lg:p-4">
-            <div className="flex flex-col items-center text-center gap-0.5">
-              <Users className="w-4 h-4 lg:w-5 lg:h-5 text-rose-500 mb-0.5" />
-              <span className="text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">2M+</span>
-              <span className="text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Happy<br/>Members</span>
+          <div className="flex justify-between items-center w-full max-w-[220px] sm:max-w-[280px] lg:max-w-[380px] bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-lg lg:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-none dark:border dark:border-zinc-800 px-2 py-0.5 sm:p-1.5 lg:p-4 mb-4 md:mb-0">
+            <div className="flex flex-col items-center text-center gap-0 md:gap-0.5">
+              <Users className="w-2 h-2 md:w-4 md:h-4 lg:w-5 lg:h-5 text-rose-500 mb-0 md:mb-0.5" />
+              <span className="text-[7px] md:text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">2M+</span>
+              <span className="text-[4px] md:text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Happy<br/>Members</span>
             </div>
-            <div className="w-[1px] h-8 lg:h-10 bg-zinc-200 dark:bg-zinc-800"></div>
-            <div className="flex flex-col items-center text-center gap-0.5">
-              <Heart className="w-4 h-4 lg:w-5 lg:h-5 text-rose-500 mb-0.5" />
-              <span className="text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">500K+</span>
-              <span className="text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Successful<br/>Matches</span>
+            <div className="w-[1px] h-3 md:h-8 lg:h-10 bg-zinc-200 dark:bg-zinc-800"></div>
+            <div className="flex flex-col items-center text-center gap-0 md:gap-0.5">
+              <Heart className="w-2 h-2 md:w-4 md:h-4 lg:w-5 lg:h-5 text-rose-500 mb-0 md:mb-0.5" />
+              <span className="text-[7px] md:text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">500K+</span>
+              <span className="text-[4px] md:text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Successful<br/>Matches</span>
             </div>
-            <div className="w-[1px] h-8 lg:h-10 bg-zinc-200 dark:bg-zinc-800"></div>
-            <div className="flex flex-col items-center text-center gap-0.5">
-              <ShieldPlus className="w-4 h-4 lg:w-5 lg:h-5 text-rose-500 mb-0.5" />
-              <span className="text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">100%</span>
-              <span className="text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Secure<br/>& Safe</span>
+            <div className="w-[1px] h-3 md:h-8 lg:h-10 bg-zinc-200 dark:bg-zinc-800"></div>
+            <div className="flex flex-col items-center text-center gap-0 md:gap-0.5">
+              <ShieldPlus className="w-2 h-2 md:w-4 md:h-4 lg:w-5 lg:h-5 text-rose-500 mb-0 md:mb-0.5" />
+              <span className="text-[7px] md:text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">100%</span>
+              <span className="text-[4px] md:text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Secure<br/>& Safe</span>
             </div>
-            <div className="w-[1px] h-8 lg:h-10 bg-zinc-200 dark:bg-zinc-800"></div>
-            <div className="flex flex-col items-center text-center gap-0.5">
-              <User className="w-4 h-4 lg:w-5 lg:h-5 text-rose-500 mb-0.5" />
-              <span className="text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">24/7</span>
-              <span className="text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Customer<br/>Support</span>
+            <div className="w-[1px] h-3 md:h-8 lg:h-10 bg-zinc-200 dark:bg-zinc-800"></div>
+            <div className="flex flex-col items-center text-center gap-0 md:gap-0.5">
+              <User className="w-2 h-2 md:w-4 md:h-4 lg:w-5 lg:h-5 text-rose-500 mb-0 md:mb-0.5" />
+              <span className="text-[7px] md:text-[13px] lg:text-[14px] font-bold text-zinc-900 dark:text-zinc-100 leading-tight">24/7</span>
+              <span className="text-[4px] md:text-[8px] font-semibold text-zinc-500 uppercase tracking-wider leading-tight">Customer<br/>Support</span>
             </div>
           </div>
           
         </div>
-        <div className="sm:w-2/3 lg:w-[450px] xl:w-[500px] bg-white dark:bg-zinc-900 rounded-t-[32px] md:rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-none dark:border dark:border-zinc-800 p-6 pt-8 md:pt-8 md:p-8 flex flex-col items-center mt-4 md:mt-0 relative z-10 mx-[-16px] md:mx-0 w-[calc(100%+32px)] md:w-1/2 md:translate-x-4 lg:translate-x-10">
+        <div className="sm:w-2/3 lg:w-[450px] xl:w-[500px] bg-white dark:bg-zinc-900 rounded-t-[32px] md:rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-none dark:border dark:border-zinc-800 p-6 pt-8 md:pt-8 md:p-8 flex flex-col items-center mt-[45vw] sm:mt-[50vw] md:mt-0 relative z-10 mx-[-16px] md:mx-0 w-[calc(100%+32px)] md:w-1/2 md:translate-x-4 lg:translate-x-10">
           <h1 className="text-2xl md:text-2xl text-zinc-800 dark:text-zinc-100 font-bold md:font-semibold text-center mb-2 md:mb-6">
             <span className="md:hidden font-serif">Join Bangali Bibaho Bandhan – <span className="text-rose-500 italic">It's Free!</span></span>
             <span className="hidden md:inline">Create your profile for <span className="font-extrabold text-[#E51E44]">FREE</span></span>
@@ -400,10 +399,10 @@ function SearchByPreferenceComponent() {
       <div className="w-full max-w-6xl bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] dark:border dark:border-zinc-800 p-4 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         
         {/* Filters */}
-        <div className="flex flex-wrap md:flex-nowrap items-center w-full gap-2 md:gap-0 justify-between">
+        <div className="flex flex-col md:flex-row md:flex-nowrap items-center w-full gap-4 md:gap-0 justify-between">
           
           {/* Age */}
-          <div className="flex items-center gap-3 px-2 md:px-4 md:border-r border-zinc-200 dark:border-zinc-800 w-[48%] md:w-auto">
+          <div className="flex items-center gap-3 px-2 md:px-4 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 w-full md:w-auto pb-3 md:pb-0">
             <User className="w-5 h-5 text-rose-500 opacity-80 shrink-0" />
             <div className="flex flex-col w-full">
               <span className="text-[10px] text-zinc-500 font-semibold uppercase">Age</span>
@@ -425,7 +424,7 @@ function SearchByPreferenceComponent() {
           </div>
 
           {/* Religion */}
-          <div className="flex items-center gap-3 px-2 md:px-4 md:border-r border-zinc-200 dark:border-zinc-800 w-[48%] md:w-auto">
+          <div className="flex items-center gap-3 px-2 md:px-4 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 w-full md:w-auto pb-3 md:pb-0">
             <Heart className="w-5 h-5 text-rose-500 opacity-80 shrink-0" />
             <div className="flex flex-col w-full">
               <span className="text-[10px] text-zinc-500 font-semibold uppercase">Religion</span>
@@ -448,7 +447,7 @@ function SearchByPreferenceComponent() {
           </div>
 
           {/* Community */}
-          <div className="flex items-center gap-3 px-2 md:px-4 md:border-r border-zinc-200 dark:border-zinc-800 w-[48%] md:w-auto">
+          <div className="flex items-center gap-3 px-2 md:px-4 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 w-full md:w-auto pb-3 md:pb-0">
             <Users className="w-5 h-5 text-rose-500 opacity-80 shrink-0" />
             <div className="flex flex-col w-full">
               <span className="text-[10px] text-zinc-500 font-semibold uppercase">Community</span>
@@ -471,7 +470,7 @@ function SearchByPreferenceComponent() {
           </div>
 
           {/* Profession */}
-          <div className="flex items-center gap-3 px-2 md:px-4 md:border-r border-zinc-200 dark:border-zinc-800 w-[48%] md:w-auto">
+          <div className="flex items-center gap-3 px-2 md:px-4 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 w-full md:w-auto pb-3 md:pb-0">
             <Briefcase className="w-5 h-5 text-rose-500 opacity-80 shrink-0" />
             <div className="flex flex-col w-full">
               <span className="text-[10px] text-zinc-500 font-semibold uppercase">Profession</span>
@@ -495,7 +494,7 @@ function SearchByPreferenceComponent() {
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-3 px-2 md:px-4 w-[48%] md:w-auto">
+          <div className="flex items-center gap-3 px-2 md:px-4 border-b md:border-b-0 border-zinc-200 dark:border-zinc-800 w-full md:w-auto pb-3 md:pb-0">
             <MapPin className="w-5 h-5 text-rose-500 opacity-80 shrink-0" />
             <div className="flex flex-col w-full">
               <span className="text-[10px] text-zinc-500 font-semibold uppercase">Location</span>
@@ -978,8 +977,11 @@ function HowItWorksComponent() {
 
       <div className="flex flex-col md:flex-row items-center justify-center gap-6 lg:gap-8 max-w-6xl mx-auto w-full">
         {/* Step 1 */}
-        <div className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex-1 w-full relative h-full min-h-[140px] hover:shadow-md transition-shadow">
-          <div className="flex-shrink-0 relative mr-5">
+        <div 
+          onClick={() => document.getElementById("home")?.scrollIntoView({ behavior: "smooth" })}
+          className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-6 shadow-sm flex-1 w-full relative h-full min-h-[140px] hover:shadow-md transition-all cursor-pointer hover:border-[#E51E44]/50 group"
+        >
+          <div className="flex-shrink-0 relative mr-5 group-hover:scale-105 transition-transform duration-300">
             <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
               <UserPlus className="w-8 h-8 text-[#E51E44]" strokeWidth={1.5} />
             </div>
@@ -988,7 +990,7 @@ function HowItWorksComponent() {
             </div>
           </div>
           <div className="flex flex-col text-left">
-            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 mb-1 text-sm sm:text-base">Create Profile</h3>
+            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 mb-1 text-sm sm:text-base group-hover:text-[#E51E44] transition-colors duration-300">Create Profile</h3>
             <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">Sign up for free and create your profile in just 1 minute.</p>
           </div>
         </div>
@@ -996,6 +998,9 @@ function HowItWorksComponent() {
         {/* Arrow 1 */}
         <div className="hidden md:flex flex-shrink-0 text-amber-500">
           <ArrowRight className="w-6 h-6" strokeWidth={2} />
+        </div>
+        <div className="md:hidden flex flex-shrink-0 text-amber-500 my-2">
+          <ArrowDown className="w-6 h-6" strokeWidth={2} />
         </div>
 
         {/* Step 2 */}
@@ -1017,6 +1022,9 @@ function HowItWorksComponent() {
         {/* Arrow 2 */}
         <div className="hidden md:flex flex-shrink-0 text-amber-500">
           <ArrowRight className="w-6 h-6" strokeWidth={2} />
+        </div>
+        <div className="md:hidden flex flex-shrink-0 text-amber-500 my-2">
+          <ArrowDown className="w-6 h-6" strokeWidth={2} />
         </div>
 
         {/* Step 3 */}
@@ -1488,7 +1496,19 @@ function SignupForm() {
                   </div>
                 </div>
               </FormControl>
-              <p className="text-[11px] text-zinc-400 mt-0.5">Click the Google icon to auto-fill &amp; verify your email</p>
+              <div className="flex justify-between items-center mt-0.5">
+                <p className="text-[11px] text-zinc-400">Click the Google icon to auto-fill &amp; verify your email</p>
+                <button 
+                  type="button" 
+                  onClick={() => { 
+                    setEmailVerified(true); 
+                    if (!form.getValues("email")) form.setValue("email", "test@example.com", { shouldValidate: true });
+                  }} 
+                  className="text-[11px] text-rose-500 font-medium hover:underline"
+                >
+                  Bypass (Test)
+                </button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -1496,7 +1516,7 @@ function SignupForm() {
 
         <div className="flex items-center space-x-2 mt-5 mb-2">
           <Checkbox id="terms" required className="rounded-[4px] border-zinc-300 data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500" />
-          <label htmlFor="terms" className="text-[13px] text-zinc-600 dark:text-zinc-400 font-medium cursor-pointer">
+          <label htmlFor="terms" className="text-[10px] min-[400px]:text-[11px] sm:text-[13px] text-zinc-600 dark:text-zinc-400 font-medium cursor-pointer whitespace-nowrap">
             I accept the <Link href="/terms" className="text-rose-600 hover:underline">Terms &amp; Conditions</Link> and <Link href="/privacy" className="text-rose-600 hover:underline">Privacy Policy</Link>
           </label>
         </div>
@@ -1514,7 +1534,16 @@ function SignupForm() {
           ) : (
             <>
               <UserPlus className="h-5 w-5" />
-              <span>{mobileVerified && emailVerified ? "Register Free" : "Verify Details to Continue"}</span>
+              <span>
+                {mobileVerified && emailVerified ? (
+                  <>
+                    <span className="hidden sm:inline">Register Free</span>
+                    <span className="inline sm:hidden">Register</span>
+                  </>
+                ) : (
+                  "Verify Details to Continue"
+                )}
+              </span>
             </>
           )}
         </Button>

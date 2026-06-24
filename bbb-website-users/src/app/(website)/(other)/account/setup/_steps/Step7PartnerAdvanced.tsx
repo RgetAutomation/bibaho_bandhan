@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
 import StepActions from "./StepActions";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export const step7Schema = updateProfileSchema.pick({
   partnerPreferredCountry: true,
@@ -66,35 +67,35 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Partner Preference (Part 2)</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">Location, Lifestyle & Family Expectations</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Partner Preference (Part 2)</h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">Location, Lifestyle & Family Expectations</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
           {/* Partner Location */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">Partner Location</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="partnerPreferredCountry" render={({ field }) => (
-                <FormItem><FormLabel>Preferred Country (Recommended)</FormLabel><FormControl><Input placeholder="Country" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Preferred Country<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="Country" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="partnerPreferredState" render={({ field }) => (
-                <FormItem><FormLabel>Preferred State (Recommended)</FormLabel><FormControl><Input placeholder="State" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Preferred State<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="State" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="partnerPreferredDistrict" render={({ field }) => (
-                <FormItem><FormLabel>Preferred District (Optional)</FormLabel><FormControl><Input placeholder="District" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Preferred District<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="District" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
 
           {/* Partner Habits & Physical */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">Partner Habits & Physical</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="partnerEatingHabit" render={({ field }) => (
-                <FormItem><FormLabel>Eating Habit Preference (Optional)</FormLabel>
+                <FormItem><FormLabel>Eating Habit Preference<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -107,7 +108,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
                 </FormItem>
               )} />
               <FormField control={form.control} name="partnerDrinkingHabit" render={({ field }) => (
-                <FormItem><FormLabel>Drinking Habit Preference (Optional)</FormLabel>
+                <FormItem><FormLabel>Drinking Habit Preference<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -120,7 +121,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
                 </FormItem>
               )} />
               <FormField control={form.control} name="partnerSmokingHabit" render={({ field }) => (
-                <FormItem><FormLabel>Smoking Habit Preference (Optional)</FormLabel>
+                <FormItem><FormLabel>Smoking Habit Preference<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -133,7 +134,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
                 </FormItem>
               )} />
               <FormField control={form.control} name="partnerDisabilityAcceptable" render={({ field }) => (
-                <FormItem><FormLabel>Any Disability Acceptable? (Recommended)</FormLabel>
+                <FormItem><FormLabel>Any Disability Acceptable?<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -148,27 +149,27 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
           </div>
 
           {/* About My Partner */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">About My Partner</h3>
             <FormField control={form.control} name="partnerDescription" render={({ field }) => (
-              <FormItem><FormLabel>Description (Recommended)</FormLabel><FormControl><Textarea className="h-24 resize-none" placeholder="Write about what you are looking for..." {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Description<FormBadge type="recommended" /></FormLabel><FormControl><Textarea className="h-24 resize-none" placeholder="Write about what you are looking for..." {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="partnerPersonalityExpectation" render={({ field }) => (
-                <FormItem><FormLabel>Personality Expectation (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Caring, Ambitious" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Personality Expectation<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Caring, Ambitious" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="partnerFamilyExpectation" render={({ field }) => (
-                <FormItem><FormLabel>Family Expectation (Optional)</FormLabel><FormControl><Input placeholder="e.g. Traditional, Supportive" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Family Expectation<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="e.g. Traditional, Supportive" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
 
           {/* Partner Family Details */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">Partner Family Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="familyStatusPreference" render={({ field }) => (
-                <FormItem><FormLabel>Family Status (Recommended)</FormLabel>
+                <FormItem><FormLabel>Family Status<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -182,7 +183,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
                 </FormItem>
               )} />
               <FormField control={form.control} name="familyTypePreference" render={({ field }) => (
-                <FormItem><FormLabel>Family Type (Recommended)</FormLabel>
+                <FormItem><FormLabel>Family Type<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -195,7 +196,7 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
                 </FormItem>
               )} />
               <FormField control={form.control} name="familyValuesPreference" render={({ field }) => (
-                <FormItem><FormLabel>Family Values (Recommended)</FormLabel>
+                <FormItem><FormLabel>Family Values<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>

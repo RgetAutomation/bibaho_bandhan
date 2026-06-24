@@ -1,0 +1,2167 @@
+"use client";
+
+import { UserType } from "@/components/enum/userType";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format, parseISO } from "date-fns";
+import { CalendarIcon, RefreshCcw } from "lucide-react";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Resolver, useForm, useWatch } from "react-hook-form";
+import z, { boolean, coerce, object, string } from "zod";
+import LoadingPage from "@/components/loader";
+import DashboardHeader from "@/components/dashboard/header";
+import { LoadingButton } from "@/components/loadingButton";
+import ApiErrorPage from "@/components/apiErrorPage";
+import { isAxiosError } from "axios";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSelfProfileDetails } from "@/actions/users";
+import toast from "react-hot-toast";
+import api from "@/lib/axiosInstance";
+import { AxiosResponse } from "@/components/interface/AxiosResponse";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+// Schema matching exactly what the backend accepts
+const editProfileSchema = object({
+  isGhotokOwned: boolean().optional(),
+  isProfilePublic: boolean().optional(),
+  allowSocialPublish: boolean().optional(),
+  dob: string().min(10, { message: "Date of birth is required" }),
+  maritalStatus: string().min(3, { message: "Marital status is required" }),
+  children: coerce.number().optional(),
+  speciallyAble: boolean().optional(),
+  religion: string().min(2, { message: "Religion is required" }),
+  gotra: string().optional(),
+  caste: string().min(2, { message: "Caste is required" }),
+  subCaste: string().optional(),
+  manglik: boolean().optional(),
+  height: string().optional(),
+  weight: string().optional(),
+  bloodGroup: string().optional(),
+  skinTone: string().optional(),
+  bodyType: string().optional(),
+  eatingHabits: string().optional(),
+  smokingHabits: string().optional(),
+  drinkingHabits: string().optional(),
+  addressLine1: string().min(3, { message: "Address line 1 is required (min 3 characters)" }),
+  addressLine2: string().optional(),
+  dist: string().min(3, { message: "District is required (min 3 characters)" }),
+  state: string().min(2, { message: "State is required" }),
+  pinCode: string().min(6, { message: "Pin code must be 6 digits" }).max(6, { message: "Pin code must be 6 digits" }),
+  whatsappNumber: string().trim().optional().refine((val) => !val || val.length === 10, {
+    message: "WhatsApp number must be exactly 10 digits",
+  }),
+  alternatePhone: string().trim().optional().refine((val) => !val || val.length === 10, {
+    message: "Mobile number must be exactly 10 digits",
+  }),
+  aboutMyself: string().optional(),
+  profession: string().min(3, { message: "Profession is required (min 3 characters)" }),
+  education: string().min(3, { message: "Education/Qualification is required (min 3 characters)" }),
+  hobbies: string().optional(),
+  monthlyIncome: string().optional(),
+  languages: string().optional(),
+  familyMembers: string().optional(),
+  fatherProfession: string().optional(),
+  candidatePreferences: string().optional(),
+  locationPreferences: string().optional(),
+  aboutMyPartner: string().optional(),
+  rashi: string().optional(),
+  nakshatra: string().optional(),
+  timeOfBirth: string().optional(),
+  cityOfBirth: string().optional(),
+  countryOfBirth: string().optional(),
+
+  familyType: string().optional(),
+  mothersOccupation: string().optional(),
+  noOfBrothers: string().optional(),
+  noOfSisters: string().optional(),
+  familyValues: string().optional(),
+
+  workExperience: string().optional(),
+  collegeInstitution: string().optional(),
+  fieldOfStudy: string().optional(),
+  organizationName: string().optional(),
+
+  partnerAgeRange: string().optional(),
+  partnerHeightRange: string().optional(),
+  partnerMaritalStatus: string().optional(),
+  partnerReligion: string().optional(),
+  partnerCaste: string().optional(),
+  partnerEducation: string().optional(),
+  partnerProfession: string().optional(),
+  partnerIncome: string().optional(),
+  partnerLocation: string().optional(),
+  partnerDiet: string().optional(),
+  partnerComplexion: string().optional(),
+  partnerMotherTongue: string().optional(),
+});
+
+export default function CompleteProfilePage() {
+  const { user, isPending } = useAuthSession();
+  //const userGender = user?.gender as UserGender;
+  const userType = user?.type as UserType;
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const hasResetRef = useRef(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["selfProfileDetails"],
+    queryFn: fetchSelfProfileDetails,
+    enabled: true,
+  });
+
+  const form = useForm<any>({
+    resolver: zodResolver(editProfileSchema) as any,
+    defaultValues: {
+      isGhotokOwned: false,
+      isProfilePublic: false,
+      allowSocialPublish: false,
+      dob: "",
+      maritalStatus: "",
+      bloodGroup: "",
+      children: 0,
+      speciallyAble: false,
+      religion: "",
+      gotra: "",
+      caste: "",
+      subCaste: "",
+      manglik: false,
+      height: "",
+      weight: "",
+      skinTone: "",
+      bodyType: "",
+      eatingHabits: "",
+      drinkingHabits: "",
+      smokingHabits: "",
+      addressLine1: "",
+      addressLine2: "",
+      dist: "",
+      state: "",
+      pinCode: "",
+      whatsappNumber: "",
+      alternatePhone: "",
+      aboutMyself: "",
+      profession: "",
+      education: "",
+      hobbies: "",
+      monthlyIncome: "",
+      languages: "",
+      familyMembers: "",
+      fatherProfession: "",
+      candidatePreferences: "",
+      locationPreferences: "",
+      aboutMyPartner: "",
+      rashi: "",
+      nakshatra: "",
+      timeOfBirth: "",
+      cityOfBirth: "",
+      countryOfBirth: "",
+
+      familyType: "",
+      mothersOccupation: "",
+      noOfBrothers: "",
+      noOfSisters: "",
+      familyValues: "",
+
+      workExperience: "",
+      collegeInstitution: "",
+      fieldOfStudy: "",
+      organizationName: "",
+
+      partnerAgeRange: "",
+      partnerHeightRange: "",
+      partnerMaritalStatus: "",
+      partnerReligion: "",
+      partnerCaste: "",
+      partnerEducation: "",
+      partnerProfession: "",
+      partnerIncome: "",
+      partnerLocation: "",
+      partnerDiet: "",
+      partnerComplexion: "",
+      partnerMotherTongue: "",
+    },
+  });
+
+  useEffect(() => {
+    if (!data || hasResetRef.current) return;
+    hasResetRef.current = true;
+
+    // Map all data fields, ensuring proper null handling
+    const formData = {
+      // isProfilePublic: data.isProfilePublic ?? false,
+      // allowSocialPublish: data.allowSocialPublish ?? false,
+      dob: data.dob ?? "",
+      maritalStatus: data.maritalStatus ?? "",
+      bloodGroup: data.bloodGroup ?? "",
+      children: data.children ?? 0,
+      speciallyAble: data.speciallyAble || false,
+      religion: data.religion ?? "",
+      gotra: data.gotra || "",
+      caste: data.caste ?? "",
+      subCaste: data.subCaste || "",
+      manglik: data.manglikDosh || false,
+      height: data.height || "",
+      weight: data.weight || "",
+      skinTone: data.skinTone ?? "",
+      bodyType: data.bodyType ?? "",
+      eatingHabits: data.eatingHabits || "",
+      drinkingHabits: data.drinkingHabits || "",
+      smokingHabits: data.smokingHabits || "",
+      addressLine1: data.addressLine1 || "",
+      addressLine2: data.addressLine2 || "",
+      dist: data.dist || "",
+      state: data.state || "",
+      pinCode: data.pinCode || "",
+      whatsappNumber: data.whatsappNumber || "",
+      alternatePhone: data.alternatePhone || "",
+      aboutMyself: data.aboutMyself || "",
+      profession: data.profession || "",
+      education: data.education || "",
+      hobbies: data.hobbies || "",
+      monthlyIncome: data.monthlyIncome ?? "",
+      languages: data.language || "",
+      familyMembers: data.familyMembers || "",
+      fatherProfession: data.fatherProfession || "",
+      candidatePreferences: data.candidatePreference || "",
+      locationPreferences: data.locationPreference || "",
+      aboutMyPartner: data.aboutMyPartner || "",
+      rashi: data.rashi || "",
+      nakshatra: data.nakshatra || "",
+      timeOfBirth: data.birthTime || "",
+      cityOfBirth: data.cityOfBirth || "",
+      countryOfBirth: data.countryOfBirth || "",
+
+      familyType: data.familyType || "",
+      mothersOccupation: data.mothersOccupation || "",
+      noOfBrothers: data.noOfBrothers || "",
+      noOfSisters: data.noOfSisters || "",
+      familyValues: data.familyValues || "",
+
+      workExperience: data.workExperience || "",
+      collegeInstitution: data.collegeInstitution || "",
+      fieldOfStudy: data.fieldOfStudy || "",
+      organizationName: data.organizationName || "",
+
+      partnerAgeRange: data.partnerAgeRange || "",
+      partnerHeightRange: data.partnerHeightRange || "",
+      partnerMaritalStatus: data.partnerMaritalStatus || "",
+      partnerReligion: data.partnerReligion || "",
+      partnerCaste: data.partnerCaste || "",
+      partnerEducation: data.partnerEducation || "",
+      partnerProfession: data.partnerProfession || "",
+      partnerIncome: data.partnerIncome || "",
+      partnerLocation: data.partnerLocation || "",
+      partnerDiet: data.partnerDiet || "",
+      partnerComplexion: data.partnerComplexion || "",
+      partnerMotherTongue: data.partnerMotherTongue || "",
+    };
+
+    // Reset form with mapped data
+    form.reset(formData);
+    setDataLoaded(true);
+  }, [data, form]);
+
+  useEffect(() => {
+    if (dataLoaded) {
+      const section = searchParams.get("scrollTo");
+      if (section) {
+        setTimeout(() => {
+          const element = document.getElementById(section);
+          if (element) {
+            const scrollContainer = document.querySelector('form.overflow-y-auto');
+            if (scrollContainer) {
+              const elementTop = element.getBoundingClientRect().top;
+              const containerTop = scrollContainer.getBoundingClientRect().top;
+              const currentScroll = scrollContainer.scrollTop;
+              
+              scrollContainer.scrollTo({
+                top: currentScroll + elementTop - containerTop - 24, // 24px padding
+                behavior: 'smooth'
+              });
+            } else {
+              element.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+        }, 300);
+      }
+    }
+  }, [dataLoaded, searchParams]);
+
+  const maritalStatus = useWatch({
+    control: form.control,
+    name: "maritalStatus",
+  });
+
+  // allowed for free users as well
+
+  async function onSubmit(data: any) {
+    setLoading(true);
+    try {
+      const response = await api.post<AxiosResponse<null>>(
+        "/users/profile/update",
+        data,
+      );
+      if (response.data.success) {
+        toast.success("Profile updated successfully");
+        router.back();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      const errorMessage = isAxiosError(error)
+        ? error.response?.data?.message || "Failed to update profile"
+        : "Something went wrong";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const errorMessage = isAxiosError(error)
+    ? error.response?.data.message
+    : "Failed to fetch profile details";
+
+  return (
+    <div className="flex flex-col w-full min-h-full">
+
+      {isLoading || isPending ? (
+        <LoadingPage />
+      ) : error ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <ApiErrorPage title={"Failed to load"} description={errorMessage} />
+        </div>
+      ) : (
+        <div className="pb-10">
+          <Form {...form} key={dataLoaded ? "loaded" : "loading"}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit as any)}
+              className="space-y-4 bg-card p-4 md:p-6 h-[calc(100vh-180px)] overflow-y-auto scroll-smooth border-2 border-primary/20 dark:border-primary/20 rounded-xl shadow-sm"
+            >
+              <div className="flex items-center gap-3 border-b-2 border-primary/20 pb-4">
+                <div className="w-1 h-7 rounded-full bg-primary"></div>
+                <h1 className="text-xl font-bold text-primary">
+                  Personal Details
+                </h1>
+              </div>
+
+              {/* Section: Basic Info */}
+              <div id="basic-info" className="space-y-5 border border-l-4 border-l-[#E51E44] border-gray-100 dark:border-zinc-800 dark:border-l-[#E51E44] rounded-xl p-5 bg-rose-50/30 dark:bg-rose-950/5 scroll-mt-6">
+                <h2 className="text-base font-bold text-[#E51E44] flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#E51E44] text-white text-[10px] flex items-center justify-center font-black">1</span>
+                  Basic Information
+                </h2>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* DOB */}
+                  <FormField
+                    control={form.control}
+                    name="dob"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Date of Birth{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Popover
+                          open={openIndex === 0}
+                          onOpenChange={(isOpen) =>
+                            setOpenIndex(isOpen ? 0 : null)
+                          }
+                        >
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground",
+                                )}
+                              >
+                                {field.value
+                                  ? format(field.value, "dd-MM-yyyy")
+                                  : "Select your date of birth"}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={
+                                field.value ? parseISO(field.value) : undefined
+                              }
+                              onSelect={(date) => {
+                                if (date) {
+                                  field.onChange(date.toISOString());
+                                  setOpenIndex(null);
+                                }
+                              }}
+                              disabled={(date) =>
+                                date > new Date() ||
+                                date < new Date("1900-01-01")
+                              }
+                              captionLayout="dropdown"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Marital Status */}
+                  <FormField
+                    control={form.control}
+                    name="maritalStatus"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Marital Status{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
+
+                        <Select
+                          value={field.value ?? ""}
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your marital status" />
+                            </SelectTrigger>
+                          </FormControl>
+
+                          <SelectContent>
+                            <SelectItem value="NEVER MARRIED">
+                              NEVER MARRIED
+                            </SelectItem>
+                            <SelectItem value="DIVORCED">DIVORCED</SelectItem>
+
+                            {/* Always render, but control selection by logic */}
+                            <SelectItem value="WIDOWED">WIDOWED</SelectItem>
+                            <SelectItem value="WIDOWER">WIDOWER</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {maritalStatus && maritalStatus !== "NEVER MARRIED" && (
+                  <FormField
+                    control={form.control}
+                    name="children"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How many children?</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Enter number of children"
+                            maxLength={2}
+                            max={20}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              {/* Section: Background */}
+              <div className="space-y-5 border border-l-4 border-l-violet-500 border-gray-100 dark:border-zinc-800 dark:border-l-violet-500 rounded-xl p-5 bg-violet-50/30 dark:bg-violet-950/5">
+                <h2 className="text-base font-bold text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] flex items-center justify-center font-black">2</span>
+                  Background Information
+                </h2>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Blood Group */}
+                  <FormField
+                    control={form.control}
+                    name="bloodGroup"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Blood Group</FormLabel>
+                        <Select
+                          value={field.value ?? ""}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select blood group" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[
+                              "A+",
+                              "A-",
+                              "B+",
+                              "B-",
+                              "AB+",
+                              "AB-",
+                              "O+",
+                              "O-",
+                            ].map((bg) => (
+                              <SelectItem key={bg} value={bg}>
+                                {bg}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Religion */}
+                  <FormField
+                    control={form.control}
+                    name="religion"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Religion <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Select
+                          value={field.value ?? ""}
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select religion" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[
+                              "HINDU",
+                              "CHRISTIAN",
+                              "MUSLIM",
+                              "SIKH",
+                              "BUDHIST",
+                              "SARNAISM",
+                              "JAIN",
+                              "OTHER",
+                            ].map((r) => (
+                              <SelectItem key={r} value={r}>
+                                {r}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Gotra & Caste */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="gotra"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gotra</FormLabel>
+                        <FormControl className="w-full">
+                          <Input placeholder="Write your gotra" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="caste"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Caste <span className="text-destructive">*</span>
+                        </FormLabel>
+                        <Select
+                          value={field.value ?? ""}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select caste" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {["GENERAL", "OBC", "SC", "ST", "OTHERS"].map(
+                              (c) => (
+                                <SelectItem key={c} value={c}>
+                                  {c}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {/* Sub Caste */}
+                <FormField
+                  control={form.control}
+                  name="subCaste"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sub Caste</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Write your sub caste" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="manglik"
+                  render={({ field }) => {
+                    const id = "manglik";
+
+                    const items = [
+                      { label: "No, I'm not Manglik", value: "false" },
+                      { label: "Yes, I'm Manglik", value: "true" },
+                    ];
+
+                    return (
+                      <FormItem>
+                        <FormLabel className="pb-2">Manglik</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={(val) =>
+                              field.onChange(val === "true")
+                            }
+                            value={field.value ? "true" : "false"}
+                            className="flex flex-wrap gap-2"
+                          >
+                            {items.map((item) => (
+                              <div
+                                key={`${id}-${item.value}`}
+                                className="relative flex flex-col items-start gap-4 rounded-md border border-input p-3 shadow-xs outline-none has-data-[state=checked]:border-primary/50"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <RadioGroupItem
+                                    id={`${id}-${item.value}`}
+                                    value={item.value}
+                                    className="after:absolute after:inset-0"
+                                  />
+                                  <Label htmlFor={`${id}-${item.value}`}>
+                                    {item.label}
+                                  </Label>
+                                </div>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              </div>
+
+              {/* Section: Physical Attributes */}
+              <div className="space-y-5 border border-l-4 border-l-blue-500 border-gray-100 dark:border-zinc-800 dark:border-l-blue-500 rounded-xl p-5 bg-blue-50/30 dark:bg-blue-950/5">
+                <h2 className="text-base font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-black">3</span>
+                  Physical Attributes
+                </h2>
+                <FormField
+                  control={form.control}
+                  name="speciallyAble"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Are you specially abled?
+                        <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) =>
+                          field.onChange(value === "true")
+                        }
+                        value={String(field.value)}
+                      >
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an option" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="false">No</SelectItem>
+                          <SelectItem value="true">Yes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid gap-6 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="height"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Height</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your height" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Less than 5 feet</SelectLabel>
+                              <SelectItem value="4 ft 5 in">
+                                4 ft 5 in
+                              </SelectItem>
+                              <SelectItem value="4 ft 6 in">
+                                4 ft 6 in
+                              </SelectItem>
+                              <SelectItem value="4 ft 7 in">
+                                4 ft 7 in
+                              </SelectItem>
+                              <SelectItem value="4 ft 8 in">
+                                4 ft 8 in
+                              </SelectItem>
+                              <SelectItem value="4 ft 9 in">
+                                4 ft 9 in
+                              </SelectItem>
+                              <SelectItem value="4 ft 10 in">
+                                4 ft 10 in
+                              </SelectItem>
+                              <SelectItem value="4 ft 11 in">
+                                4 ft 11 in
+                              </SelectItem>
+                            </SelectGroup>
+
+                            <SelectGroup>
+                              <SelectLabel>Less than 6 feet</SelectLabel>
+                              <SelectItem value="5 ft">5 ft</SelectItem>
+                              <SelectItem value="5 ft 1 in">
+                                5 ft 1 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 2 in">
+                                5 ft 2 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 3 in">
+                                5 ft 3 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 4 in">
+                                5 ft 4 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 5 in">
+                                5 ft 5 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 6 in">
+                                5 ft 6 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 7 in">
+                                5 ft 7 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 8 in">
+                                5 ft 8 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 9 in">
+                                5 ft 9 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 10 in">
+                                5 ft 10 in
+                              </SelectItem>
+                              <SelectItem value="5 ft 11 in">
+                                5 ft 11 in
+                              </SelectItem>
+                            </SelectGroup>
+
+                            <SelectGroup>
+                              <SelectLabel>Upto 7 feet</SelectLabel>
+                              <SelectItem value="6 ft">6 ft</SelectItem>
+                              <SelectItem value="6 ft 1 in">
+                                6 ft 1 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 2 in">
+                                6 ft 2 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 3 in">
+                                6 ft 3 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 4 in">
+                                6 ft 4 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 5 in">
+                                6 ft 5 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 6 in">
+                                6 ft 6 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 7 in">
+                                6 ft 7 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 8 in">
+                                6 ft 8 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 9 in">
+                                6 ft 9 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 10 in">
+                                6 ft 10 in
+                              </SelectItem>
+                              <SelectItem value="6 ft 11 in">
+                                6 ft 11 in
+                              </SelectItem>
+                              <SelectItem value="7 ft">7 ft</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="weight"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weight (Kg)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="decimal"
+                            inputMode="decimal"
+                            placeholder="Write your weight"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="skinTone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Skin Tone</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select your skin tone" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Light">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#f8d2b3] h-6 w-6 rounded-full" />
+                                <span>Light</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Fair">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#ebb68f] h-6 w-6 rounded-full" />
+                                <span>Fair</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Medium">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#cfa07c] h-6 w-6 rounded-full" />
+                                <span>Medium</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Tan">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#bd7852] h-6 w-6 rounded-full" />
+                                <span>Tan</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Brown">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#90493d] h-6 w-6 rounded-full" />
+                                <span>Brown</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="Dark">
+                              <div className="flex items-center gap-2">
+                                <div className="bg-[#3c1f1b] h-6 w-6 rounded-full" />
+                                <span>Dark</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bodyType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Body Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select your body type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Slim">Slim</SelectItem>
+                            <SelectItem value="Average">Average</SelectItem>
+                            <SelectItem value="Athletic">Athletic</SelectItem>
+                            <SelectItem value="Muscular">Muscular</SelectItem>
+                            <SelectItem value="Curvy">Curvy</SelectItem>
+                            <SelectItem value="Chubby">Chubby</SelectItem>
+                            <SelectItem value="Heavy">Heavy</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="eatingHabits"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Eating Habits</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your eating habits" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Non Vegetarian">
+                            Non Vegetarian
+                          </SelectItem>
+                          <SelectItem value="Vegetarian">Vegetarian</SelectItem>
+                          <SelectItem value="Eggetarian">Eggetarian</SelectItem>
+                          <SelectItem value="Occasionally Non-Veg">
+                            Occasionally Non-Veg
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="drinkingHabits"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Drinking Habits</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your drinking habits" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="No">No</SelectItem>
+                          <SelectItem value="Yes">Yes</SelectItem>
+                          <SelectItem value="Occasionally">
+                            Occasionally
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="smokingHabits"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Smoking Habits</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your smoking habits" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="No">No</SelectItem>
+                          <SelectItem value="Yes">Yes</SelectItem>
+                          <SelectItem value="Occasionally">
+                            Occasionally
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Astrology Details */}
+              <div id="astrology" className="space-y-5 border border-l-4 border-l-purple-500 border-gray-100 dark:border-zinc-800 dark:border-l-purple-500 rounded-xl p-5 bg-purple-50/30 dark:bg-purple-950/5 mt-8 scroll-mt-6">
+                <div>
+                  <h2 className="text-base font-bold text-purple-600 dark:text-purple-400 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] flex items-center justify-center font-black">★</span>
+                    Astrology Details
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    Please provide your astrological details if applicable.
+                  </p>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="rashi"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rashi (Moon Sign)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter Rashi" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nakshatra"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nakshatra</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter Nakshatra" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-3">
+                  <FormField
+                    control={form.control}
+                    name="timeOfBirth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time of Birth</FormLabel>
+                        <FormControl>
+                          <Input type="time" placeholder="HH:MM" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cityOfBirth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>City of Birth</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter City" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="countryOfBirth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Country of Birth</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter Country" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-5 border border-l-4 border-l-emerald-500 border-gray-100 dark:border-zinc-800 dark:border-l-emerald-500 rounded-xl p-5 bg-emerald-50/30 dark:bg-emerald-950/5">
+                <div>
+                  <h2 className="text-base font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center font-black">4</span>
+                    Contact Details
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    Please provide your complete and accurate contact details.
+                  </p>
+                </div>
+
+              <FormField
+                control={form.control}
+                name="addressLine1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Village / Town <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="address"
+                        inputMode="text"
+                        placeholder="Village, Road or Street Name"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="addressLine2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Apartment</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="address"
+                        inputMode="text"
+                        placeholder="Apartment, Suite, Unit, Building, Floor, etc"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="postOffice"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Post Office <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="address"
+                        inputMode="text"
+                        placeholder="Post Office"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="policeStation"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Police Station <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="address"
+                        inputMode="text"
+                        placeholder="Police Station"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dist"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>
+                      District <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Enter your district"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>
+                      State <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Enter your state"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pinCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Pin Code <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="address"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="Pin Code"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="whatsappNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Whatsapp Number</FormLabel>
+                    <FormControl>
+                      <div className="flex rounded-md shadow-xs">
+                        <span className="border-input bg-background text-muted-foreground inline-flex items-center rounded-s-md border px-3 text-sm">
+                          +91
+                        </span>
+                        <Input
+                          type="tel"
+                          inputMode="tel"
+                          className="-ms-px rounded-s-none shadow-none"
+                          maxLength={10}
+                          minLength={10}
+                          placeholder="Write your whatsapp number"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="alternatePhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Alternate Number</FormLabel>
+                    <FormControl>
+                      <div className="flex rounded-md shadow-xs">
+                        <span className="border-input bg-background text-muted-foreground inline-flex items-center rounded-s-md border px-3 text-sm">
+                          +91
+                        </span>
+                        <Input
+                          type="tel"
+                          inputMode="tel"
+                          className="-ms-px rounded-s-none shadow-none"
+                          maxLength={10}
+                          minLength={10}
+                          placeholder="Write your alternate number"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              </div>
+              
+              {/* Section: About Me */}
+              <div id="about-me" className="space-y-5 border border-l-4 border-l-amber-500 border-gray-100 dark:border-zinc-800 dark:border-l-amber-500 rounded-xl p-5 bg-amber-50/30 dark:bg-amber-950/5 scroll-mt-6">
+                <div>
+                  <h2 className="text-base font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-black">5</span>
+                    About Me
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    Please tell us about yourself.
+                  </p>
+                </div>
+
+              <FormField
+                control={form.control}
+                name="aboutMyself"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>About Myself</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        inputMode="text"
+                        placeholder="Write about yourself here..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              </div>
+
+              {/* Section: Education & Career */}
+              <div id="education" className="space-y-5 border border-l-4 border-l-blue-500 border-gray-100 dark:border-zinc-800 dark:border-l-blue-500 rounded-xl p-5 bg-blue-50/30 dark:bg-blue-950/5 scroll-mt-6">
+                <div>
+                  <h2 className="text-base font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-black">6</span>
+                    Education & Career
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    Please provide your education and career details.
+                  </p>
+                </div>
+
+              <FormField
+                control={form.control}
+                name="profession"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>
+                      Occupation / Profession{" "}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Write your profession"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="education"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Education <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Write your higher education"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="hobbies"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hobbies</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Write your hobbies"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="monthlyIncome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Annual Income</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl className="w-full">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your income" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Less than 5 lakh</SelectLabel>
+                          <SelectItem value="No Income">No Income</SelectItem>
+                          <SelectItem value="0 - 1 lakh">0 - 1 lakh</SelectItem>
+                          <SelectItem value="1 - 2 lakh">1 - 2 lakh</SelectItem>
+                          <SelectItem value="2 - 3 lakh">2 - 3 lakh</SelectItem>
+                          <SelectItem value="3 - 4 lakh">3 - 4 lakh</SelectItem>
+                          <SelectItem value="4 - 5 lakh">4 - 5 lakh</SelectItem>
+                        </SelectGroup>
+
+                        <SelectGroup>
+                          <SelectLabel>5 lakh to 15 lakh</SelectLabel>
+                          <SelectItem value="5 - 6 lakh">5 - 6 lakh</SelectItem>
+                          <SelectItem value="6 - 7 lakh">6 - 7 lakh</SelectItem>
+                          <SelectItem value="7 - 8 lakh">7 - 8 lakh</SelectItem>
+                          <SelectItem value="8 - 9 lakh">8 - 9 lakh</SelectItem>
+                          <SelectItem value="9 - 10 lakh">
+                            9 - 10 lakh
+                          </SelectItem>
+                          <SelectItem value="10 - 15 lakh">
+                            10 - 15 lakh
+                          </SelectItem>
+                        </SelectGroup>
+
+                        <SelectGroup>
+                          <SelectLabel>15 lakh to 50 lakh</SelectLabel>
+                          <SelectItem value="15 - 20 lakh">
+                            15 - 20 lakh
+                          </SelectItem>
+                          <SelectItem value="20 - 25 lakh">
+                            20 - 25 lakh
+                          </SelectItem>
+                          <SelectItem value="25 - 30 lakh">
+                            25 - 30 lakh
+                          </SelectItem>
+                          <SelectItem value="30 - 35 lakh">
+                            30 - 35 lakh
+                          </SelectItem>
+                          <SelectItem value="35 - 40 lakh">
+                            35 - 40 lakh
+                          </SelectItem>
+                          <SelectItem value="40 - 45 lakh">
+                            40 - 45 lakh
+                          </SelectItem>
+                          <SelectItem value="45 - 50 lakh">
+                            45 - 50 lakh
+                          </SelectItem>
+                        </SelectGroup>
+
+                        <SelectGroup>
+                          <SelectLabel>50 lakh to 1 crore</SelectLabel>
+                          <SelectItem value="50 - 55 lakh">
+                            50 - 55 lakh
+                          </SelectItem>
+                          <SelectItem value="55 - 60 lakh">
+                            55 - 60 lakh
+                          </SelectItem>
+                          <SelectItem value="60 - 65 lakh">
+                            60 - 65 lakh
+                          </SelectItem>
+                          <SelectItem value="65 - 70 lakh">
+                            65 - 70 lakh
+                          </SelectItem>
+                          <SelectItem value="70 - 75 lakh">
+                            70 - 75 lakh
+                          </SelectItem>
+                          <SelectItem value="75 - 80 lakh">
+                            75 - 80 lakh
+                          </SelectItem>
+                          <SelectItem value="80 - 85 lakh">
+                            80 - 85 lakh
+                          </SelectItem>
+                          <SelectItem value="85 - 90 lakh">
+                            85 - 90 lakh
+                          </SelectItem>
+                          <SelectItem value="90 - 95 lakh">
+                            90 - 95 lakh
+                          </SelectItem>
+                          <SelectItem value="95 lakh - 1 crore">
+                            95 lakh - 1 crore
+                          </SelectItem>
+                          <SelectItem value="1 crore & above">
+                            1 crore & above
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="languages"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Which languages do you speak, read or write?
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Write your languages"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="workExperience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Work Experience</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="e.g. 5 Years"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="collegeInstitution"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>College / Institution</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Enter your college or institution"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="fieldOfStudy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Field of Study</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="e.g. Computer Science"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="passingYear"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Passing Year</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="e.g. 2020"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="organizationName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organization Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Enter your company name"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              </div>
+
+              {/* Section: Family Details */}
+              <div id="family" className="space-y-5 border border-l-4 border-l-pink-500 border-gray-100 dark:border-zinc-800 dark:border-l-pink-500 rounded-xl p-5 bg-pink-50/30 dark:bg-pink-950/5 scroll-mt-6">
+                <div>
+                  <h2 className="text-base font-bold text-pink-600 dark:text-pink-400 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-[10px] flex items-center justify-center font-black">7</span>
+                    Family Details
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    Please provide your family details.
+                  </p>
+                </div>
+
+              <FormField
+                control={form.control}
+                name="familyMembers"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>How many family members do you have?</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Enter number of family members"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="fatherProfession"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Father&apos;s Profession</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Write your fathers profession"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="mothersOccupation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mother&apos;s Occupation</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Write your mothers occupation"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="familyType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Family Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl className="w-full">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select family type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Joint">Joint Family</SelectItem>
+                        <SelectItem value="Nuclear">Nuclear Family</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="familyValues"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Family Values</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl className="w-full">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select family values" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Orthodox">Orthodox</SelectItem>
+                        <SelectItem value="Traditional">Traditional</SelectItem>
+                        <SelectItem value="Moderate">Moderate</SelectItem>
+                        <SelectItem value="Liberal">Liberal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="noOfBrothers"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Brothers</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="e.g. 1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="noOfSisters"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Sisters</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="e.g. 1"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              </div>
+
+              {/* Section: Partner Preferences */}
+              <div id="partner-preferences" className="space-y-5 border border-l-4 border-l-cyan-500 border-gray-100 dark:border-zinc-800 dark:border-l-cyan-500 rounded-xl p-5 bg-cyan-50/30 dark:bg-cyan-950/5 scroll-mt-6">
+                <div>
+                  <h2 className="text-base font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-cyan-500 text-white text-[10px] flex items-center justify-center font-black">8</span>
+                    Partner Preferences
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    Please tell us about your partner preferences.
+                  </p>
+                </div>
+
+              <FormField
+                control={form.control}
+                name="candidatePreferences"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What is your preferred profession?</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Enter preferred profession"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="locationPreferences"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What is your preferred location?</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        inputMode="text"
+                        placeholder="Enter preferred location"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="aboutMyPartner"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>About My Partner</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        inputMode="text"
+                        placeholder="Write about your partner preferences"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerAgeRange"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Age Range</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. 25 - 30" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerHeightRange"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Height Range</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. 5'2 - 5'8" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerMaritalStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Marital Status</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Never Married" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerReligion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Religion</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Hindu" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerCaste"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Caste</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Brahmin" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerEducation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Education</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Masters" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerProfession"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Profession</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Software Engineer" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerIncome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Income</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. 10 - 15 Lakhs" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerLocation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Location</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Kolkata" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerDiet"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Diet</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Non-Vegetarian" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerComplexion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Complexion</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Fair" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partnerMotherTongue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Partner Mother Tongue</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. Bengali" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              </div>
+
+              {/* <FormField
+                control={form.control}
+                name="isProfilePublic"
+                render={({ field }) => (
+                  <FormItem className="hover:bg-primary/20 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-primary/30 dark:has-[[aria-checked=true]]:bg-primary/20">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked === true)
+                        }
+                      />
+                    </FormControl>
+                    <FormLabel className="text-sm font-normal">
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none font-medium">
+                          Public Profile Visibility
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          Enable this option to make your profile visible on our
+                          public landing page. This helps others discover you
+                          more easily.
+                        </p>
+                      </div>
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="allowSocialPublish"
+                render={({ field }) => (
+                  <FormItem className="hover:bg-primary/20 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-primary/30 dark:has-[[aria-checked=true]]:bg-primary/20">
+                    <FormControl>
+                      <Checkbox
+                        checked={!!field.value}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked === true)
+                        }
+                      />
+                    </FormControl>
+                    <FormLabel className="text-sm font-normal">
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none font-medium">
+                          Social Media Sharing
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          By selecting this option to allow your profile to be
+                          shared on our social media platforms.
+                        </p>
+                      </div>
+                    </FormLabel>
+                  </FormItem>
+                )}
+              /> */}
+
+              <Button
+                type="submit"
+                className="w-full rounded-2xl"
+                disabled={loading}
+              >
+                {loading ? (
+                  <LoadingButton title="Saving..." />
+                ) : (
+                  <>
+                    <RefreshCcw className="h-4 w-4" />
+                    Update Profile
+                  </>
+                )}
+              </Button>
+            </form>
+          </Form>
+        </div>
+      )}
+    </div>
+  );
+}

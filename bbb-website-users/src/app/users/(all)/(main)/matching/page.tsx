@@ -66,6 +66,7 @@ export default function MatchingPage() {
   };
 
   const [matchTab, setMatchTab] = useState("all");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -217,34 +218,40 @@ export default function MatchingPage() {
   }
 
   return (
-    <div className="flex flex-col xl:flex-row h-full bg-gray-50/50 dark:bg-zinc-950 px-4 md:px-6 xl:px-8 gap-6 pt-4 pb-0">
+    <div className="flex flex-col xl:flex-row h-[calc(100vh-80px)] xl:h-full bg-gray-50/50 dark:bg-zinc-950 px-4 md:px-6 xl:px-8 gap-6 pt-4 pb-0 overflow-hidden">
       
       {/* Left side: Header + Main Column */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         
         {/* Header */}
         <div className="w-full pb-3 shrink-0 z-30 relative bg-gray-50/50 dark:bg-zinc-950 border-b border-transparent">
-          <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="hidden md:flex text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white items-center gap-2">
             My Matches <Heart className="w-6 h-6 md:w-7 md:h-7 fill-[#E51E44] text-[#E51E44]" />
           </h1>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-1">
-            <p className="text-sm font-medium text-gray-500 dark:text-zinc-400">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:mt-1">
+            <p className="hidden md:block text-sm font-medium text-gray-500 dark:text-zinc-400">
               Profiles that are most compatible with you
             </p>
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="relative w-full sm:w-auto">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input 
                 type="text" 
                 placeholder="Search by name or ID..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:w-[320px] text-xs font-semibold pl-9 pr-3 py-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-[#E51E44]"
+                className="w-full sm:w-[320px] text-sm font-medium pl-9 pr-10 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all shadow-sm"
               />
+              <button 
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className={`xl:hidden absolute right-1.5 top-1/2 -translate-y-1/2 shrink-0 flex items-center justify-center p-1.5 rounded-lg transition-colors ${showMobileFilters ? "bg-[#E51E44]/10 text-[#E51E44]" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"}`}
+              >
+                <Filter className="w-[18px] h-[18px]" />
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-1.5 md:gap-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-1 rounded-xl shadow-sm w-full shrink-0 z-20 mt-1 mb-2">
+        <div className="hidden md:flex flex-wrap md:flex-nowrap items-center justify-between gap-1.5 md:gap-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-1 rounded-xl shadow-sm w-full shrink-0 z-20 mt-1 mb-2">
           {matchTabs.map(tab => {
             const isActive = matchTab === tab.id;
             return (
@@ -291,6 +298,7 @@ export default function MatchingPage() {
             const location = match.profile.dist && match.profile.state 
               ? `${match.profile.dist}, ${match.profile.state}` 
               : "Location Not Set";
+            const height = match.profile.height || "";
 
             return (
               <Card key={match.id} className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow p-0 gap-0 flex flex-col">
@@ -310,7 +318,7 @@ export default function MatchingPage() {
                   )}
 
                   {match.isGhotokOwned && (
-                    <div className="absolute bottom-1.5 left-0 right-0 bg-gradient-to-r from-emerald-600 via-emerald-600/80 to-transparent backdrop-blur-[2px] text-white text-[9px] md:text-[10px] font-bold py-1 px-2 leading-none flex items-center">
+                    <div className="absolute bottom-1.5 left-0 right-0 bg-gradient-to-r from-emerald-600 via-emerald-600/80 to-transparent backdrop-blur-[2px] text-white text-xs font-bold py-1.5 px-2.5 leading-none flex items-center">
                       Managed by a Matchmaker
                     </div>
                   )}
@@ -326,16 +334,21 @@ export default function MatchingPage() {
                       {match.isGhotokOwned && <CheckCircle2 className="w-4 h-4 text-white fill-green-500 shrink-0 shadow-sm rounded-full" />}
                     </div>
 
-                    <div className="space-y-1.5 text-xs text-gray-600 dark:text-zinc-400 font-medium">
-                      <p className="flex items-center gap-2 truncate">
-                        <Briefcase className="w-3.5 h-3.5 shrink-0" /> {profession}
+                    <div className="grid grid-cols-2 gap-1.5 text-[11px] md:text-xs text-gray-600 dark:text-zinc-400 font-bold mb-1">
+                      <p className="flex items-center gap-1.5 truncate">
+                        <Briefcase className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" /> {profession}
                       </p>
-                      <p className="flex items-center gap-2 truncate">
-                        <GraduationCap className="w-3.5 h-3.5 shrink-0" /> {education}
+                      <p className="flex items-center gap-1.5 truncate">
+                        <GraduationCap className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" /> {education}
                       </p>
-                      <p className="flex items-center gap-2 truncate text-gray-600 dark:text-zinc-400">
-                        <MapPin className="w-3.5 h-3.5 shrink-0 text-[#9B1C31]" /> {location}
+                      <p className="flex items-center gap-1.5 truncate text-gray-600 dark:text-zinc-400">
+                        <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-[#9B1C31]" /> {location}
                       </p>
+                      {height && (
+                        <p className="flex items-center gap-1.5 truncate text-gray-600 dark:text-zinc-400">
+                          <Target className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0 text-gray-400" /> {height}
+                        </p>
+                      )}
                     </div>
 
                     {/* Why it's a great match */}
@@ -377,7 +390,7 @@ export default function MatchingPage() {
                       <Button
                         size="sm"
                         onClick={() => toggleShortlist(match.id!)}
-                        className="flex-[1.2] rounded-xl text-[10px] md:text-xs py-2 bg-rose-50 text-[#E51E44] hover:bg-rose-100 h-auto font-bold flex items-center justify-center gap-1 shadow-sm px-1 md:px-2 border border-[#E51E44]/30"
+                        className="flex-1 md:flex-[1.2] rounded-xl text-[10px] md:text-xs py-2 bg-rose-50 text-[#E51E44] hover:bg-rose-100 h-auto font-bold flex items-center justify-center gap-1 shadow-sm px-1 md:px-2 border border-[#E51E44]/30"
                       >
                         <Bookmark className="w-3.5 h-3.5 fill-[#E51E44]" />
                         Saved
@@ -387,7 +400,7 @@ export default function MatchingPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => toggleShortlist(match.id!)}
-                        className="flex-[1.2] rounded-xl text-[10px] md:text-xs py-2 text-[#E51E44] hover:text-[#C81A3C] border-[#E51E44]/30 hover:bg-rose-50 h-auto font-bold flex items-center justify-center gap-1 shadow-sm px-1 md:px-2"
+                        className="flex-1 md:flex-[1.2] rounded-xl text-[10px] md:text-xs py-2 text-[#E51E44] hover:text-[#C81A3C] border-[#E51E44]/30 hover:bg-rose-50 h-auto font-bold flex items-center justify-center gap-1 shadow-sm px-1 md:px-2"
                       >
                         <Bookmark className="w-3.5 h-3.5" />
                         Shortlist
@@ -480,10 +493,13 @@ export default function MatchingPage() {
       </div>
 
       {/* Right Sidebar - Refine Matches */}
-      <div className="hidden xl:flex flex-col w-[220px] shrink-0 space-y-3 sticky top-0 h-fit max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10">
+      <div className={`${showMobileFilters ? "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" : "hidden"} xl:flex xl:static xl:bg-transparent xl:p-0 xl:backdrop-blur-none xl:z-auto flex-col w-full xl:w-[220px] shrink-0 space-y-3 xl:sticky xl:top-0 h-[100dvh] xl:h-fit max-h-screen xl:max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pb-10`}>
+        {showMobileFilters && (
+          <div className="absolute inset-0 z-0 xl:hidden" onClick={() => setShowMobileFilters(false)} />
+        )}
         
         {/* Refine Matches Card */}
-        <Card className="p-3 shrink-0 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs flex flex-col gap-3">
+        <Card className="relative z-10 w-full max-w-[320px] xl:max-w-none max-h-[85vh] overflow-y-auto p-4 xl:p-3 shrink-0 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-2xl xl:shadow-xs flex flex-col gap-3">
           <div className="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-zinc-800">
             <h2 className="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
               Refine Matches <Filter className="w-3.5 h-3.5 text-gray-400" />
@@ -547,7 +563,10 @@ export default function MatchingPage() {
             ))}
 
             <Button 
-              onClick={handleApplyFilters}
+              onClick={() => {
+                handleApplyFilters();
+                setShowMobileFilters(false);
+              }}
               className="w-full bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold rounded-xl py-2 mt-2"
             >
               Apply Filters
@@ -556,7 +575,7 @@ export default function MatchingPage() {
         </Card>
 
         {/* Search Alerts Card */}
-        <div className="relative shrink-0 overflow-hidden p-4 bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-zinc-900 border border-rose-100 dark:border-rose-900/30 rounded-2xl shadow-xs">
+        <div className="hidden xl:block relative shrink-0 overflow-hidden p-4 bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-zinc-900 border border-rose-100 dark:border-rose-900/30 rounded-2xl shadow-xs">
           <div className="relative z-10 space-y-2.5">
             <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white flex items-center gap-1.5">
               <Bell className="w-3.5 h-3.5 text-rose-500" /> Search Alerts

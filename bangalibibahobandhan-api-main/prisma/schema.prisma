@@ -406,11 +406,26 @@ model Profile {
 
   user          User           @relation("UserProfile", fields: [userId], references: [id], onDelete: Cascade)
   profileImages ProfileImage[]
+  editHistory   ProfileEditHistory[]
 
   @@index([userId])
   @@index([maritalStatus])
   @@index([dist])
   @@index([state])
+}
+
+// Superadmin-only: tracks every section edit made by admins
+model ProfileEditHistory {
+  id           String   @id @default(cuid())
+  profileId    String
+  sectionName  String
+  previousData Json
+  updatedAt    DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([sectionName])
 }
 
 // Refresh Token Model (For User)

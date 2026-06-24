@@ -198,6 +198,9 @@ model User {
   isProfilePublic    Boolean @default(false)
   allowSocialPublish Boolean @default(false)
 
+  verificationStatus ModerationStatus @default(PENDING)
+  verificationSelfieUrl String?
+
   payments               Payment[]
   conversations          Conversation[]  @relation("ConversationParticipants")
   sentMessages           Message[]       @relation("SentMessages")
@@ -329,13 +332,100 @@ model Profile {
   aboutMyself    String?
   aboutMyPartner String?
 
+  rashi          String?
+  nakshatra      String?
+  birthTime      String?
+  cityOfBirth    String?
+  countryOfBirth String?
+
+  familyType          String?
+  mothersOccupation   String?
+  noOfBrothers        String?
+  noOfSisters         String?
+  familyValues        String?
+
+  workExperience      String?
+  collegeInstitution  String?
+  fieldOfStudy        String?
+  passingYear         String?
+  organizationName    String?
+
+  partnerAgeRange     String?
+  partnerHeightRange  String?
+  partnerMaritalStatus String?
+  partnerReligion     String?
+  partnerCaste        String?
+  partnerEducation    String?
+  partnerProfession   String?
+  partnerIncome       String?
+  partnerLocation     String?
+  partnerDiet         String?
+  partnerComplexion   String?
+  partnerMotherTongue String?
+
+  // Additional Missing Fields
+  disabilityDetails     String?
+  healthScreening       String?
+  country               String?
+  citizenship           String?
+  ancestralOrigin       String?
+  relationshipWithBrideGroom String?
+  
+  personalityTraits     String?
+  lifeGoals             String?
+  employmentType        String?
+  occupationDetails     String?
+  designation           String?
+  companyName           String?
+  
+  brothersMarriedCount  String?
+  sistersMarriedCount   String?
+  myFamilyStatus        String?
+  familyDescription     String?
+  familyBackground      String?
+  culturalValues        String?
+  
+  partnerWeightRange             String?
+  partnerSpokenLanguages         String?
+  partnerEmploymentType          String?
+  partnerSubCaste                String?
+  partnerGothra                  String?
+  partnerPreferredCountry        String?
+  partnerPreferredState          String?
+  partnerPreferredDistrict       String?
+  partnerDrinkingHabit           String?
+  partnerSmokingHabit            String?
+  partnerDisabilityAcceptable    String?
+  partnerDescription             String?
+  partnerPersonalityExpectation  String?
+  partnerFamilyExpectation       String?
+  partnerFamilyDetails           String?
+  familyStatusPreference         String?
+  familyTypePreference           String?
+  familyValuesPreference         String?
+
   user          User           @relation("UserProfile", fields: [userId], references: [id], onDelete: Cascade)
   profileImages ProfileImage[]
+  editHistory   ProfileEditHistory[]
 
   @@index([userId])
   @@index([maritalStatus])
   @@index([dist])
   @@index([state])
+}
+
+// Superadmin-only: tracks every section edit made by admins
+model ProfileEditHistory {
+  id           String   @id @default(cuid())
+  profileId    String
+  sectionName  String
+  previousData Json
+  updatedAt    DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([sectionName])
 }
 
 // Refresh Token Model (For User)
@@ -915,6 +1005,7 @@ model BroadcastMessage {
   id           String    @id @default(cuid())
   content      String
   targetGender String?
+  imageUrl     String?
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   expiresAt    DateTime?
@@ -937,4 +1028,16 @@ model UserSubscription {
   @@index([userId])
   @@index([planId])
   @@index([expiryDate])
+}
+
+// System Settings Model
+model SystemSettings {
+  id            String   @id @default(cuid())
+  smtpHost      String?
+  smtpPort      Int?
+  smtpUser      String?
+  smtpPass      String?
+  smsGatewayUrl String?
+  smsApiKey     String?
+  updatedAt     DateTime @updatedAt
 }

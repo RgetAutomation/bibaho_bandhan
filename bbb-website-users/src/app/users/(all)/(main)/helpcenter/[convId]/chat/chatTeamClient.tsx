@@ -37,6 +37,7 @@ import toast from "react-hot-toast";
 import SubmitLoadingView from "@/components/submitLoadingView";
 import { companyDetails } from "@/components/helper/constant";
 import { useNotificationStore } from "@/hooks/useNotificationStore";
+import MobileHeader from "@/components/dashboard/MobileHeader";
 
 interface ChatContainerProps {
   conversationId: string;
@@ -166,7 +167,7 @@ export const ChatTeamClient: React.FC<ChatContainerProps> = ({
   }
 
   return (
-    <div className="flex flex-row h-full w-full overflow-hidden">
+    <div className="flex flex-row flex-1 min-h-0 overflow-hidden w-full fixed top-0 left-0 right-0 h-[100dvh] z-40 md:relative md:h-auto md:z-auto bg-white dark:bg-zinc-950">
 
       {/* ─── LEFT: Chat ─── */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
@@ -196,20 +197,22 @@ export const ChatTeamClient: React.FC<ChatContainerProps> = ({
           </Avatar>
 
           <div className="flex flex-col justify-center">
-            <h1 className="text-base font-semibold leading-tight">Support Team</h1>
+            <h1 className="text-base font-semibold leading-tight">Support</h1>
             <span className="flex items-center gap-1.5 text-[10px] text-green-600 font-semibold mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               Online
             </span>
           </div>
+
+          {/* Quick mobile navigation since the main nav is hidden */}
+          <MobileHeader hideLogo={true} className="flex md:hidden items-center ml-auto shrink-0 z-40 bg-transparent border-none p-0" />
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
-          <div
-            ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto p-4 space-y-4"
-          >
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4"
+        >
             {Object.entries(groupedMessages).map(([date, msgs]) => (
               <div key={date}>
                 {renderDateSeparator(new Date(date))}
@@ -236,7 +239,6 @@ export const ChatTeamClient: React.FC<ChatContainerProps> = ({
                 )}
               </div>
             ))}
-          </div>
         </div>
 
         {/* Input */}

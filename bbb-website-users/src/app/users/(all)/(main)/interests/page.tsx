@@ -12,7 +12,7 @@ import { UserType } from "@/components/enum/userType";
 import { IConnectionRequest } from "@/components/interface/IConnectionRequest";
 import LoadingPage from "@/components/loader";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, UserRound, UserX, XCircle, Heart, CheckCircle2, MapPin, Briefcase, GraduationCap, MoreVertical, Users, Clock, Eye, MessageCircle, ShieldCheck, Bookmark, Flag, Ban, Ruler, Crown, CheckCircle, Search } from "lucide-react";
+import { Trash2, UserRound, UserX, XCircle, Heart, CheckCircle2, MapPin, Briefcase, GraduationCap, MoreVertical, Users, Clock, Eye, MessageCircle, ShieldCheck, Bookmark, Flag, Ban, Ruler, Crown, CheckCircle, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -106,6 +106,7 @@ function LoadConnectionPage({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -122,35 +123,43 @@ function LoadConnectionPage({
     <div className="flex flex-col h-[calc(100vh-80px)]">
       <div className="w-full max-w-6xl mx-auto px-4 pt-4 pb-2 shrink-0 z-30 relative">
         <div className="flex flex-col md:flex-row items-center gap-4 relative justify-center w-full">
-          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white text-center md:absolute md:left-0 z-0">
+          <h2 className="hidden md:block text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white text-center md:absolute md:left-0 z-0">
             {paramsType === "sent" ? "Interests Sent" : "Interests Received"}
           </h2>
           
           <div className="flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-xl w-full md:w-auto shrink-0 shadow-inner z-10 relative">
             <Link 
               href="/users/interests?type=received" 
-              className={`flex-1 md:flex-none text-center px-6 py-2 rounded-lg text-sm font-bold transition-all ${paramsType !== "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
+              className={`flex-1 md:flex-none text-center px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${paramsType !== "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-[0_3px_10px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-zinc-700/60 dark:shadow-[0_3px_10px_rgba(0,0,0,0.4)]" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
             >
               Received
             </Link>
             <Link 
               href="/users/interests?type=sent" 
-              className={`flex-1 md:flex-none text-center px-6 py-2 rounded-lg text-sm font-bold transition-all ${paramsType === "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
+              className={`flex-1 md:flex-none text-center px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${paramsType === "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-[0_3px_10px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-zinc-700/60 dark:shadow-[0_3px_10px_rgba(0,0,0,0.4)]" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
             >
               Sent
             </Link>
           </div>
 
           <div className="w-full md:w-auto md:absolute md:right-0 z-10">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name..."
-                className="w-full lg:w-[260px] bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all shadow-sm"
-              />
+            <div className="flex gap-2 items-center w-full">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by name..."
+                  className="w-full lg:w-[260px] bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all shadow-sm"
+                />
+              </div>
+              <button 
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className={`md:hidden shrink-0 flex items-center justify-center p-2 rounded-xl border transition-colors ${showMobileFilters ? "bg-[#E51E44]/10 border-[#E51E44]/30 text-[#E51E44]" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-gray-400"}`}
+              >
+                <Filter className="w-[18px] h-[18px]" />
+              </button>
             </div>
           </div>
         </div>
@@ -159,9 +168,9 @@ function LoadConnectionPage({
       <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col items-center relative z-0">
         <div className="w-full max-w-6xl">
           {paramsType === "sent" ? (
-            <InterestsSentComponent userType={userType} searchQuery={debouncedSearchQuery} />
+            <InterestsSentComponent userType={userType} searchQuery={debouncedSearchQuery} showMobileFilters={showMobileFilters} setShowMobileFilters={setShowMobileFilters} />
           ) : (
-            <InterestsReveivedComponent userType={userType} searchQuery={debouncedSearchQuery} />
+            <InterestsReveivedComponent userType={userType} searchQuery={debouncedSearchQuery} showMobileFilters={showMobileFilters} setShowMobileFilters={setShowMobileFilters} />
           )}
         </div>
       </div>
@@ -169,7 +178,7 @@ function LoadConnectionPage({
   );
 }
 
-function InterestsReveivedComponent({ userType, searchQuery }: { userType: UserType, searchQuery: string }) {
+function InterestsReveivedComponent({ userType, searchQuery, showMobileFilters, setShowMobileFilters }: { userType: UserType, searchQuery: string, showMobileFilters: boolean, setShowMobileFilters: (val: boolean) => void }) {
   const [filterType, setFilterType] = useState("all");
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -228,8 +237,8 @@ function InterestsReveivedComponent({ userType, searchQuery }: { userType: UserT
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start mt-2">
       <div className="flex-1 w-full space-y-4">
-        <div className="sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 flex items-center justify-center md:justify-start w-full">
-          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} />
+        <div className={`${showMobileFilters ? "flex" : "hidden"} md:flex sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 items-center justify-center md:justify-start w-full`}>
+          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} setShowMobileFilters={setShowMobileFilters} />
         </div>
       <div className="space-y-2 flex flex-col flex-1">
         <AnimatePresence mode="popLayout">
@@ -277,7 +286,7 @@ function InterestsReveivedComponent({ userType, searchQuery }: { userType: UserT
   );
 }
 
-function InterestsSentComponent({ userType, searchQuery }: { userType: UserType, searchQuery: string }) {
+function InterestsSentComponent({ userType, searchQuery, showMobileFilters, setShowMobileFilters }: { userType: UserType, searchQuery: string, showMobileFilters: boolean, setShowMobileFilters: (val: boolean) => void }) {
   const [filterType, setFilterType] = useState("all");
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -336,8 +345,8 @@ function InterestsSentComponent({ userType, searchQuery }: { userType: UserType,
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start mt-2">
       <div className="flex-1 w-full space-y-4">
-        <div className="sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 flex items-center justify-center md:justify-start w-full">
-          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} />
+        <div className={`${showMobileFilters ? "flex" : "hidden"} md:flex sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 items-center justify-center md:justify-start w-full`}>
+          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} setShowMobileFilters={setShowMobileFilters} />
         </div>
       <div className="space-y-2 flex flex-col flex-1">
         <AnimatePresence mode="popLayout">
@@ -504,8 +513,107 @@ function ProfileCard({
     ? `${profileUser.profile.dist}, ${profileUser.profile.state}` 
     : "";
 
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  const isNew = new Date(request.createdAt) > threeDaysAgo;
+
   return (
-    <div className="flex flex-col md:flex-row items-start p-4 md:p-5 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-zinc-800/80 gap-6 w-full relative">
+    <>
+      {/* Mobile View */}
+      <div className="flex md:hidden items-center justify-between p-3 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800/80 w-full gap-3">
+        {/* Mobile Left: Avatar */}
+        <ProfileLinkWrapper enabled={canViewProfileFromCard} userId={profileUser?.id || ""}>
+          <div className="relative w-[52px] h-[52px] shrink-0">
+            <div className="relative w-full h-full rounded-full overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm">
+              <Image
+                src={profileUser?.avatar ? profileUser.avatar : (profileUser?.gender === "MALE" ? "/groom.webp" : "/bride.webp")}
+                alt="avatar" fill className="object-cover"
+              />
+            </div>
+            {request.onlineStatus === "Online" && (
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full z-10" />
+            )}
+            {profileUser?.isGhotokOwned && (
+              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-600 via-emerald-600/80 to-transparent backdrop-blur-[2px] text-white text-[6px] font-bold py-0.5 px-1.5 rounded-sm z-10 pointer-events-none shadow-sm whitespace-nowrap">
+                Matchmaker
+              </div>
+            )}
+          </div>
+        </ProfileLinkWrapper>
+
+        {/* Mobile Middle: Info */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+          <ProfileLinkWrapper enabled={canViewProfileFromCard} userId={profileUser?.id || ""}>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              {isNew && <span className="bg-rose-100 text-[#E51E44] text-[8px] font-bold px-1.5 py-0.5 rounded-sm shrink-0">NEW</span>}
+              <h1 className="text-[13px] font-bold text-gray-900 dark:text-white truncate">
+                {profileUser?.title} {profileUser?.lastName}
+              </h1>
+            </div>
+          </ProfileLinkWrapper>
+          <span className="text-[10px] font-medium text-gray-500 truncate">{ageText ? `${ageText}, ` : ""}{locationText}</span>
+          {(profileUser?.profile?.education || profileUser?.profile?.height) && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+              {profileUser?.profile?.education && (
+                <div className="flex items-center gap-1 text-[9px] font-medium text-gray-500 truncate max-w-[120px]">
+                  <GraduationCap className="w-2.5 h-2.5 shrink-0" /> {profileUser.profile.education}
+                </div>
+              )}
+              {profileUser?.profile?.height && (
+                <div className="flex items-center gap-1 text-[9px] font-medium text-gray-500 shrink-0">
+                  <Ruler className="w-2.5 h-2.5 shrink-0" /> {profileUser.profile.height}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex items-center gap-1 text-[9px] font-semibold text-gray-400 mt-0.5">
+            <Clock className="w-2.5 h-2.5" /> {timeAgo}
+          </div>
+        </div>
+
+        {/* Mobile Right: Actions */}
+        <div className="flex flex-col gap-1.5 shrink-0 w-[100px]">
+          {interestType === "received" && request.status === ConnectionStatus.SENT ? (
+            <>
+              <Button size="sm" onClick={() => handleAcceptConnection(request.id as string)} disabled={accepting || rejecting} className="h-7 px-2 text-[9px] font-bold bg-[#1B7339] hover:bg-[#145a2b] text-white rounded-md flex items-center justify-center gap-1 w-full">
+                <CheckCircle2 className="w-3 h-3" /> {accepting ? "..." : "Accept"}
+              </Button>
+              <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white border-none rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
+                <Link href={`/users/profile/${profileUser?.id}`}><Eye className="w-3 h-3" /> Profile</Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleRejectConnection(request.id as string)} disabled={accepting || rejecting} className="h-7 px-2 text-[9px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 rounded-md flex items-center justify-center gap-1 w-full">
+                <XCircle className="w-3 h-3" /> {rejecting ? "..." : "Decline"}
+              </Button>
+            </>
+          ) : interestType === "sent" && request.status === ConnectionStatus.SENT ? (
+            <>
+              <div className="h-7 px-2 text-[9px] font-bold text-orange-600 bg-orange-100 border border-orange-200 rounded-md flex items-center justify-center gap-1 w-full shrink-0">
+                <Clock className="w-3 h-3" /> Pending
+              </div>
+              <Button variant="outline" size="sm" onClick={() => handleDeleteConnection(request.id as string)} disabled={deleting} className="h-7 px-2 text-[9px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 rounded-md flex items-center justify-center gap-1 w-full">
+                <XCircle className="w-3 h-3" /> {deleting ? "..." : "Cancel"}
+              </Button>
+              <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white border-none rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
+                <Link href={`/users/profile/${profileUser?.id}`}><Eye className="w-3 h-3" /> Profile</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 rounded-md flex items-center justify-center gap-1 w-full">
+                <Link href={`/chat?userId=${profileUser?.id}`}><MessageCircle className="w-3 h-3" /> Message</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white border-none rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
+                <Link href={`/users/profile/${profileUser?.id}`}><Eye className="w-3 h-3" /> Profile</Link>
+              </Button>
+              <Button variant="outline" size="sm" className="h-7 px-2 text-[9px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 rounded-md flex items-center justify-center gap-1 w-full">
+                <Bookmark className="w-3 h-3" /> Shortlist
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:flex flex-col md:flex-row items-start p-4 md:p-5 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 dark:border-zinc-800/80 gap-6 w-full relative">
       
       {/* Left: Avatar & Online Status */}
       <ProfileLinkWrapper enabled={canViewProfileFromCard} userId={profileUser?.id || ""}>
@@ -779,6 +887,7 @@ function ProfileCard({
         </div>
       )}
     </div>
+    </>
   );
 }
 
@@ -947,7 +1056,7 @@ function InterestSummarySidebar({ data, title }: { data: IConnectionRequest[] | 
   );
 }
 
-function FilterTabs({ data, filterType, setFilterType }: { data: IConnectionRequest[] | undefined, filterType: string, setFilterType: (val: string) => void }) {
+function FilterTabs({ data, filterType, setFilterType, setShowMobileFilters }: { data: IConnectionRequest[] | undefined, filterType: string, setFilterType: (val: string) => void, setShowMobileFilters?: (val: boolean) => void }) {
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   
   const allCount = data?.length || 0;
@@ -964,31 +1073,59 @@ function FilterTabs({ data, filterType, setFilterType }: { data: IConnectionRequ
   ];
 
   return (
-    <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-1.5 md:gap-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-1 rounded-xl shadow-sm w-full">
-      {tabs.map(tab => {
-        const isActive = filterType === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => setFilterType(tab.id)}
-            className={`flex-1 flex justify-center items-center gap-1.5 md:gap-2 px-2 py-1 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-bold transition-all ${
-              isActive 
-                ? "bg-[#E51E44] text-white shadow-sm" 
-                : "text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800"
-            }`}
-          >
-            {tab.label}
-            <span className={`px-1.5 py-0.5 rounded-md text-[10px] md:text-xs font-black ${
-              isActive 
-                ? "bg-white/20 text-white" 
-                : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-500"
-            }`}>
-              {tab.count}
-            </span>
-          </button>
-        )
-      })}
-    </div>
+    <>
+      {/* Mobile View (Chat-style horizontal scroll) */}
+      <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-1 scrollbar-hide w-full">
+        {tabs.map(tab => {
+          const isActive = filterType === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => { setFilterType(tab.id); setShowMobileFilters?.(false); }}
+              className={`whitespace-nowrap flex-shrink-0 px-4 py-1.5 rounded-full border text-[11px] font-bold flex items-center gap-1.5 transition-colors ${
+                isActive 
+                  ? "border-[#E51E44]/30 bg-rose-50 dark:bg-[#E51E44]/10 text-[#E51E44]" 
+                  : "border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300 bg-white dark:bg-zinc-900"
+              }`}
+            >
+              {tab.label}
+              {tab.count > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${isActive ? "bg-[#E51E44] text-white" : "bg-rose-100 dark:bg-rose-900/40 text-[#E51E44]"}`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Desktop View (Original block style) */}
+      <div className="hidden md:flex flex-nowrap items-center justify-between gap-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 p-1 rounded-xl shadow-sm w-full">
+        {tabs.map(tab => {
+          const isActive = filterType === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setFilterType(tab.id)}
+              className={`flex-1 flex justify-center items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                isActive 
+                  ? "bg-[#E51E44] text-white shadow-sm" 
+                  : "text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800"
+              }`}
+            >
+              {tab.label}
+              <span className={`px-1.5 py-0.5 rounded-md text-xs font-black ${
+                isActive 
+                  ? "bg-white/20 text-white" 
+                  : "bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-500"
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </>
   );
 }
 

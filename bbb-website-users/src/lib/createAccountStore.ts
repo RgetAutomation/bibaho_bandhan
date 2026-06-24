@@ -5,6 +5,7 @@ type CreateAccountState = Partial<RegisterFormData> & {
   setData: (data: Partial<RegisterFormData>) => void;
   hydrated: boolean;
   setHydrated: (hydrated: boolean) => void;
+  clearData: () => void;
 };
 
 export const useCreateAccountStore = create<CreateAccountState>()(
@@ -16,6 +17,15 @@ export const useCreateAccountStore = create<CreateAccountState>()(
       hydrated: false,
       setHydrated: (value) => set({ hydrated: value }),
       setData: (data: Partial<RegisterFormData>) => set(data),
+      clearData: () => set((state) => ({
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        hydrated: state.hydrated,
+        setHydrated: state.setHydrated,
+        setData: state.setData,
+        clearData: state.clearData
+      }), true),
     }),
     {
       name: "create-account-storage",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Search, Edit, CheckCircle2, MessageSquare, ChevronRight, ChevronLeft } from "lucide-react";
+import { Search, Edit, CheckCircle2, MessageSquare, ChevronRight, ChevronLeft, Filter, Heart } from "lucide-react";
 import Image from "next/image";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useUserNotification } from "@/hooks/useUserNotification";
@@ -21,6 +21,7 @@ export default function ChatSidebarClient() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filterMode, setFilterMode] = React.useState<"all" | "unread" | "online" | "verified">("all");
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [showMobileFilters, setShowMobileFilters] = React.useState(false);
 
   const { user } = useAuthSession();
   const userType = user?.type as UserType;
@@ -82,11 +83,16 @@ export default function ChatSidebarClient() {
     return filtered;
   }, [allConversations, onlineUsers, searchQuery, filterMode]);
 
+  const onlineConversations = useMemo(() => {
+    if (!allConversations) return [];
+    return allConversations.filter(conv => onlineUsers.has(conv.participant.id));
+  }, [allConversations, onlineUsers]);
+
   const totalUnread = allConversations?.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0) || 0;
 
   if (isCollapsed) {
     return (
-      <div className="w-[80px] shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col items-center py-5 h-full transition-all duration-300 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)] gap-4">
+      <div className={`${activeConvId ? "hidden sm:flex" : "flex w-full sm:w-[80px]"} shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-col items-center py-5 h-full transition-all duration-300 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)] gap-4`}>
         <button 
           onClick={() => setIsCollapsed(false)}
           className="bg-[#E51E44] text-white p-2 rounded-xl shadow-md shadow-[#E51E44]/20 hover:bg-[#C81A3C] transition-colors flex items-center justify-center w-10 h-10 shrink-0 mb-2"
@@ -130,11 +136,11 @@ export default function ChatSidebarClient() {
   }
 
   return (
-    <div className="w-[380px] shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300">
+    <div className={`${activeConvId ? "hidden sm:flex" : "flex w-full sm:w-[380px]"} shrink-0 border-r border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-col h-full overflow-hidden shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300`}>
       
       {/* Header Section */}
-      <div className="p-5 flex flex-col gap-4 border-b border-gray-50 dark:border-zinc-800/50 shrink-0">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-5 pb-2 sm:pb-5 flex flex-col gap-4 border-b border-gray-50 dark:border-zinc-800/50 shrink-0">
+        <div className="hidden sm:flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-[22px] font-black tracking-tight text-gray-900 dark:text-white">
               Messages
@@ -147,34 +153,79 @@ export default function ChatSidebarClient() {
           </div>
           <button 
             onClick={() => setIsCollapsed(true)}
-            className="bg-[#E51E44] text-white p-2 rounded-xl shadow-md shadow-[#E51E44]/20 hover:bg-[#C81A3C] transition-colors"
+            className="hidden sm:flex bg-[#E51E44] text-white p-2 rounded-xl shadow-md shadow-[#E51E44]/20 hover:bg-[#C81A3C] transition-colors items-center justify-center"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl text-[13px] font-medium outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all placeholder:text-gray-400"
-          />
+        {/* Search and Mobile Filter Toggle */}
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700/50 rounded-2xl text-[13px] font-medium outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <button 
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className={`sm:hidden flex items-center justify-center p-2 rounded-xl border transition-colors ${showMobileFilters ? "bg-[#E51E44]/10 border-[#E51E44]/30 text-[#E51E44]" : "bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-700/50 text-gray-500 dark:text-gray-400"}`}
+          >
+            <Filter className="w-[18px] h-[18px]" />
+          </button>
+        </div>
+
+        {/* Mobile Online Users Horizontal List */}
+        <div className="sm:hidden flex items-center gap-3 overflow-x-auto pt-1 pb-2 px-1 scrollbar-hide">
+          {/* All Messages / Heart */}
+          <div 
+            onClick={() => setFilterMode("all")}
+            className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+          >
+            <div className="w-[44px] h-[44px] rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center border border-rose-100 dark:border-rose-900 shadow-sm">
+              <Heart className="w-5 h-5 text-[#E51E44] fill-[#E51E44]" />
+            </div>
+            <span className="text-[9px] font-bold text-gray-600 dark:text-zinc-400 text-center leading-tight">All<br/>Messages</span>
+          </div>
+
+          {/* Online Users */}
+          {onlineConversations.map((conv) => {
+            const p = conv.participant;
+            return (
+              <div 
+                key={conv.id}
+                onClick={() => {
+                  router.push(`/users/chat/${conv.id}`);
+                  clearUnreadCount(conv.id);
+                }}
+                className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+              >
+                <div className="relative w-[44px] h-[44px] rounded-full border-[1.5px] border-[#E51E44] p-[1.5px] shadow-sm">
+                  <div className="relative w-full h-full rounded-full overflow-hidden">
+                    <Image src={p?.avatar || ((p as any)?.gender === "MALE" ? "/groom.webp" : "/bride.webp")} alt={p?.lastName || "Avatar"} fill className="object-cover" />
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-zinc-900 rounded-full z-10" />
+                </div>
+                <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate w-12 text-center">{p?.lastName}</span>
+              </div>
+            );
+          })}
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className={`${showMobileFilters ? "flex" : "hidden"} sm:flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide`}>
           <button 
-            onClick={() => setFilterMode("all")}
+            onClick={() => { setFilterMode("all"); setShowMobileFilters(false); }}
             className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-[11px] font-bold transition-colors ${filterMode === "all" ? "border-[#E51E44]/30 bg-rose-50 dark:bg-[#E51E44]/10 text-[#E51E44]" : "border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300"}`}
           >
             All Chats
           </button>
           <button 
-            onClick={() => setFilterMode("unread")}
+            onClick={() => { setFilterMode("unread"); setShowMobileFilters(false); }}
             className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-[11px] font-bold flex items-center gap-1.5 transition-colors ${filterMode === "unread" ? "border-[#E51E44]/30 bg-rose-50 dark:bg-[#E51E44]/10 text-[#E51E44]" : "border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300"}`}
           >
             Unread
@@ -183,13 +234,13 @@ export default function ChatSidebarClient() {
             )}
           </button>
           <button 
-            onClick={() => setFilterMode("online")}
+            onClick={() => { setFilterMode("online"); setShowMobileFilters(false); }}
             className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-[11px] font-bold transition-colors ${filterMode === "online" ? "border-[#E51E44]/30 bg-rose-50 dark:bg-[#E51E44]/10 text-[#E51E44]" : "border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300"}`}
           >
             Online
           </button>
           <button 
-            onClick={() => setFilterMode("verified")}
+            onClick={() => { setFilterMode("verified"); setShowMobileFilters(false); }}
             className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-[11px] font-bold transition-colors ${filterMode === "verified" ? "border-[#E51E44]/30 bg-rose-50 dark:bg-[#E51E44]/10 text-[#E51E44]" : "border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300"}`}
           >
             Verified
@@ -198,7 +249,7 @@ export default function ChatSidebarClient() {
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0 pb-24 sm:pb-0">
         {isLoading ? (
           <div className="p-6 text-center text-sm font-semibold text-gray-400">Loading chats...</div>
         ) : conversations.length === 0 ? (

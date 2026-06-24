@@ -120,10 +120,10 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col min-h-full bg-gray-50/50 dark:bg-zinc-950">
 
-      <div className="flex flex-col gap-3 overflow-y-auto">
+      <div className="flex flex-col gap-3 overflow-y-auto pb-24 sm:pb-6">
         {/* Profile Card View */}
         <div className="flex flex-col gap-5 px-4 md:px-6 lg:px-8 pt-4 md:pt-6 w-full">
-          <div className="w-full flex flex-col md:flex-row items-start justify-start gap-6 md:gap-10 pb-6 border-b">
+          <div className="w-full flex flex-row items-start justify-start gap-4 sm:gap-6 md:gap-10 pb-6 border-b">
             {/* Avatar with gradient ring */}
             <div className="relative shrink-0 group">
               <Image
@@ -138,9 +138,16 @@ export default function ProfilePage() {
                 width={256}
                 height={320}
                 priority
-                className="w-40 sm:w-48 md:w-56 lg:w-64 h-auto aspect-[4/5] object-cover rounded-2xl shadow-lg border-2"
+                className="w-24 sm:w-48 md:w-56 lg:w-64 h-auto aspect-[4/5] object-cover rounded-2xl shadow-lg border-2"
               />
-              {!error && data === true && (
+              {/* Pending Badge */}
+              {!error && data?.verificationStatus !== "APPROVED" && (
+                <div className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-amber-500/90 text-white px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-lg border border-amber-400 backdrop-blur-sm text-[8px] sm:text-[10px] font-bold flex items-center gap-1 sm:gap-1.5 z-10 pointer-events-none">
+                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-white animate-pulse"></span>
+                  Pending
+                </div>
+              )}
+              {!error && data?.verificationStatus === "APPROVED" && (
                 <Link
                   href={PROFILE_CHANGE_AVATAR_LINK}
                   className="absolute bottom-3 right-3 bg-rose-600 text-white p-2.5 sm:p-3 rounded-full shadow-xl hover:bg-rose-700 hover:scale-110 transition-all border-2 border-white dark:border-zinc-950"
@@ -152,44 +159,39 @@ export default function ProfilePage() {
             </div>
 
             {/* User Info */}
-            <div className="flex flex-col items-start gap-2 pt-2">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col items-start gap-1 sm:gap-2 pt-1 sm:pt-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight">
                   {user?.name} {user?.middleName} {user?.lastName}
                 </h1>
                 {paidUser.paid && (
-                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white shadow-md gap-1">
-                    <Crown className="w-3 h-3" /> VIP
+                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white shadow-md gap-1 px-1.5 py-0 sm:px-2.5 sm:py-0.5 text-[9px] sm:text-xs">
+                    <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> VIP
                   </Badge>
                 )}
               </div>
 
-              <p className="flex items-center gap-2 text-sm md:text-base text-muted-foreground">
-                <Hash className="w-4 h-4" />
+              <p className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base text-muted-foreground">
+                <Hash className="w-3 h-3 sm:w-4 sm:h-4" />
                 {user?.publicId}
                 <Button
                   onClick={() => handleCopy(user?.publicId as string)}
                   variant="ghost"
-                  size={"icon"}
+                  size="icon"
+                  className="h-6 w-6 sm:h-9 sm:w-9 ml-[-4px]"
                 >
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </p>
 
-              {/* {user?.email && !user?.email.includes("@example.com") && (
-                <p className="flex items-center gap-2 text-sm md:text-base text-muted-foreground">
-                  <Mail className="w-4 h-4" /> {user?.email}
-                </p>
-              )} */}
-
-              <p className="flex items-center gap-2 text-sm md:text-base text-muted-foreground">
-                <Phone className="w-4 h-4" /> +91 {user?.phone}
+              <p className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base text-muted-foreground">
+                <Phone className="w-3 h-3 sm:w-4 sm:h-4" /> +91 {user?.phone}
               </p>
 
               {user?.type === UserType.PAID_USER && (
-                <div className="flex gap-2 items-start text-sm md:text-base text-muted-foreground">
+                <div className="flex gap-1.5 sm:gap-2 items-start text-xs sm:text-sm md:text-base text-muted-foreground">
                   <div className={"flex gap-1 items-center"}>
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span>Plan Expires:</span>
                   </div>
                   <div
@@ -203,7 +205,7 @@ export default function ProfilePage() {
                         "dd MMM yyyy",
                       )}
                     </span>
-                    <span className="text-xs hidden sm:block">
+                    <span className="text-[10px] sm:text-xs hidden sm:block">
                       (
                       {formatDistance(
                         new Date(user?.planExpiryDate ?? new Date()),
@@ -216,9 +218,9 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Profile Update Actions */}
-              {!error && data !== true && (
-                <div className="mt-4 w-full flex justify-start">
+              {/* Profile Update Actions (Desktop Only) */}
+              {!error && data?.isProfileComplete !== true && (
+                <div className="mt-4 w-full hidden sm:flex justify-start">
                   <div className="bg-muted p-4 rounded-2xl shadow-lg text-center flex flex-col justify-between space-y-3 border border-primary/20 w-full max-w-sm">
                     <div>
                       <p className="text-lg font-semibold text-foreground mb-1">
@@ -241,9 +243,9 @@ export default function ProfilePage() {
               )}
 
               {/* Plan Details Simplified */}
-              <div className="mt-2 w-full flex justify-start">
-                <p className="flex items-center gap-2 text-sm md:text-base text-muted-foreground">
-                  <CreditCard className="w-4 h-4" /> 
+              <div className="mt-1 sm:mt-2 w-full flex justify-start">
+                <p className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base text-muted-foreground">
+                  <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" /> 
                   Plan: <span className="font-semibold text-primary">{paidUser.paid ? "Premium Plan" : "Free Plan"}</span>
                   {paidUser.paid === false && paidUser.reason === NotPaidUserReason.PLAN_EXPIRED && (
                     <span className="text-destructive font-semibold">(Expired)</span>
@@ -252,6 +254,31 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          {/* Profile Update Actions (Mobile Only) */}
+          {!error && data?.isProfileComplete !== true && (
+            <div className="w-full flex sm:hidden justify-center pb-6">
+              <div className="bg-muted p-3 rounded-xl shadow-md text-center flex flex-col justify-between space-y-2 border border-primary/20 w-full max-w-[90%] mx-auto">
+                <div>
+                  <p className="text-base font-bold text-foreground mb-0.5">
+                    Complete your profile
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    Just one step away! Complete your profile to make it visible to everyone.
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-full w-full font-medium shadow-sm h-8 text-xs mt-1"
+                >
+                  <Link href={PROFILE_EDIT_PAGE_LINK}>
+                    Update Profile
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
 
         </div>
 
@@ -282,7 +309,7 @@ export default function ProfilePage() {
             </Link>
 
             {/* Edit Profile Details */}
-            {!error && data === true && (
+            {!error && data?.isProfileComplete === true && (
               <Link href={PROFILE_EDIT_PROFILE_DETAILS_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <Settings className="w-6 h-6 text-rose-500" />
@@ -297,7 +324,7 @@ export default function ProfilePage() {
             )}
 
             {/* Photo Gallery */}
-            {!error && data === true && (
+            {!error && data?.isProfileComplete === true && (
               <Link href={PROFILE_CHANGE_AVATAR_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <ImageIcon className="w-6 h-6 text-rose-500" />
@@ -340,7 +367,7 @@ export default function ProfilePage() {
             )}
 
             {/* Blocked Users */}
-            {!error && data === true && (
+            {!error && data?.isProfileComplete === true && (
               <Link href={BLOCKED_USER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <Ban className="w-6 h-6 text-rose-500" />

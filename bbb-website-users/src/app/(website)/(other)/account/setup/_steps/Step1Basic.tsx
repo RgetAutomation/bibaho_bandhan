@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import StepActions from "./StepActions";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 // Inline schema for this specific step
 export const step1Schema = updateProfileSchema.pick({
@@ -51,9 +52,9 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
     resolver: zodResolver(step1Schema),
     defaultValues: {
       firstName: stateData.firstName || createAccountState.firstName || "",
-      middleName: stateData.middleName || "",
+      middleName: stateData.middleName || createAccountState.middleName || "",
       lastName: stateData.lastName || createAccountState.lastName || "",
-      dob: stateData.dob || "",
+      dob: stateData.dob || createAccountState.dateOfBirth || "",
       height: stateData.height || "",
       weight: stateData.weight || "",
       maritalStatus: stateData.maritalStatus || "",
@@ -84,33 +85,33 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Personal Information</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">Account & Basic Information</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Personal Information</h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">Account & Basic Information</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
           {/* My Basic */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Basic</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="firstName" render={({ field }) => (
-                <FormItem><FormLabel>First Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="First Name" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>First Name<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="First Name" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="middleName" render={({ field }) => (
-                <FormItem><FormLabel>Middle Name (Optional)</FormLabel><FormControl><Input placeholder="Middle Name" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Middle Name<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Middle Name" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="lastName" render={({ field }) => (
-                <FormItem><FormLabel>Last Name <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="Last Name" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Last Name<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="Last Name" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="dob" render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date of Birth <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel>Date of Birth<FormBadge type="mandatory" /></FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -121,7 +122,7 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(date) => field.onChange(date?.toISOString())} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus />
+                      <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(date) => field.onChange(date?.toISOString())} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus captionLayout="dropdown" fromYear={1900} toYear={new Date().getFullYear()} />
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
@@ -136,7 +137,7 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="height" render={({ field }) => (
-                <FormItem><FormLabel>Height <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Height<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select your height" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -187,13 +188,13 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
                 </FormItem>
               )} />
               <FormField control={form.control} name="weight" render={({ field }) => (
-                <FormItem><FormLabel>Weight (Kg)</FormLabel><FormControl><Input type="decimal" inputMode="decimal" placeholder="Write your weight" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Weight (Kg)<FormBadge type="recommended" /></FormLabel><FormControl><Input type="decimal" inputMode="decimal" placeholder="Write your weight" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="maritalStatus" render={({ field }) => (
-                <FormItem><FormLabel>Marital Status <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Marital Status<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select marital status" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -207,17 +208,17 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
                 </FormItem>
               )} />
               <FormField control={form.control} name="motherTongue" render={({ field }) => (
-                <FormItem><FormLabel>Mother Tongue <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="e.g. Bengali" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Mother Tongue<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="e.g. Bengali" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
 
             {(form.watch("maritalStatus") && form.watch("maritalStatus") !== "NEVER MARRIED") && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="children" render={({ field }) => (
-                  <FormItem><FormLabel>No. of Children <span className="text-destructive">*</span></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>No. of Children<FormBadge type="mandatory" /></FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="childrenLivingWith" render={({ field }) => (
-                  <FormItem><FormLabel>Children Living With <span className="text-destructive">*</span></FormLabel>
+                  <FormItem><FormLabel>Children Living With<FormBadge type="mandatory" /></FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                       <SelectContent>
@@ -233,28 +234,28 @@ export default function Step1Basic({ onComplete }: { onComplete: () => void }) {
             )}
             
             <FormField control={form.control} name="spokenLanguages" render={({ field }) => (
-              <FormItem><FormLabel>Spoken Languages (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Bengali, English, Hindi" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Spoken Languages<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Bengali, English, Hindi" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
           </div>
 
           {/* My Contact */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Contact</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="emailId" render={({ field }) => (
-                <FormItem><FormLabel>Email ID (Recommended)</FormLabel><FormControl><Input type="email" placeholder="Email" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email ID<FormBadge type="recommended" /></FormLabel><FormControl><Input type="email" placeholder="Email" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="phoneNumber" render={({ field }) => (
-                <FormItem><FormLabel>Phone Number <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="Phone Number" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Phone Number<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="Phone Number" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="whatsappNumber" render={({ field }) => (
-                <FormItem><FormLabel>WhatsApp Number (Optional)</FormLabel><FormControl><Input placeholder="WhatsApp Number" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>WhatsApp Number<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="WhatsApp Number" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="alternatePhone" render={({ field }) => (
-                <FormItem><FormLabel>Alternate Number (Optional)</FormLabel><FormControl><Input placeholder="Alternate Number" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Alternate Number<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Alternate Number" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="relationshipWithBrideGroom" render={({ field }) => (
-                <FormItem className="md:col-span-2"><FormLabel>Relationship with Bride/Groom <span className="text-destructive">*</span></FormLabel>
+                <FormItem className="md:col-span-2"><FormLabel>Relationship with Bride/Groom<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select relationship" /></SelectTrigger></FormControl>
                     <SelectContent>

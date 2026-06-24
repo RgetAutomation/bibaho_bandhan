@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
 import StepActions from "./StepActions";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export const step3Schema = updateProfileSchema.pick({
   religion: true,
@@ -73,19 +74,19 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Religion, Astrology & Location</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">My Cultural Background & Current Location</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Religion, Astrology & Location</h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">My Cultural Background & Current Location</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
           {/* My Religious */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Religious</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="religion" render={({ field }) => (
-                <FormItem><FormLabel>Religion <span className="text-destructive">*</span></FormLabel>
+                <FormItem><FormLabel>Religion<FormBadge type="mandatory" /></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select religion" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -98,7 +99,7 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="caste" render={({ field }) => (
-                <FormItem><FormLabel>Caste (Recommended)</FormLabel>
+                <FormItem><FormLabel>Caste<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select caste" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -111,26 +112,26 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="subCaste" render={({ field }) => (
-                <FormItem><FormLabel>Sub Caste (Optional)</FormLabel><FormControl><Input placeholder="Sub Caste" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Sub Caste<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Sub Caste" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="gotra" render={({ field }) => (
-                <FormItem><FormLabel>Gothra (Optional)</FormLabel><FormControl><Input placeholder="Gothra" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Gothra<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Gothra" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
 
           {/* My Astrology */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Astrology</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="rashi" render={({ field }) => (
-                <FormItem><FormLabel>Rashi (Optional)</FormLabel><FormControl><Input placeholder="Rashi" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Rashi<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Rashi" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="nakshatra" render={({ field }) => (
-                <FormItem><FormLabel>Star / Nakshatra (Optional)</FormLabel><FormControl><Input placeholder="Nakshatra" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Star / Nakshatra<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Nakshatra" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="manglik" render={({ field }) => (
-                <FormItem><FormLabel>Manglik Dosh (Optional)</FormLabel>
+                <FormItem><FormLabel>Manglik Dosh<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={(val) => field.onChange(val === "true")} defaultValue={field.value ? "true" : "false"}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -142,41 +143,41 @@ export default function Step3Religion({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="timeOfBirth" render={({ field }) => (
-                <FormItem><FormLabel>Time of Birth (Optional)</FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Time of Birth<FormBadge type="optional" /></FormLabel><FormControl><Input type="time" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="cityOfBirth" render={({ field }) => (
-                <FormItem><FormLabel>City of Birth (Recommended)</FormLabel><FormControl><Input placeholder="City of Birth" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>City of Birth<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="City of Birth" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="countryOfBirth" render={({ field }) => (
-                <FormItem><FormLabel>Country of Birth (Recommended)</FormLabel><FormControl><Input placeholder="Country of Birth" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Country of Birth<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="Country of Birth" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
 
           {/* My Location */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Location</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="country" render={({ field }) => (
-                <FormItem><FormLabel>Country <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="Country" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Country<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="Country" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="state" render={({ field }) => (
-                <FormItem><FormLabel>State <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="State" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>State<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="State" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="dist" render={({ field }) => (
-                <FormItem><FormLabel>District <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="District" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>District<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="District" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="addressLine1" render={({ field }) => (
-                <FormItem><FormLabel>Town / Village (Recommended)</FormLabel><FormControl><Input placeholder="Town / Village" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Town / Village<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="Town / Village" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="citizenship" render={({ field }) => (
-                <FormItem><FormLabel>Citizenship (Recommended)</FormLabel><FormControl><Input placeholder="Citizenship" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Citizenship<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="Citizenship" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="ancestralOrigin" render={({ field }) => (
-                <FormItem><FormLabel>Ancestral Origin (Optional)</FormLabel><FormControl><Input placeholder="Ancestral Origin" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Ancestral Origin<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="Ancestral Origin" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="pinCode" render={({ field }) => (
-                <FormItem><FormLabel>Pin Code (Recommended)</FormLabel><FormControl><Input type="text" inputMode="numeric" maxLength={6} placeholder="Pin Code" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Pin Code<FormBadge type="recommended" /></FormLabel><FormControl><Input type="text" inputMode="numeric" maxLength={6} placeholder="Pin Code" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>

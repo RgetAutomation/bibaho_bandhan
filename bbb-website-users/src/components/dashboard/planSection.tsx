@@ -5,7 +5,10 @@ import {
   CheckCircle2,
   Heart,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import React, { useRef } from "react";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { cn, formatINR } from "@/lib/utils";
@@ -55,6 +58,20 @@ export function PlansSection({
   activePlanId?: string;
   gridClassName?: string;
 }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -250, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 250, behavior: "smooth" });
+    }
+  };
+
   const {
     data: plans,
     isLoading,
@@ -108,7 +125,7 @@ export function PlansSection({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="relative w-full overflow-hidden bg-gradient-to-r from-rose-50/80 to-pink-50/80 dark:from-rose-950/20 dark:to-pink-950/20 flex flex-col md:flex-row items-center md:justify-between p-5 md:p-6 md:px-10 rounded-3xl shadow-sm border border-rose-100 dark:border-rose-900/30 mb-2"
+              className="sticky top-0 md:relative z-20 w-full overflow-hidden bg-gradient-to-r from-rose-50/80 to-pink-50/80 dark:from-rose-950/20 dark:to-pink-950/20 flex flex-col md:flex-row items-center md:justify-between p-5 md:p-6 md:px-10 rounded-b-3xl md:rounded-3xl shadow-sm border border-rose-100 dark:border-rose-900/30 mb-2 -mt-2 md:mt-0"
             >
               {/* Background Glows */}
               <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/10 via-transparent to-emerald-400/10 blur-2xl opacity-70" />
@@ -136,7 +153,7 @@ export function PlansSection({
               </div>
 
               {/* Graphic / Podium */}
-              <div className="relative w-full md:w-[220px] flex justify-center items-center mt-6 md:mt-0 z-10 h-[120px] md:h-[140px]">
+              <div className="relative w-full md:w-[220px] hidden md:flex justify-center items-center mt-6 md:mt-0 z-10 h-[120px] md:h-[140px]">
                 {/* Floating Elements */}
                 <motion.div animate={{ y: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="absolute top-2 left-2 text-pink-400 opacity-80">
                   <Heart className="w-5 h-5 fill-pink-400" />
@@ -203,27 +220,50 @@ export function PlansSection({
             </motion.div>
           )}
 
-          <div className={cn("grid gap-6 w-full mt-8 md:px-10 max-w-7xl mx-auto", gridClassName || "grid-cols-1 md:grid-cols-2 xl:grid-cols-3")}>
-            {plans
-              ?.filter((plan) => !( (hasUsedFreePlan || isFreePlanActive) && Number(plan.price) === 0))
-              .map((plan: any, index: number) => {
-                const activeDiscount = plan.discounts && plan.discounts.length > 0 ? plan.discounts[0].percentage : 0;
-                const isPlanActive = activePlanIds.has(plan.id);
-                return (
-                <PlanCard
-                  key={plan.id}
-                  id={plan.id}
-                  title={plan.title}
-                  price={plan.price}
-                  connection={plan.connection}
-                  duration={plan.duration}
-                  isActive={isPlanActive}
-                  discountPercentage={activeDiscount}
-                  isPremiumMember={isPremiumMember}
-                  isPopular={index === 1}
-                />
-                );
-              })}
+          <div className="relative w-full group">
+            {/* Left Scroll Arrow (Mobile Only) */}
+            <button 
+              onClick={scrollLeft}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-30 md:hidden flex items-center justify-center w-8 h-8 bg-transparent text-gray-500 dark:text-zinc-400 active:scale-95 transition-transform"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-7 h-7 pr-0.5 drop-shadow-sm" />
+            </button>
+
+            <div 
+              ref={scrollContainerRef}
+              className={cn("flex md:grid overflow-x-auto snap-x snap-mandatory md:overflow-visible gap-4 md:gap-6 w-full mt-4 md:mt-8 md:px-10 max-w-7xl mx-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth", gridClassName || "md:grid-cols-2 xl:grid-cols-3")}
+            >
+              {plans
+                ?.filter((plan) => !( (hasUsedFreePlan || isFreePlanActive) && Number(plan.price) === 0))
+                .map((plan: any, index: number) => {
+                  const activeDiscount = plan.discounts && plan.discounts.length > 0 ? plan.discounts[0].percentage : 0;
+                  const isPlanActive = activePlanIds.has(plan.id);
+                  return (
+                  <PlanCard
+                    key={plan.id}
+                    id={plan.id}
+                    title={plan.title}
+                    price={plan.price}
+                    connection={plan.connection}
+                    duration={plan.duration}
+                    isActive={isPlanActive}
+                    discountPercentage={activeDiscount}
+                    isPremiumMember={isPremiumMember}
+                    isPopular={index === 1}
+                  />
+                  );
+                })}
+            </div>
+
+            {/* Right Scroll Arrow (Mobile Only) */}
+            <button 
+              onClick={scrollRight}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-30 md:hidden flex items-center justify-center w-8 h-8 bg-transparent text-gray-500 dark:text-zinc-400 active:scale-95 transition-transform"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-7 h-7 pl-0.5 drop-shadow-sm" />
+            </button>
           </div>
         </div>
       )}
@@ -259,7 +299,7 @@ export function PlanCard({
     <motion.div
       transition={{ duration: 0.3 }}
       className={cn(
-        "relative flex flex-col p-4 lg:p-5 rounded-2xl transition-all h-full border-2",
+        "relative flex flex-col p-4 lg:p-5 rounded-2xl transition-all h-full border-2 shrink-0 w-[85vw] md:w-auto snap-center",
         isPopular 
           ? "border-rose-500 bg-gradient-to-b from-rose-50/80 to-card dark:from-rose-950/20 dark:to-card shadow-xl shadow-rose-500/10 scale-100 lg:scale-[1.03] z-10" 
           : "border-border bg-card hover:border-rose-300/50 dark:hover:border-rose-800 shadow-sm",

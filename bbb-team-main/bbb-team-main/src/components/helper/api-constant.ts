@@ -1,6 +1,6 @@
 export const SOCKET_URL =
   process.env.NODE_ENV === "development"
-    ? "http://localhost:5000"
+    ? `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:5000`
     : "https://api.bibahobandhan.com";
 
 export const SYSTEM_ACCESS_TOKEN = "systemAccessToken";

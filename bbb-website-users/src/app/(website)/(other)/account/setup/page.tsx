@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useCreateAccountStore } from "@/lib/createAccountStore";
 import { Heart, UserCircle, Briefcase, GraduationCap, MapPin, Scale, Home, ShieldCheck, MessageCircle, Phone, Shield, Users, Lock, ImageIcon } from "lucide-react";
 
@@ -14,7 +15,7 @@ import Step5Family from "./_steps/Step5Family";
 import Step6PartnerBasic from "./_steps/Step6PartnerBasic";
 import Step7PartnerAdvanced from "./_steps/Step7PartnerAdvanced";
 import Step8Photos from "./_steps/Step8Photos";
-import Step9FaceVerify from "./_steps/Step9FaceVerify";
+const Step9FaceVerify = dynamic(() => import("./_steps/Step9FaceVerify"), { ssr: false });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -32,7 +33,7 @@ const STEPS = [
 // ─── Step Indicator Component ──────────────────────────────────────────────────
 function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
-    <div className="flex items-center gap-1 md:gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="hidden">
       {STEPS.map((step, idx) => {
         const isCurrent = step.id === currentStep;
         const isCompleted = step.id < currentStep;
@@ -88,6 +89,31 @@ export default function CompleteProfilePage() {
         {/* Step Progress Bar */}
         <StepIndicator currentStep={currentStep} />
 
+        {/* Form Legend */}
+        <div className="flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 sm:gap-6 md:gap-10 mt-0 mb-4 text-sm bg-background p-2 w-full max-w-fit mx-auto overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#E51E44] text-white text-[9px] font-bold">M</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-semibold text-foreground text-[13px]">Mandatory</span>
+              <span className="text-[10px] text-muted-foreground">Required</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-orange-500 text-white text-[9px] font-bold">R</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-semibold text-foreground text-[13px]">Recommended</span>
+              <span className="text-[10px] text-muted-foreground">Helps better matches</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-blue-500 text-white text-[9px] font-bold">O</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-semibold text-foreground text-[13px]">Optional</span>
+              <span className="text-[10px] text-muted-foreground">Add if comfortable</span>
+            </div>
+          </div>
+        </div>
+
         {/* Step Content */}
         <div className="mt-6 w-full">
           {currentStep === 1 && <Step1Basic onComplete={() => setCurrentStep(2)} />}
@@ -103,7 +129,7 @@ export default function CompleteProfilePage() {
       </div>
 
       {/* Right side: Summary / Sidebar */}
-      <div className="hidden xl:flex w-[350px] 2xl:w-[400px] border-l border-border bg-card p-6 flex-col overflow-y-auto scrollbar-hide">
+      <div className="hidden xl:flex w-[350px] 2xl:w-[400px] bg-background p-6 flex-col overflow-y-auto scrollbar-hide">
         <h3 className="font-semibold text-lg mb-4 text-slate-800 dark:text-foreground">Why complete your profile?</h3>
         
         <div className="space-y-6">
@@ -142,11 +168,11 @@ export default function CompleteProfilePage() {
             <h4 className="font-bold text-[16px] text-slate-800 dark:text-foreground mb-1 tracking-tight">Need Help?</h4>
             <p className="text-xs text-muted-foreground mb-4 font-medium">Our support team is here to help you</p>
             <div className="flex gap-3">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[12px] font-bold hover:bg-[#e11d48]/5 transition-colors">
-                <MessageCircle className="w-4 h-4" /> Live Chat
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[11px] font-bold whitespace-nowrap hover:bg-[#e11d48]/5 transition-colors">
+                <MessageCircle className="w-3.5 h-3.5" /> Live Chat
               </button>
-              <button className="flex-1 flex items-center justify-center gap-2 py-2.5 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[12px] font-bold hover:bg-[#e11d48]/5 transition-colors">
-                <Phone className="w-4 h-4" /> Contact Support
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border border-[#e11d48] text-[#e11d48] dark:border-primary dark:text-primary text-[11px] font-bold whitespace-nowrap hover:bg-[#e11d48]/5 transition-colors">
+                <Phone className="w-3.5 h-3.5" /> Contact Support
               </button>
             </div>
           </div>

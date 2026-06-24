@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import LoadingPage from "./loader";
 import Link from "next/link";
+import MobileHeader from "./dashboard/MobileHeader";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   MessageDeliveredIcon,
@@ -238,22 +239,29 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden w-full fixed top-0 left-0 right-0 h-[100dvh] z-40 md:relative md:h-auto md:z-auto bg-white dark:bg-zinc-950">
       {/* Top bar */}
       <div
         className={
-          "w-full flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800"
+          "w-full flex items-center justify-between gap-2.5 md:gap-4 py-2.5 px-3 md:p-4 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0"
         }
       >
-        <div className="flex items-center gap-4 p-4">
+        <div className="flex items-center gap-2.5 md:gap-4 flex-1 min-w-0">
           <Button
             onClick={() => router.back()}
             variant={"ghost"}
-            className="rounded-full w-8 h-8"
+            className="rounded-full w-8 h-8 p-0 shrink-0"
           >
-            <ArrowLeft className="size-6" />
+            <ArrowLeft className="size-5 md:size-6" />
           </Button>
-          <Avatar className="h-12 w-12 bg-card border ring-1 ring-rose-400 ring-offset-2 ring-offset-card">
+          <Avatar 
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                router.push(`/users/profile/${participant?.id}`);
+              }
+            }}
+            className="h-9 w-9 md:h-12 md:w-12 bg-card border ring-1 ring-rose-400 ring-offset-2 ring-offset-card shrink-0 cursor-pointer md:cursor-default"
+          >
             <AvatarImage
               src={participant?.avatar || ""}
               alt="Avatar"
@@ -265,8 +273,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex flex-col">
-            <h1 className="text-lg font-semibold">
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-base md:text-lg font-semibold truncate">
               {participant?.title} {participant?.lastName}
             </h1>
             {!participant?.isGhotokOwned && (
@@ -277,14 +285,18 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             )}
           </div>
         </div>
-        <Button
-          size={"sm"}
-          asChild
-          className={"rounded-full me-4"}
-          variant={"outline"}
-        >
-          <Link href={`/users/profile/${participant?.id}`}>Profile</Link>
-        </Button>
+
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
+          <Button
+            size={"sm"}
+            asChild
+            className={"rounded-full hidden md:inline-flex"}
+            variant={"outline"}
+          >
+            <Link href={`/users/profile/${participant?.id}`}>Profile</Link>
+          </Button>
+          <MobileHeader hideLogo={true} className="flex md:hidden items-center z-40 bg-transparent border-none p-0" />
+        </div>
       </div>
 
       {/* Scrollable Message Area */}

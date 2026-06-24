@@ -50,15 +50,7 @@ export default function ReportedUserClientPage({
 
   return (
     <div className="flex flex-col h-[calc(100vh-0px)]">
-      <DashboardHeader
-        title={
-          <div className="w-full flex items-center justify-center gap-2 bg-primary/20 p-4">
-            <h1 className="font-semibold text-lg md:text-xl">
-              Reported Profile
-            </h1>
-          </div>
-        }
-      />
+
 
       {reportedUser && (
         <div className="flex flex-col p-3 md:p-4 overflow-y-auto">

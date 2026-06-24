@@ -23,6 +23,8 @@ import { USER_ACCESS_TOKEN, USER_REFRESH_TOKEN } from "../utils/constant.js";
 import storageProvider from "../services/storage/StorageProvide.js";
 import { authUser } from "../utils/auth.js";
 import { fromNodeHeaders } from "better-auth/node";
+import { otpStore } from "./verification.controller.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
 const TokenExpiredError = jwt.TokenExpiredError;
 
@@ -896,3 +898,65 @@ export async function updateHelpRequestStatus(req: Request, res: Response) {
     return res.status(500).json(new ApiError(500, "Server error"));
   }
 }
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { target, otp, newPassword } = req.body;
+
+  if (!target || !otp || !newPassword) {
+    throw new ApiError(400, "Please provide target, otp, and newPassword");
+  }
+
+  const storedData = otpStore.get(target);
+
+  if (!storedData) {
+    throw new ApiError(400, "No OTP found or it has expired. Please request a new one.");
+  }
+
+  if (Date.now() > storedData.expiresAt) {
+    otpStore.delete(target);
+    throw new ApiError(400, "OTP has expired. Please request a new one.");
+  }
+
+  if (storedData.otp !== otp) {
+    throw new ApiError(400, "Invalid OTP");
+  }
+
+  // OTP is valid, hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update user
+  const isEmail = target.includes("@");
+  const user = await prisma.user.findFirst({
+    where: isEmail ? { email: target } : { phone: target },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Update password in UserAccount
+  const userAccount = await prisma.userAccount.findFirst({
+    where: { userId: user.id, providerId: "credential" },
+  });
+
+  if (userAccount) {
+    await prisma.userAccount.update({
+      where: { id: userAccount.id },
+      data: { password: hashedPassword },
+    });
+  } else {
+    await prisma.userAccount.create({
+      data: {
+        userId: user.id,
+        providerId: "credential",
+        accountId: target,
+        password: hashedPassword,
+      }
+    });
+  }
+
+  // clear the OTP after successful reset
+  otpStore.delete(target);
+
+  res.status(200).json(new ApiResponse(200, "Password reset successfully", null));
+});

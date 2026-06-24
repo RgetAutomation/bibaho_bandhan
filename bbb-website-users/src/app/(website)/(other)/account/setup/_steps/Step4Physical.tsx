@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
 import StepActions from "./StepActions";
+import { FormBadge } from "@/components/ui-custom/form-badge";
 
 export const step4Schema = updateProfileSchema.pick({
   eatingHabits: true,
@@ -74,19 +75,19 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-foreground">Physical, Lifestyle & About Me</h2>
-        <p className="text-slate-500 dark:text-muted-foreground">My Health, Habits, and Personal Traits</p>
+        <h2 className="text-center md:text-left text-2xl font-bold text-slate-800 dark:text-foreground">Physical, Lifestyle & About Me</h2>
+        <p className="hidden md:block text-slate-500 dark:text-muted-foreground">My Health, Habits, and Personal Traits</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
           {/* My Habits */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Habits</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="eatingHabits" render={({ field }) => (
-                <FormItem><FormLabel>Eating Habits (Optional)</FormLabel>
+                <FormItem><FormLabel>Eating Habits<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -100,7 +101,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="drinkingHabits" render={({ field }) => (
-                <FormItem><FormLabel>Drinking Habits (Optional)</FormLabel>
+                <FormItem><FormLabel>Drinking Habits<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -113,7 +114,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="smokingHabits" render={({ field }) => (
-                <FormItem><FormLabel>Smoking Habits (Optional)</FormLabel>
+                <FormItem><FormLabel>Smoking Habits<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -129,11 +130,11 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
           </div>
 
           {/* My Physical & Health */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">My Physical & Health</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="bodyType" render={({ field }) => (
-                <FormItem><FormLabel>Body Type (Optional)</FormLabel>
+                <FormItem><FormLabel>Body Type<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select body type" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -150,7 +151,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="skinTone" render={({ field }) => (
-                <FormItem><FormLabel>Skin Tone (Optional)</FormLabel>
+                <FormItem><FormLabel>Skin Tone<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select skin tone" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -166,7 +167,7 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="bloodGroup" render={({ field }) => (
-                <FormItem><FormLabel>Blood Group (Optional)</FormLabel>
+                <FormItem><FormLabel>Blood Group<FormBadge type="optional" /></FormLabel>
                   <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -179,11 +180,11 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
                 </FormItem>
               )} />
               <FormField control={form.control} name="healthScreening" render={({ field }) => (
-                <FormItem><FormLabel>Health Screening (Optional)</FormLabel><FormControl><Input placeholder="e.g. Any Major Illness?" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Health Screening<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="e.g. Any Major Illness?" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               
               <FormField control={form.control} name="speciallyAble" render={({ field }) => (
-                <FormItem><FormLabel>Any Disability? (Recommended)</FormLabel>
+                <FormItem><FormLabel>Any Disability?<FormBadge type="recommended" /></FormLabel>
                   <Select onValueChange={(val) => field.onChange(val === "true")} defaultValue={field.value ? "true" : "false"}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -196,27 +197,27 @@ export default function Step4Physical({ onComplete, onBack }: { onComplete: () =
               )} />
               {form.watch("speciallyAble") && (
                 <FormField control={form.control} name="disabilityDetails" render={({ field }) => (
-                  <FormItem><FormLabel>Disability Details <span className="text-destructive">*</span></FormLabel><FormControl><Input placeholder="Specify disability details" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Disability Details<FormBadge type="mandatory" /></FormLabel><FormControl><Input placeholder="Specify disability details" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               )}
             </div>
           </div>
 
           {/* About Myself */}
-          <div className="space-y-4 bg-white dark:bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
             <h3 className="text-lg font-semibold border-b pb-2 text-primary">About Myself</h3>
             <FormField control={form.control} name="hobbies" render={({ field }) => (
-              <FormItem><FormLabel>My Hobbies & Interests (Optional)</FormLabel><FormControl><Input placeholder="e.g. Reading, Traveling" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>My Hobbies & Interests<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="e.g. Reading, Traveling" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="aboutMyself" render={({ field }) => (
-              <FormItem><FormLabel>Description (500-1000 Characters) (Recommended)</FormLabel><FormControl><Textarea className="h-32 resize-none" placeholder="Write about your background, personality, and what you are looking for..." {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel>Description (500-1000 Characters)<FormBadge type="recommended" /></FormLabel><FormControl><Textarea className="h-32 resize-none" placeholder="Write about your background, personality, and what you are looking for..." {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="personalityTraits" render={({ field }) => (
-                <FormItem><FormLabel>Personality Traits (Recommended)</FormLabel><FormControl><Input placeholder="e.g. Introvert, Ambitious" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Personality Traits<FormBadge type="recommended" /></FormLabel><FormControl><Input placeholder="e.g. Introvert, Ambitious" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="lifeGoals" render={({ field }) => (
-                <FormItem><FormLabel>Life Goals (Optional)</FormLabel><FormControl><Input placeholder="e.g. Career focus, peaceful life" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Life Goals<FormBadge type="optional" /></FormLabel><FormControl><Input placeholder="e.g. Career focus, peaceful life" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>

@@ -96,6 +96,7 @@ export default function HelpCenterChooseAdmin() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [showAllPopular, setShowAllPopular] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -185,7 +186,7 @@ export default function HelpCenterChooseAdmin() {
       <div className="flex-1 w-full px-4 md:px-8 py-6 pb-10 overflow-y-auto min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
 
         {/* ── Header ── */}
-        <div className="mb-6">
+        <div className="mb-6 hidden md:block">
           <h1 className="text-2xl font-extrabold text-[#1a1b4b] dark:text-white">Help &amp; Support</h1>
           <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
             We&apos;re here to help you. Find answers, get assistance, report issues, and stay safe.
@@ -201,16 +202,23 @@ export default function HelpCenterChooseAdmin() {
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-extrabold text-[#1a1b4b] dark:text-white mb-4">How can we help you today?</h2>
 
-              <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full">
-                <div className="relative flex-1 min-w-0" ref={searchContainerRef}>
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 shrink-0" />
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
+                <div className="relative w-full" ref={searchContainerRef}>
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 shrink-0" />
                   <Input
                     placeholder="Describe your issue in a few words..."
-                    className="w-full pl-10 h-12 rounded-xl bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-sm"
+                    className="w-full pl-11 pr-[110px] h-14 rounded-2xl bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-[14px] shadow-sm"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsSearchFocused(true)}
                   />
+                  <Button
+                    type="submit"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-11 px-5 rounded-xl bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold text-[13px] shadow-sm"
+                    disabled={loadingAction !== null}
+                  >
+                    {loadingAction === "search" ? <SubmitLoadingView text="Wait" /> : "Search"}
+                  </Button>
 
                   {/* Search Suggestions Dropdown */}
                   {isSearchFocused && (
@@ -264,13 +272,6 @@ export default function HelpCenterChooseAdmin() {
                     </div>
                   )}
                 </div>
-                <Button
-                  type="submit"
-                  className="h-12 px-6 rounded-xl bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold shrink-0"
-                  disabled={loadingAction !== null}
-                >
-                  {loadingAction === "search" ? <SubmitLoadingView text="Wait" /> : "Search"}
-                </Button>
               </form>
 
               {/* Static Popular Searches */}
@@ -287,12 +288,32 @@ export default function HelpCenterChooseAdmin() {
                     <button 
                       key={index}
                       onClick={() => { setSearchQuery(term); handleStartChatClick(term); }}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-[#E51E44]/20 bg-transparent hover:bg-[#E51E44]/5 transition-colors text-[#E51E44]"
+                      className={`items-center gap-1 px-2.5 py-1 rounded-full border border-[#E51E44]/20 bg-transparent hover:bg-[#E51E44]/5 transition-colors text-[#E51E44] ${
+                        index >= 2 ? (showAllPopular ? "flex" : "hidden md:flex") : "flex"
+                      }`}
                     >
                       <Search className="w-3 h-3 stroke-[2.5]" />
                       <span className="text-[11.5px] font-bold">{term}</span>
                     </button>
                   ))}
+                  
+                  {!showAllPopular && (
+                    <button
+                      onClick={() => setShowAllPopular(true)}
+                      className="flex md:hidden items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 font-bold text-[11.5px]"
+                    >
+                      See more...
+                    </button>
+                  )}
+
+                  {showAllPopular && (
+                    <button
+                      onClick={() => setShowAllPopular(false)}
+                      className="flex md:hidden items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 font-bold text-[11.5px]"
+                    >
+                      Show less
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -303,15 +324,15 @@ export default function HelpCenterChooseAdmin() {
 
         {/* ── Quick Actions ── */}
         <div className="mb-6">
-          <div className="relative w-full overflow-hidden bg-[#FFF5F8] dark:bg-rose-950/20 rounded-[1.5rem] border border-rose-100 dark:border-rose-900/30 p-5 md:p-6 flex flex-col md:flex-row items-center justify-between shadow-sm">
+          <div className="relative w-full overflow-hidden bg-[#FFF5F8] dark:bg-rose-950/20 rounded-[1.5rem] border border-rose-100 dark:border-rose-900/30 p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between shadow-sm">
             
             {/* Left Content */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-4 z-10 w-full md:w-auto">
+            <div className="flex flex-col md:flex-row items-start gap-4 z-10 w-full md:w-auto">
               
 
 
               {/* Text Info */}
-              <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
+              <div className="flex flex-col items-start text-left space-y-2">
                 <div className="space-y-0.5">
                   <h2 className="text-[18px] font-bold text-slate-900 dark:text-white tracking-tight">Chat With Support</h2>
                   <p className="text-[12px] text-slate-600 dark:text-slate-400 font-medium">Get instant help from our support team.</p>
@@ -417,8 +438,9 @@ export default function HelpCenterChooseAdmin() {
             </div>
 
             <button 
-              onClick={() => { /* handle ticket creation */ }}
-              className="px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-bold text-[13px] flex items-center gap-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap shrink-0 shadow-sm"
+              onClick={() => handleStartChatClick("Support Ticket")}
+              disabled={loadingAction === "Support Ticket"}
+              className="px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-bold text-[13px] flex items-center gap-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors whitespace-nowrap shrink-0 shadow-sm disabled:opacity-50"
             >
               <Ticket className="w-3.5 h-3.5 stroke-[2]" />
               Create Support Ticket

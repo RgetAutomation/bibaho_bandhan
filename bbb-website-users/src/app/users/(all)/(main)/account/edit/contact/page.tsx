@@ -100,20 +100,10 @@ export default function ProfileEditPage() {
 
   return (
     <div className="w-full flex flex-col h-[calc(100vh-80px)]">
-      {/* Sticky header (must be inside the same scrolling container) */}
-      <div className="sticky top-0 z-40 bg-background">
-        <DashboardHeader
-          title={
-            <div className="w-full flex items-center justify-center gap-2 bg-primary/20 p-4 md:p-6">
-              <h1 className="font-semibold text-xl">Edit Contact Details</h1>
-            </div>
-          }
-          mainPage={false}
-        />
-      </div>
 
-      <div className="w-full flex flex-col flex-1 p-6 min-h-screen">
-        <div className="w-full max-w-lg mx-auto shadow-lg border rounded-2xl p-6">
+
+      <div className="w-full flex flex-col flex-1 p-4 md:p-6 min-h-[calc(100vh-64px)]">
+        <div className="w-full max-w-lg mx-auto md:shadow-lg md:border rounded-2xl md:p-6">
           {/* Header */}
           <div className="w-full flex flex-col gap-2 mb-5">
             <h1 className="text-2xl font-semibold ">Contact Details</h1>
