@@ -320,7 +320,7 @@ export default function ProfileEditPage() {
                 <div className="flex items-center justify-between cursor-pointer mb-2" onClick={() => toggleSection('career-education')}>
                   <h2 className="text-base md:text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-3">
                     
-                    Career & Education
+                    Education & Career
                   </h2>
                   <ChevronDown className={cn("w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-all duration-200", !openSections['career-education'] && "-rotate-90")} />
                 </div>
@@ -333,7 +333,7 @@ export default function ProfileEditPage() {
                 <div className="flex items-center justify-between cursor-pointer mb-2" onClick={() => toggleSection('religion-background')}>
                   <h2 className="text-base md:text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-3">
                     
-                    Religion & Background
+                    Religion & Astrology Details
                   </h2>
                   <ChevronDown className={cn("w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-all duration-200", !openSections['religion-background'] && "-rotate-90")} />
                 </div>
@@ -346,7 +346,7 @@ export default function ProfileEditPage() {
                 <div className="flex items-center justify-between cursor-pointer mb-2" onClick={() => toggleSection('physical-attributes')}>
                   <h2 className="text-base md:text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-3">
                     
-                    Physical Attributes
+                    Physical Attributes & Lifestyle
                   </h2>
                   <ChevronDown className={cn("w-5 h-5 text-slate-400 group-hover:text-rose-500 transition-all duration-200", !openSections['physical-attributes'] && "-rotate-90")} />
                 </div>

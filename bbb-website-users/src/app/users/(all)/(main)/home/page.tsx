@@ -114,8 +114,10 @@ export default function UsersPage() {
   const { data: recommendedMatches, isLoading: isLoadingMatches } = useQuery({
     queryKey: ["recommendedMatches"],
     queryFn: async () => {
-      const res = await api.get<PaginationResponse<AllUsers>>("/users/profiles?page=1&limit=10");
-      return res.data.data.data;
+      const res = await api.get<PaginationResponse<AllUsers>>("/users/profiles?page=1&limit=50");
+      let fetchedData = res.data.data.data;
+      // Shuffle array to show random profiles
+      return fetchedData.sort(() => Math.random() - 0.5);
     },
     enabled: !!user
   });
@@ -591,9 +593,9 @@ export default function UsersPage() {
               </button>
             </div>
 
-            <div className="divide-y divide-gray-50 dark:divide-zinc-800 flex-1">
+            <div className="divide-y divide-gray-50 dark:divide-zinc-800 shrink-0 overflow-y-auto h-56 max-h-56 pr-1 scrollbar-hide">
               {!conversations || conversations.length === 0 ? (
-                <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500">
+                <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500 h-full flex flex-col items-center justify-center">
                   No recent messages found.
                 </div>
               ) : (
@@ -606,12 +608,12 @@ export default function UsersPage() {
                   });
                   if (filtered.length === 0) {
                     return (
-                      <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500 h-full flex flex-col items-center justify-center min-h-[150px]">
+                      <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500 h-full flex flex-col items-center justify-center">
                         No {messageFilter} messages found.
                       </div>
                     );
                   }
-                  return filtered.slice(0, 3).map((conv) => (
+                  return filtered.map((conv) => (
                   <div key={conv.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 px-2 rounded-xl transition-colors cursor-pointer" onClick={() => router.push("/users/chat")}>
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative shrink-0 w-10 h-10">
@@ -687,14 +689,14 @@ export default function UsersPage() {
               </button>
             </div>
 
-            <div className="divide-y divide-gray-50 dark:divide-zinc-800 flex-1">
+            <div className="divide-y divide-gray-50 dark:divide-zinc-800 shrink-0 overflow-y-auto h-56 max-h-56 pr-1 scrollbar-hide">
               {interestTab === "received" ? (
                 !receivedInterests || receivedInterests.length === 0 ? (
-                  <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500">
+                  <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500 h-full flex flex-col items-center justify-center">
                     No received interests.
                   </div>
                 ) : (
-                  receivedInterests.slice(0, 3).map((item, idx) => (
+                  receivedInterests.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between gap-3 py-3 first:pt-0 hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 px-2 rounded-xl transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative shrink-0 w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 border">
@@ -727,11 +729,11 @@ export default function UsersPage() {
                 )
               ) : (
                 !sentInterests || sentInterests.length === 0 ? (
-                  <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500">
+                  <div className="py-6 text-center text-xs text-gray-400 dark:text-zinc-500 h-full flex flex-col items-center justify-center">
                     No sent interests.
                   </div>
                 ) : (
-                  sentInterests.slice(0, 3).map((item, idx) => (
+                  sentInterests.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between gap-3 py-3 first:pt-0 hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 px-2 rounded-xl transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative shrink-0 w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 border">

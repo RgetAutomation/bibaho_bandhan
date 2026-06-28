@@ -238,6 +238,27 @@ export async function approveGhotokJoinRequest(
         }));
       } while (exists);
 
+      let phoneToUse = data?.phone || newPublicId;
+      const existingTeam = await tx.team.findFirst({
+        where: {
+          OR: [{ phone: phoneToUse }, { username: phoneToUse }],
+        },
+      });
+
+      if (existingTeam) {
+        throw new Error("This phone number is already registered.");
+      }
+
+      let emailToUse = data?.email ? data.email : null;
+      if (emailToUse) {
+        const existingEmail = await tx.team.findUnique({
+          where: { email: emailToUse },
+        });
+        if (existingEmail) {
+          throw new Error("This email is already registered.");
+        }
+      }
+
       // 5. Create ghotok user
       const ghotok = await tx.team.create({
         data: {
@@ -246,10 +267,10 @@ export async function approveGhotokJoinRequest(
           middleName: data?.middleName,
           lastName: data?.lastName ?? "",
           gender: data?.gender ?? "MALE",
-          phone: data?.phone ?? "",
-          username: data?.phone ?? "",
-          displayUsername: data?.phone ?? "",
-          email: data?.email ?? "",
+          phone: phoneToUse,
+          username: phoneToUse,
+          displayUsername: phoneToUse,
+          email: emailToUse,
           role: UserRole.GHOTOK,
           ghotokPublicId: newPublicId,
         },
@@ -275,7 +296,7 @@ export async function approveGhotokJoinRequest(
     console.error("Error approving ghotok join request:", error);
     return {
       success: false,
-      message: "Failed to approve ghotok join request.",
+      message: error instanceof Error ? `Failed to approve ghotok join request. ${error.message}` : "Failed to approve ghotok join request.",
     } as IServerResponse;
   }
 }

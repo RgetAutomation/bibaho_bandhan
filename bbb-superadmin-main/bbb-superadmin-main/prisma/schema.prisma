@@ -591,6 +591,17 @@ model ConvsersationAssignedAuditLogs {
   @@index([adminId])
 }
 
+// Success Story Model (For SuperAdmin and Public Website)
+model SuccessStory {
+  id        String   @id @default(cuid())
+  title     String
+  image     String
+  text      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Report User Model (For User)
 model ReportUsers {
   id                String   @id @default(cuid())

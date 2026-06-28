@@ -1,9 +1,11 @@
 "use client";
-
+import React from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
 import NextImage from "next/image";
 import Marquee from "react-fast-marquee";
@@ -569,10 +571,29 @@ function PublicProfileComponent() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-8 items-center justify-center">
-            {data?.map((profile) => (
-              <PublicProfileCard key={profile.id} profile={profile} />
-            ))}
+          <div className="w-full pl-4 pr-0 sm:px-12">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {data?.slice(0, 5).map((profile) => (
+                  <CarouselItem 
+                    key={profile.id} 
+                    className="pl-4 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 flex justify-center"
+                  >
+                    <div className="w-full max-w-[260px] p-1">
+                      <PublicProfileCard profile={profile} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden sm:flex -left-4 sm:-left-12" />
+              <CarouselNext className="hidden sm:flex -right-4 sm:-right-12" />
+            </Carousel>
           </div>
 
           <div className="mt-16 text-center space-y-4 max-w-xl">
@@ -842,44 +863,101 @@ function SuccessStoriesComponent() {
     text: string;
   }
 
-  const successStories: SuccessStoryProps[] = [
-    {
-      id: "see-more-0",
-      title: "Zahra & Hasan",
-      image: "/matching/BBBCI5278413002.webp",
-      text: "Thanks to Bangali Bibaho Bandhan, I found someone who truly understands me. Our bond grew effortlessly, and within months, we tied the knot in a traditional Bengali wedding.",
-    },
-    {
-      id: "see-more-1",
-      title: "Tania & Arijit",
-      image: "/matching/BBBCI5278965420.webp",
-      text: "A simple match request turned into the most meaningful connection of my life. With love, laughter, and shared dreams, we started our forever together. Grateful to this amazing platform.",
-    },
-    {
-      id: "see-more-2",
-      title: "Poulomi & Subhankar",
-      image: "/matching/BBBCI5482346951.webp",
-      text: "Our families matched us through Bangali Bibaho Bandhan. With every conversation, love blossomed. From strangers to soulmates, our journey has been magical. We couldn't be happier.",
-    },
-    {
-      id: "see-more-3",
-      title: "Madhumita & Ritam",
-      image: "/matching/BBBCI5469824566.webp",
-      text: "I never thought I'd find love online, but Bangali Bibaho Bandhan changed everything. Ritam and I share the same values and dreams. Our story is just beginning!",
-    },
-    {
-      id: "see-more-4",
-      title: "Ishita & Debayan",
-      image: "/matching/BBBCI6255662497.webp",
-      text: "We met, we talked, we laughed — and soon realized we were made for each other. Thanks to Bangali Bibaho Bandhan, I found my best friend and life partner.",
-    },
-    {
-      id: "see-more-5",
-      title: "Nandini & Abir",
-      image: "/matching/BBBCI6258453360.webp",
-      text: "From our first message on Bangali Bibaho Bandhan, everything just felt right. We discovered shared dreams, values, and a deep connection. Our wedding was filled with joy, and our hearts with gratitude.",
-    },
-  ];
+  const [successStories, setSuccessStories] = React.useState<SuccessStoryProps[]>([]);
+
+  React.useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const { MAIN_API_URL } = await import("@/lib/constant-data");
+        const response = await fetch(`${MAIN_API_URL}/success-stories`);
+        const result = await response.json();
+        if (result.success && result.data.length > 0) {
+          setSuccessStories(result.data);
+        } else {
+          // Fallback to hardcoded if API is empty or fails
+          setSuccessStories([
+            {
+              id: "see-more-0",
+              title: "Zahra & Hasan",
+              image: "/matching/BBBCI5278413002.webp",
+              text: "Thanks to Bangali Bibaho Bandhan, I found someone who truly understands me. Our bond grew effortlessly, and within months, we tied the knot in a traditional Bengali wedding.",
+            },
+            {
+              id: "see-more-1",
+              title: "Tania & Arijit",
+              image: "/matching/BBBCI5278965420.webp",
+              text: "A simple match request turned into the most meaningful connection of my life. With love, laughter, and shared dreams, we started our forever together. Grateful to this amazing platform.",
+            },
+            {
+              id: "see-more-2",
+              title: "Poulomi & Subhankar",
+              image: "/matching/BBBCI5482346951.webp",
+              text: "Our families matched us through Bangali Bibaho Bandhan. With every conversation, love blossomed. From strangers to soulmates, our journey has been magical. We couldn't be happier.",
+            },
+            {
+              id: "see-more-3",
+              title: "Madhumita & Ritam",
+              image: "/matching/BBBCI5469824566.webp",
+              text: "I never thought I'd find love online, but Bangali Bibaho Bandhan changed everything. Ritam and I share the same values and dreams. Our story is just beginning!",
+            },
+            {
+              id: "see-more-4",
+              title: "Ishita & Debayan",
+              image: "/matching/BBBCI6255662497.webp",
+              text: "We met, we talked, we laughed — and soon realized we were made for each other. Thanks to Bangali Bibaho Bandhan, I found my best friend and life partner.",
+            },
+            {
+              id: "see-more-5",
+              title: "Nandini & Abir",
+              image: "/matching/BBBCI6258453360.webp",
+              text: "From our first message on Bangali Bibaho Bandhan, everything just felt right. We discovered shared dreams, values, and a deep connection. Our wedding was filled with joy, and our hearts with gratitude.",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching success stories:", error);
+        setSuccessStories([
+          {
+            id: "see-more-0",
+            title: "Zahra & Hasan",
+            image: "/matching/BBBCI5278413002.webp",
+            text: "Thanks to Bangali Bibaho Bandhan, I found someone who truly understands me. Our bond grew effortlessly, and within months, we tied the knot in a traditional Bengali wedding.",
+          },
+          {
+            id: "see-more-1",
+            title: "Tania & Arijit",
+            image: "/matching/BBBCI5278965420.webp",
+            text: "A simple match request turned into the most meaningful connection of my life. With love, laughter, and shared dreams, we started our forever together. Grateful to this amazing platform.",
+          },
+          {
+            id: "see-more-2",
+            title: "Poulomi & Subhankar",
+            image: "/matching/BBBCI5482346951.webp",
+            text: "Our families matched us through Bangali Bibaho Bandhan. With every conversation, love blossomed. From strangers to soulmates, our journey has been magical. We couldn't be happier.",
+          },
+          {
+            id: "see-more-3",
+            title: "Madhumita & Ritam",
+            image: "/matching/BBBCI5469824566.webp",
+            text: "I never thought I'd find love online, but Bangali Bibaho Bandhan changed everything. Ritam and I share the same values and dreams. Our story is just beginning!",
+          },
+          {
+            id: "see-more-4",
+            title: "Ishita & Debayan",
+            image: "/matching/BBBCI6255662497.webp",
+            text: "We met, we talked, we laughed — and soon realized we were made for each other. Thanks to Bangali Bibaho Bandhan, I found my best friend and life partner.",
+          },
+          {
+            id: "see-more-5",
+            title: "Nandini & Abir",
+            image: "/matching/BBBCI6258453360.webp",
+            text: "From our first message on Bangali Bibaho Bandhan, everything just felt right. We discovered shared dreams, values, and a deep connection. Our wedding was filled with joy, and our hearts with gratitude.",
+          },
+        ]);
+      }
+    };
+    fetchStories();
+  }, []);
 
   return (
     <div id="success-stories" className="flex flex-col items-center justify-center pb-10">
@@ -900,7 +978,7 @@ function SuccessStoriesComponent() {
         <CarouselContent className="w-full -ml-1">
           {successStories.map((story, index) => (
             <CarouselItem
-              key={index}
+              key={story.id || index}
               className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
             >
               <div className="h-full p-4 border border-rose-700/30 rounded-2xl bg-red-100 dark:bg-zinc-800 dark:border-zinc-800">

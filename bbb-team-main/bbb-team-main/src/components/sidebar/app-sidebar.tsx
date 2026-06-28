@@ -264,7 +264,7 @@ const data: MainMenuProps = {
           title: GHOTOK_MENU_CHAT_MATCH_GROOM_TITLE,
           url: GHOTOK_MENU_CHAT_MATCH_GROOM_PATH,
           icon: MessagesSquare,
-          role: [Role.GHOTOK], // Only Admin and User can access this
+          role: [Role.GHOTOK, Role.ADMIN], // Show to Ghotok and Admin
           badgeKey: "messageSAUserBadge",
         },
         {
@@ -336,12 +336,12 @@ const data: MainMenuProps = {
           icon: BadgeIndianRupee,
           role: [Role.ADMIN], // Only Admin and User can access this
         },
-        // {
-        //   title: ADMIN_MENU_PAID_MATCHING_TITLE,
-        //   url: ADMIN_MENU_PAID_MATCHING_PATH,
-        //   icon: BadgeIndianRupee,
-        //   role: [Role.ADMIN], // Only Admin and User can access this
-        // },
+        {
+          title: ADMIN_MENU_PAID_MATCHING_TITLE,
+          url: ADMIN_MENU_PAID_MATCHING_PATH,
+          icon: BadgeIndianRupee,
+          role: [Role.ADMIN], // Only Admin and User can access this
+        },
         {
           title: ADMIN_MENU_REPORTED_GROOM_TITLE,
           url: ADMIN_MENU_REPORTED_GROOM_PATH,

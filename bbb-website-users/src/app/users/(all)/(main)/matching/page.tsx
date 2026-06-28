@@ -5,7 +5,8 @@ import LoadingPage from "@/components/loader";
 import { isPaidUser, NotPaidUserReason } from "@/lib/utils";
 import { PlansSection } from "@/components/dashboard/planSection";
 import { UserType } from "@/components/enum/userType";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
 import { sendConnectionRequest } from "@/actions/userConnections";
 import api from "@/lib/axiosInstance";
 import { PaginationResponse } from "@/components/interface/AxiosResponse";
@@ -49,18 +50,20 @@ export default function MatchingPage() {
   const [caste, setCaste] = useState("");
   const [education, setEducation] = useState("");
   const [profession, setProfession] = useState("");
+  const [maritalStatus, setMaritalStatus] = useState<string[]>([]);
 
   const [appliedFilters, setAppliedFilters] = useState<any>({});
 
   const handleApplyFilters = () => {
     setAppliedFilters({
-      ageFrom, ageTo, heightFrom, heightTo, location, religion, caste, education, profession
+      ageFrom, ageTo, heightFrom, heightTo, location, religion, caste, education, profession, maritalStatus
     });
   };
 
   const handleResetFilters = () => {
     setAgeFrom(""); setAgeTo(""); setHeightFrom(""); setHeightTo("");
     setLocation(""); setReligion(""); setCaste(""); setEducation(""); setProfession("");
+    setMaritalStatus([]);
     setAppliedFilters({});
     setSearchQuery("");
   };
@@ -69,6 +72,14 @@ export default function MatchingPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // Set initial value
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Trigger fade transition when filters, tabs or search change
   useEffect(() => {
@@ -101,14 +112,30 @@ export default function MatchingPage() {
     localStorage.setItem("shortlistedUsers", JSON.stringify(updated));
   };
 
-  const { data: matches, isLoading, refetch } = useQuery({
+  const { ref: loadMoreRef, inView } = useInView();
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, refetch } = useInfiniteQuery({
     queryKey: ["allMatches"],
-    queryFn: async () => {
-      const res = await api.get<PaginationResponse<AllUsers>>("/users/profiles?page=1&limit=50");
-      return res.data.data.data;
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await api.get<PaginationResponse<AllUsers>>(`/users/profiles?page=${pageParam}&limit=50`);
+      let fetchedData = res.data.data.data;
+      // Shuffle array to show random profiles
+      return fetchedData.sort(() => Math.random() - 0.5);
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === 50 ? allPages.length + 1 : undefined;
     },
     enabled: !!user && user.type === UserType.PAID_USER
   });
+
+  const matches = useMemo(() => data?.pages.flat() || [], [data]);
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const filteredMatches = useMemo(() => {
     if (!matches) return [];
@@ -151,10 +178,11 @@ export default function MatchingPage() {
     
     if (searchQuery.trim() !== "") {
        const lowerQuery = searchQuery.toLowerCase();
-       result = result.filter(m => 
-         (m.lastName && m.lastName.toLowerCase().includes(lowerQuery)) ||
-         (m.publicId && m.publicId.toLowerCase().includes(lowerQuery))
-       );
+       result = result.filter(m => {
+         // Only search by lastName and publicId as requested
+         return (m.lastName && m.lastName.toLowerCase().includes(lowerQuery)) || 
+                (m.publicId && m.publicId.toLowerCase().includes(lowerQuery));
+       });
     }
     
     return result;
@@ -167,9 +195,10 @@ export default function MatchingPage() {
   ];
 
   const paginatedMatches = useMemo(() => {
+    if (isMobile) return finalMatches;
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return finalMatches.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [finalMatches, currentPage]);
+  }, [finalMatches, currentPage, isMobile]);
 
   const totalPages = Math.ceil(finalMatches.length / ITEMS_PER_PAGE);
 
@@ -218,8 +247,139 @@ export default function MatchingPage() {
   }
 
   return (
-    <div className="flex flex-col xl:flex-row h-[calc(100vh-80px)] xl:h-full bg-gray-50/50 dark:bg-zinc-950 px-4 md:px-6 xl:px-8 gap-6 pt-4 pb-0 overflow-hidden">
+    <div className="flex flex-col xl:flex-row h-[calc(100vh-80px)] xl:h-full bg-gray-50/50 dark:bg-zinc-950 px-4 md:px-6 xl:pr-8 xl:pl-3 gap-6 pt-4 pb-0 overflow-hidden">
       
+      {/* Right Sidebar - Refine Matches */}
+      <div className={`${showMobileFilters ? "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" : "hidden"} xl:flex xl:static xl:bg-transparent xl:p-0 xl:backdrop-blur-none xl:z-auto flex-col w-full xl:w-[220px] shrink-0 space-y-3 xl:sticky xl:top-0 h-[100dvh] xl:h-fit max-h-screen xl:max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pb-10`}>
+        {showMobileFilters && (
+          <div className="absolute inset-0 z-0 xl:hidden" onClick={() => setShowMobileFilters(false)} />
+        )}
+        
+        {/* Refine Matches Card */}
+        <Card className="relative z-10 w-full max-w-[320px] xl:max-w-none max-h-[85vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 xl:p-3 shrink-0 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-2xl xl:shadow-xs flex flex-col gap-3">
+          <div className="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-zinc-800">
+            <h2 className="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
+              Refine Matches <Filter className="w-3.5 h-3.5 text-gray-400" />
+            </h2>
+            <button 
+              onClick={handleResetFilters}
+              className="text-[10px] md:text-xs font-bold text-[#E51E44] hover:underline"
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {/* Age Range */}
+            <div>
+              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Age</label>
+              <div className="flex items-center gap-2">
+                <select value={ageFrom} onChange={(e) => setAgeFrom(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
+                  <option value="">From</option>
+                  <option value="20">20</option><option value="22">22</option><option value="25">25</option><option value="28">28</option>
+                </select>
+                <span className="text-xs font-bold text-gray-400">To</span>
+                <select value={ageTo} onChange={(e) => setAgeTo(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
+                  <option value="">To</option>
+                  <option value="25">25</option><option value="28">28</option><option value="32">32</option><option value="35">35</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Height Range */}
+            <div>
+              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Height</label>
+              <div className="flex items-center gap-2">
+                <select value={heightFrom} onChange={(e) => setHeightFrom(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
+                  <option value="">From</option>
+                  <option value="4'10">4' 10"</option><option value="5'0">5' 0"</option><option value="5'5">5' 5"</option>
+                </select>
+                <span className="text-xs font-bold text-gray-400">To</span>
+                <select value={heightTo} onChange={(e) => setHeightTo(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
+                  <option value="">To</option>
+                  <option value="5'5">5' 5"</option><option value="5'10">5' 10"</option><option value="6'0">6' 0"</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Marital Status (Checkboxes) */}
+            <div>
+              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Marital Status</label>
+              <div className="flex flex-col gap-2.5 mt-2">
+                {["Never Married", "Divorced", "Widowed", "Awaiting Divorce"].map(status => (
+                  <label key={status} className="flex items-center gap-2.5 cursor-pointer group">
+                    <div className="relative flex items-center justify-center">
+                      <input 
+                        type="checkbox" 
+                        checked={maritalStatus.includes(status)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setMaritalStatus(prev => [...prev, status]);
+                          } else {
+                            setMaritalStatus(prev => prev.filter(s => s !== status));
+                          }
+                        }}
+                        className="peer appearance-none w-4 h-4 border border-gray-300 dark:border-zinc-700 rounded-sm checked:bg-[#E51E44] checked:border-[#E51E44] cursor-pointer transition-all" 
+                      />
+                      <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 14 14" fill="none">
+                        <path d="M3 8L6 11L11 3.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" stroke="currentColor"/>
+                      </svg>
+                    </div>
+                    <span className="text-xs font-bold text-gray-700 dark:text-zinc-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                      {status}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Single Selects */}
+            {[
+              { label: "Location", state: location, setter: setLocation, options: ["Kolkata + 50 km", "Delhi", "Mumbai", "Bangalore"] },
+              { label: "Religion", state: religion, setter: setReligion, options: ["Hinduism", "Islam", "Christianity", "Sikhism"] },
+              { label: "Caste", state: caste, setter: setCaste, options: ["Brahmin", "Kayastha", "Baidya", "Scheduled Caste"] },
+              { label: "Education", state: education, setter: setEducation, options: ["B.Tech", "M.Tech", "B.Sc", "MBA", "Doctorate"] },
+              { label: "Profession", state: profession, setter: setProfession, options: ["Software Engineer", "Doctor", "Teacher", "Business"] }
+            ].map((field, idx) => (
+              <div key={idx}>
+                <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">{field.label}</label>
+                <select value={field.state} onChange={(e) => field.setter(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
+                  <option value="">All {field.label}</option>
+                  {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+            ))}
+
+            <Button 
+              onClick={() => {
+                handleApplyFilters();
+                setShowMobileFilters(false);
+              }}
+              className="w-full bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold rounded-xl py-2 mt-2"
+            >
+              Apply Filters
+            </Button>
+          </div>
+        </Card>
+
+        {/* Search Alerts Card */}
+        <div className="hidden xl:block relative shrink-0 overflow-hidden p-4 bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-zinc-900 border border-rose-100 dark:border-rose-900/30 rounded-2xl shadow-xs">
+          <div className="relative z-10 space-y-2.5">
+            <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5 text-rose-500" /> Search Alerts
+            </h3>
+            <p className="text-[11px] font-bold text-gray-700 dark:text-zinc-300 leading-relaxed max-w-[170px]">
+              12 New profiles matching your preferences
+            </p>
+            <button className="text-[11px] font-bold text-[#E51E44] hover:underline flex items-center gap-1">
+              View New Profiles &rarr;
+            </button>
+          </div>
+          <div className="absolute -bottom-2 -right-4 opacity-80">
+            <MailOpen className="w-20 h-20 text-rose-200 dark:text-rose-900/40 fill-rose-100 dark:fill-rose-900/20" strokeWidth={1} />
+          </div>
+        </div>
+      </div>
       {/* Left side: Header + Main Column */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         
@@ -271,7 +431,7 @@ export default function MatchingPage() {
         </div>
 
         {/* Main Column */}
-        <div className="flex-1 flex flex-col space-y-6 pt-2 h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 pr-2">
+        <div id="matching-scroll-container" className="flex-1 flex flex-col space-y-6 pt-2 h-full overflow-y-auto snap-y snap-mandatory md:snap-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pr-2">
 
         {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -290,7 +450,7 @@ export default function MatchingPage() {
           </p>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5 transition-opacity duration-200 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-1 gap-4 md:gap-5 transition-opacity duration-200 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           {paginatedMatches.map((match) => {
             const age = match.profile.age || 27;
             const education = match.profile.education || "B.Sc";
@@ -301,9 +461,9 @@ export default function MatchingPage() {
             const height = match.profile.height || "";
 
             return (
-              <Card key={match.id} className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow p-0 gap-0 flex flex-col">
+              <Card key={match.id} className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow p-0 gap-0 flex flex-col xl:flex-row snap-start md:snap-align-none scroll-mt-2">
                 {/* Image */}
-                <div className="relative aspect-square w-full bg-gray-100 dark:bg-zinc-800 shrink-0">
+                <div className="relative aspect-square xl:aspect-auto w-full xl:w-[220px] bg-gray-100 dark:bg-zinc-800 shrink-0">
                   <Image
                     src={match.avatar || (match.gender === "MALE" ? "/groom.webp" : "/bride.webp")}
                     alt={match.lastName}
@@ -430,14 +590,19 @@ export default function MatchingPage() {
       )}
 
       {/* Pagination & Verification Banner */}
-      <div className="mt-6 flex flex-col items-center gap-6 pb-6">
+      <div className="mt-6 hidden md:flex flex-col items-center gap-6 pb-6">
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center gap-1.5">
             <Button 
               variant="outline" size="icon" 
               className="w-9 h-9 rounded-xl border-gray-200 dark:border-zinc-800 shadow-xs bg-white dark:bg-zinc-900"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => {
+                setCurrentPage(prev => Math.max(prev - 1, 1));
+                const scrollContainer = document.getElementById('matching-scroll-container');
+                if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-zinc-400" />
@@ -445,7 +610,6 @@ export default function MatchingPage() {
             
             {Array.from({ length: totalPages }).map((_, i) => {
               const pageNum = i + 1;
-              // Logic: show first, last, current, and +/- 1 from current
               if (
                 pageNum === 1 || 
                 pageNum === totalPages || 
@@ -462,7 +626,9 @@ export default function MatchingPage() {
                     }`}
                     onClick={() => {
                       setCurrentPage(pageNum);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      const scrollContainer = document.getElementById('matching-scroll-container');
+                      if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                      else window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                   >
                     {pageNum}
@@ -480,117 +646,30 @@ export default function MatchingPage() {
             <Button 
               variant="outline" size="icon" 
               className="w-9 h-9 rounded-xl border-gray-200 dark:border-zinc-800 shadow-xs bg-white dark:bg-zinc-900"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              onClick={() => {
+                setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                const scrollContainer = document.getElementById('matching-scroll-container');
+                if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="w-4 h-4 text-gray-600 dark:text-zinc-400" />
             </Button>
           </div>
         )}
-
-      </div>
-      </div>
       </div>
 
-      {/* Right Sidebar - Refine Matches */}
-      <div className={`${showMobileFilters ? "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" : "hidden"} xl:flex xl:static xl:bg-transparent xl:p-0 xl:backdrop-blur-none xl:z-auto flex-col w-full xl:w-[220px] shrink-0 space-y-3 xl:sticky xl:top-0 h-[100dvh] xl:h-fit max-h-screen xl:max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pb-10`}>
-        {showMobileFilters && (
-          <div className="absolute inset-0 z-0 xl:hidden" onClick={() => setShowMobileFilters(false)} />
+      {/* Infinite Scroll Trigger */}
+      <div ref={loadMoreRef} className="w-full h-10 flex items-center justify-center mb-8 shrink-0">
+        {isFetchingNextPage && (
+          <div className="flex items-center gap-2 text-[#E51E44] text-sm font-semibold">
+            <div className="w-4 h-4 rounded-full border-2 border-[#E51E44] border-t-transparent animate-spin"></div>
+            Loading more profiles...
+          </div>
         )}
-        
-        {/* Refine Matches Card */}
-        <Card className="relative z-10 w-full max-w-[320px] xl:max-w-none max-h-[85vh] overflow-y-auto p-4 xl:p-3 shrink-0 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-2xl xl:shadow-xs flex flex-col gap-3">
-          <div className="flex justify-between items-center pb-2 border-b border-gray-50 dark:border-zinc-800">
-            <h2 className="text-sm font-extrabold text-gray-900 dark:text-white flex items-center gap-1.5">
-              Refine Matches <Filter className="w-3.5 h-3.5 text-gray-400" />
-            </h2>
-            <button 
-              onClick={handleResetFilters}
-              className="text-[10px] md:text-xs font-bold text-[#E51E44] hover:underline"
-            >
-              Reset
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {/* Age Range */}
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Age</label>
-              <div className="flex items-center gap-2">
-                <select value={ageFrom} onChange={(e) => setAgeFrom(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">From</option>
-                  <option value="20">20</option><option value="22">22</option><option value="25">25</option><option value="28">28</option>
-                </select>
-                <span className="text-xs font-bold text-gray-400">To</span>
-                <select value={ageTo} onChange={(e) => setAgeTo(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">To</option>
-                  <option value="25">25</option><option value="28">28</option><option value="32">32</option><option value="35">35</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Height Range */}
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Height</label>
-              <div className="flex items-center gap-2">
-                <select value={heightFrom} onChange={(e) => setHeightFrom(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">From</option>
-                  <option value="4'10">4' 10"</option><option value="5'0">5' 0"</option><option value="5'5">5' 5"</option>
-                </select>
-                <span className="text-xs font-bold text-gray-400">To</span>
-                <select value={heightTo} onChange={(e) => setHeightTo(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">To</option>
-                  <option value="5'5">5' 5"</option><option value="5'10">5' 10"</option><option value="6'0">6' 0"</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Single Selects */}
-            {[
-              { label: "Location", state: location, setter: setLocation, options: ["Kolkata + 50 km", "Delhi", "Mumbai", "Bangalore"] },
-              { label: "Religion", state: religion, setter: setReligion, options: ["Hinduism", "Islam", "Christianity", "Sikhism"] },
-              { label: "Caste", state: caste, setter: setCaste, options: ["Brahmin", "Kayastha", "Baidya", "Scheduled Caste"] },
-              { label: "Education", state: education, setter: setEducation, options: ["B.Tech", "M.Tech", "B.Sc", "MBA", "Doctorate"] },
-              { label: "Profession", state: profession, setter: setProfession, options: ["Software Engineer", "Doctor", "Teacher", "Business"] }
-            ].map((field, idx) => (
-              <div key={idx}>
-                <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">{field.label}</label>
-                <select value={field.state} onChange={(e) => field.setter(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">All {field.label}</option>
-                  {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-              </div>
-            ))}
-
-            <Button 
-              onClick={() => {
-                handleApplyFilters();
-                setShowMobileFilters(false);
-              }}
-              className="w-full bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold rounded-xl py-2 mt-2"
-            >
-              Apply Filters
-            </Button>
-          </div>
-        </Card>
-
-        {/* Search Alerts Card */}
-        <div className="hidden xl:block relative shrink-0 overflow-hidden p-4 bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-950/20 dark:to-zinc-900 border border-rose-100 dark:border-rose-900/30 rounded-2xl shadow-xs">
-          <div className="relative z-10 space-y-2.5">
-            <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-rose-500" /> Search Alerts
-            </h3>
-            <p className="text-[11px] font-bold text-gray-700 dark:text-zinc-300 leading-relaxed max-w-[170px]">
-              12 New profiles matching your preferences
-            </p>
-            <button className="text-[11px] font-bold text-[#E51E44] hover:underline flex items-center gap-1">
-              View New Profiles &rarr;
-            </button>
-          </div>
-          <div className="absolute -bottom-2 -right-4 opacity-80">
-            <MailOpen className="w-20 h-20 text-rose-200 dark:text-rose-900/40 fill-rose-100 dark:fill-rose-900/20" strokeWidth={1} />
-          </div>
-        </div>
+      </div>
+      </div>
       </div>
     </div>
   );

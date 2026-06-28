@@ -102,7 +102,7 @@ export default function SocialShareClient({
           <div className="mb-3 grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.map((groom) => (
               <Link href={`/dashboard/profile/user/${groom.id}`} key={groom.id}>
-                <UserCardView user={groom} />
+                <UserCardView user={groom} showMarkButton={true} />
               </Link>
             ))}
           </div>

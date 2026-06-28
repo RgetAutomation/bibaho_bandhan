@@ -113,6 +113,25 @@ export interface ProfileProps {
   familyStatusPreference: string | null;
   familyTypePreference: string | null;
   familyValuesPreference: string | null;
+  
+  childrenLivingWith: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  pinCode: string | null;
+  noOfMarriedBrothers: string | null;
+  noOfMarriedSisters: string | null;
+  familyLocation: string | null;
+  partnerChildren: string | null;
+  partnerManglik: string | null;
+  partnerEducation: string | null;
+  partnerProfession: string | null;
+  partnerIncome: string | null;
+  partnerLocation: string | null;
+  partnerDiet: string | null;
+  partnerComplexion: string | null;
+  partnerBodyType: string | null;
+  partnerFamilyValues: string | null;
+  partnerFamilyType: string | null;
 
   familyMembers: string | null;
   fatherProfession: string | null;

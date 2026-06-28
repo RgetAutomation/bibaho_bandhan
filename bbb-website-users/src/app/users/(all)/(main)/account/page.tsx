@@ -44,6 +44,7 @@ import {
   HelpCircle,
   ImageIcon,
   KeyRound,
+  LogOut,
   MessageCircleHeart,
   MessageCircleWarning,
   Moon,
@@ -432,6 +433,27 @@ export default function ProfilePage() {
               <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-rose-500 transition-colors" />
             </Link>
 
+          </div>
+
+          {/* Mobile Logout Button */}
+          <div className="md:hidden mt-6 pb-8 flex justify-center">
+            <Button
+              variant="ghost"
+              className="text-xs text-muted-foreground hover:text-destructive hover:bg-transparent font-medium py-2"
+              onClick={() =>
+                authClient.signOut({
+                  fetchOptions: {
+                    onRequest: () => setLoggingOut(true),
+                    onSuccess: () => router.push("/auth/login"),
+                    onError: () => setLoggingOut(false),
+                  },
+                })
+              }
+              disabled={loggingOut}
+            >
+              <LogOut className="w-4 h-4 mr-1.5" />
+              {loggingOut ? "Logging out..." : "Log out"}
+            </Button>
           </div>
 
 

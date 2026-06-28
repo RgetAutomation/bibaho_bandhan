@@ -101,6 +101,11 @@ const data: MainMenuProps = {
           url: "/dashboard/verify-profiles",
           icon: ShieldBan,
         },
+        {
+          title: "Success Stories",
+          url: "/dashboard/success-stories",
+          icon: Star,
+        },
       ],
     },
 

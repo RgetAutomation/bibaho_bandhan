@@ -4,7 +4,7 @@ import { getUserById } from "@/action/users";
 import { getProfileEditHistory } from "@/action/adminProfileEdit";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ban, Calendar, Hash, ShieldAlert, ShieldCheck, Users, Ruler, Book, Heart, MapPin, ExternalLink, Crown, BadgeCheck, Star, Copy, CheckCircle2, Clock, MessageSquare, BrainCircuit, UserCog, Check, Bell, PauseCircle, Trash2, Edit, Activity, Building2, UserX } from "lucide-react";
+import { Ban, Calendar, Hash, ShieldAlert, ShieldCheck, Users, Ruler, Book, Heart, MapPin, ExternalLink, Crown, BadgeCheck, Star, Copy, CheckCircle2, Clock, MessageSquare, BrainCircuit, UserCog, Check, Bell, PauseCircle, Trash2, Edit, Activity, Building2, UserX, ChevronDown } from "lucide-react";
 import { headers } from "next/headers";
 import { checkAuthAndGetSession } from "@/components/helper/checkAuthAndGetSession";
 import UserProfileClient, {
@@ -139,207 +139,94 @@ export default async function UserProfileId({
       <div className="flex-1 space-y-4 sm:space-y-6 min-w-0">
       {/* ================= HEADER ================= */}
       <Card className="rounded-2xl border shadow-sm bg-card text-card-foreground overflow-hidden mb-6">
-        <div className="flex flex-col lg:flex-row">
-          
-          {/* Left Column - Media */}
-          <div className="w-full lg:w-[160px] 2xl:w-[220px] p-5 border-b lg:border-b-0 lg:border-r border-border flex flex-col gap-3 shrink-0">
-            <div className="w-full aspect-[4/5] relative rounded-xl overflow-hidden bg-muted border border-border">
-              {data.avatar ? (
-                <img src={data.avatar} alt={fullName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-5xl font-bold text-muted-foreground/30">
-                  {data.firstName?.[0]?.toUpperCase()}
-                </div>
-              )}
-            </div>
-            
-            {data.profileImages && data.profileImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                {data.profileImages.slice(0, 2).map((img: any, i: number) => (
-                  <div key={i} className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
-                    <img src={img.url} className="w-full h-full object-cover" alt="Thumbnail" />
-                  </div>
-                ))}
-                {data.profileImages.length > 2 && (
-                  <div className="aspect-square relative rounded-lg overflow-hidden border border-border bg-muted">
-                    <img src={data.profileImages[2].url} className="w-full h-full object-cover" alt="Thumbnail" />
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-xs font-bold pointer-events-none">
-                      +{data.profileImages.length - 2}
-                    </div>
-                  </div>
-                )}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start p-4 sm:p-5 gap-4 sm:gap-6">
+          {/* Avatar */}
+          <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 relative rounded-full overflow-hidden bg-muted border border-border">
+            {data.avatar ? (
+              <img src={data.avatar} alt={fullName} className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-muted-foreground/30">
+                {data.firstName?.[0]?.toUpperCase()}
               </div>
             )}
-            
-            <button className="w-full py-2 mt-1 text-[12px] font-semibold text-primary border border-primary/30 rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors">
-              View All Photos ({data.profileImages?.length ? data.profileImages.length + (data.avatar ? 1 : 0) : (data.avatar ? 1 : 0)})
-            </button>
           </div>
 
-          {/* Middle Column - Core Info */}
-          <div className="flex-1 p-5 lg:p-6 flex flex-col min-w-0">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 h-full">
-              <div className="flex flex-col h-full w-full">
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-xl lg:text-2xl font-bold text-foreground truncate">{fullName}</h1>
+          {/* Details */}
+          <div className="flex flex-col flex-1 min-w-0">
+            {/* Title & Badges Row */}
+            <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-4 mb-3">
+              
+              {/* Left: Title & Badges */}
+              <div className="flex flex-col gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{fullName}</h1>
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  {data.type === "PAID" && (
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] sm:text-xs font-bold tracking-wide">
+                      PAID
+                    </span>
+                  )}
+                  
                   {data.blocked ? (
-                    <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[11px] font-semibold flex items-center gap-1 shrink-0">
+                    <span className="px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] sm:text-xs font-bold tracking-wide flex items-center gap-1">
                       <Ban className="w-3 h-3" /> Blocked
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[11px] font-semibold flex items-center gap-1 shrink-0">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-600 dark:bg-green-400" /> Active
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] sm:text-xs font-bold tracking-wide flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" /> Active
                     </span>
                   )}
-                </div>
-                
-                <div className="flex items-center gap-2 text-[12px] text-muted-foreground mb-3">
-                  <span className="font-medium">Profile ID:</span>
-                  <span className="font-bold text-foreground">{data.publicId}</span>
-                  <CopyableComponent copyText={data.publicId}>
-                    <span className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                      <Copy className="w-3.5 h-3.5" />
-                    </span>
-                  </CopyableComponent>
-                </div>
 
-                {/* Badges */}
-                <div className="flex flex-wrap items-center gap-1.5 mb-3">
                   {data.isProfileComplete && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-100 dark:border-emerald-800">
-                      <BadgeCheck className="w-3.5 h-3.5" /> Verified
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400 text-[10px] sm:text-xs font-bold tracking-wide">
+                      Profile Complete
                     </span>
                   )}
-                  {data.type === "PAID" && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 text-xs font-bold border border-purple-100 dark:border-purple-800">
-                      <Crown className="w-3.5 h-3.5" /> Premium
+
+                  {data.gender && (
+                    <span className="px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-100 dark:bg-zinc-700 text-[10px] sm:text-xs font-bold tracking-wide uppercase">
+                      {data.gender}
                     </span>
                   )}
-                  {data.isGhotokOwned && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-xs font-bold border border-orange-100 dark:border-orange-800">
-                      <Star className="w-3.5 h-3.5" /> Featured
-                    </span>
-                  )}
-                  
-
                 </div>
-
-                {/* Key Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 py-3 border-y border-border mb-3">
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
-                      <Users className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">Age</span>
-                    </div>
-                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.dob ? `${new Date().getFullYear() - new Date(p.dob).getFullYear()} Yrs` : "—"}</span>
-                  </div>
-                  
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
-                      <Ruler className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">Height</span>
-                    </div>
-                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.height || "—"}</span>
-                  </div>
-
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
-                      <Book className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">Religion</span>
-                    </div>
-                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.religion || "—"}</span>
-                  </div>
-
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
-                      <Heart className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">Marital</span>
-                    </div>
-                    <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.maritalStatus || "—"}</span>
-                  </div>
-                </div>
-
-                {/* Bottom Info */}
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4 justify-between mt-auto">
-                  <div className="flex items-center gap-4 lg:gap-6">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Mother Tongue</span>
-                      <span className="font-semibold text-[13px] text-foreground leading-tight">{p?.language || "—"}</span>
-                    </div>
-                    
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/> Location</span>
-                      <span className="font-semibold text-[13px] text-foreground leading-tight line-clamp-1">
-                        {p?.dist || p?.state ? [p?.dist, p?.state].filter(Boolean).join(", ") : "—"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Profile Completion */}
-                  <div className="flex flex-col gap-1.5 min-w-[150px]">
-                    <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-muted-foreground font-medium uppercase tracking-wider">Profile Completion</span>
-                      <span className="font-bold text-foreground">{calculateCompletion(p)}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${calculateCompletion(p)}%` }} />
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
-          </div>
 
-          {/* Right Column - Meta Details */}
-          <div className="w-full lg:w-[260px] 2xl:w-[300px] p-5 lg:p-6 border-t lg:border-t-0 lg:border-l border-border bg-muted/30 flex flex-col shrink-0">
-            <div className="flex flex-col gap-4 flex-1">
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-xs text-muted-foreground mt-0.5">Registration Date</span>
-                <span className="text-sm font-semibold text-foreground text-right">{formatDate(data.createdAt)}</span>
+            {/* Bottom Meta Row with Buttons */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground mt-1">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" />
+                <span>Created {formatDate(data.createdAt)}</span>
               </div>
               
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-xs text-muted-foreground mt-0.5">Last Login</span>
-                <span className="text-sm font-semibold text-foreground text-right">{(data as any).lastLogin ? formatDate((data as any).lastLogin) : "—"}</span>
+              {data.planExpiryDate && (
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" />
+                  <span>Expires {formatDate(data.planExpiryDate)}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                <Hash className="w-4 h-4" />
+                <span>{data.publicId}</span>
               </div>
-              
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-xs text-muted-foreground mt-0.5">Membership Plan</span>
-                <span className="text-sm font-semibold text-foreground text-right">{data.type === "PAID" ? "Premium" : "Free"}</span>
-              </div>
-              
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-xs text-muted-foreground mt-0.5">Plan Expiry Date</span>
-                <span className="text-sm font-semibold text-foreground text-right">{data.planExpiryDate ? formatDate(data.planExpiryDate) : "—"}</span>
-              </div>
-              
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-xs text-muted-foreground mt-0.5">Assigned Matchmaker</span>
-                <span className="text-sm font-semibold text-foreground text-right">{(data as any).assignedMatchmaker ? (data as any).assignedMatchmaker : "Not Assigned"}</span>
-              </div>
-              
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-xs text-muted-foreground mt-0.5">Profile Views</span>
-                <span className="text-sm font-semibold text-foreground text-right">{(data as any).viewsCount !== undefined && (data as any).viewsCount !== null ? (data as any).viewsCount : "0"}</span>
-              </div>
-            </div>
-            
-            <div className="mt-6 flex flex-col gap-3">
-              <a href={`https://bibahobandhan.com/profile/${data.publicId}`} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 font-semibold text-sm rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors">
-                View Public Profile <ExternalLink className="w-4 h-4" />
-              </a>
-              
-              {/* Mark & Edit Buttons */}
-              <div className="grid grid-cols-2 gap-2">
-                <MarkButtonClient className="w-full h-10" />
-                <div className="w-full [&>button]:h-10">
+
+              {(data as any).password && (
+                <div className="flex items-center gap-1.5 font-mono text-xs opacity-60">
+                  <ShieldAlert className="w-4 h-4" />
+                  <span className="truncate max-w-[120px] sm:max-w-none">{(data as any).password}</span>
+                </div>
+              )}
+
+              {/* Mark & Edit Buttons - Now inside the gap-x-6 gap-y-3 row */}
+              <div className="flex items-center gap-2">
+                <MarkButtonClient className="h-8 px-3 text-xs" />
+                <div className="[&>button]:h-8 [&>button]:px-3 [&>button]:text-xs">
                   <SidebarEditButtonClient />
                 </div>
               </div>
             </div>
           </div>
-          
         </div>
       </Card>
 
@@ -518,8 +405,21 @@ export default async function UserProfileId({
           <FieldRow label="Social Publish" value={data.allowSocialPublish ? "Yes" : "No"} />
         </Section>
 
-        <div className={cn("bg-card flex flex-col gap-2 rounded-2xl border p-3 sm:gap-3 sm:p-4 md:gap-4 md:p-5 lg:col-span-2")}>
-          <h1 className="p-1 text-lg font-semibold sm:p-2 md:p-3">Images</h1>
+        <details className={cn("bg-card flex flex-col gap-2 rounded-2xl border p-3 sm:gap-3 sm:p-4 md:gap-4 md:p-5 lg:col-span-2 group")} open>
+          <summary className="p-1 text-lg font-semibold sm:p-2 md:p-3 cursor-pointer flex items-center justify-between list-none [&::-webkit-details-marker]:hidden">
+            <div className="flex items-center gap-4 flex-1 overflow-hidden mr-4">
+              <span className="shrink-0">Images</span>
+              <div className="flex items-center gap-2 group-open:hidden flex-1 overflow-x-auto no-scrollbar">
+                {data.avatar && (
+                  <img src={data.avatar} className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shrink-0 border-2 border-gray-200 dark:border-neutral-700 shadow-sm" alt="avatar" />
+                )}
+                {data.profileImages?.map((img, i) => (
+                  <img key={i} src={img.url} className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover shrink-0 border-2 border-gray-200 dark:border-neutral-700 shadow-sm" alt="image" />
+                ))}
+              </div>
+            </div>
+            <ChevronDown className="w-5 h-5 transition-transform group-open:rotate-180 shrink-0" />
+          </summary>
           <div className="grid grid-cols-1 gap-3">
             {data.profileImages.length === 0 && !data.avatar ? (
               <p className="text-muted-foreground text-sm">No images ☹️</p>
@@ -532,7 +432,7 @@ export default async function UserProfileId({
               </div>
             )}
           </div>
-        </div>
+        </details>
       </div>
 
       {/* ================= MISSING FIELDS ================= */}

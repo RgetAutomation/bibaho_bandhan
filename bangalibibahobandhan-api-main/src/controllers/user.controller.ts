@@ -98,8 +98,13 @@ export async function getAllUsers(req: Request, res: Response) {
       b.blockerId === currentUser.id ? b.blockedId : b.blockerId
     );
 
+    const excludedInterestUserIds = [
+      ...interestsSent.map((i) => i.receiverId),
+      ...interestsReceived.map((i) => i.senderId),
+    ];
+
     const excludedUserIds = [
-      ...new Set([...excludedConversationUserIds, ...excludedBlockedUserIds]),
+      ...new Set([...excludedConversationUserIds, ...excludedBlockedUserIds, ...excludedInterestUserIds]),
     ];
 
     // Filter parameters

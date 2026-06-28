@@ -38,7 +38,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   conversationId,
   currentUserId,
 }) => {
-  const { sockets } = useSocket();
+  const { sockets, onlineUsers } = useSocket();
   const socket = sockets["/"];
   const teamUserSocket = sockets["/teamuser"];
   const { user } = useAuthSession();
@@ -254,24 +254,29 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           >
             <ArrowLeft className="size-5 md:size-6" />
           </Button>
-          <Avatar 
-            onClick={() => {
-              if (window.innerWidth < 768) {
-                router.push(`/users/profile/${participant?.id}`);
-              }
-            }}
-            className="h-9 w-9 md:h-12 md:w-12 bg-card border ring-1 ring-rose-400 ring-offset-2 ring-offset-card shrink-0 cursor-pointer md:cursor-default"
-          >
-            <AvatarImage
-              src={participant?.avatar || ""}
-              alt="Avatar"
-              width={50}
-              height={50}
-            />
-            <AvatarFallback>
-              {participant?.lastName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative shrink-0">
+            <Avatar 
+              onClick={() => {
+                if (window.innerWidth < 768) {
+                  router.push(`/users/profile/${participant?.id}`);
+                }
+              }}
+              className="h-9 w-9 md:h-12 md:w-12 bg-card border ring-1 ring-rose-400 ring-offset-2 ring-offset-card cursor-pointer md:cursor-default"
+            >
+              <AvatarImage
+                src={participant?.avatar || ""}
+                alt="Avatar"
+                width={50}
+                height={50}
+              />
+              <AvatarFallback>
+                {participant?.lastName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {onlineUsers.has(participant?.id || "") && (
+              <div className="absolute bottom-0 right-0 w-3 h-3 md:w-3.5 md:h-3.5 bg-green-500 border-2 border-white dark:border-zinc-950 rounded-full shadow-sm z-10" />
+            )}
+          </div>
 
           <div className="flex flex-col min-w-0">
             <h1 className="text-base md:text-lg font-semibold truncate">

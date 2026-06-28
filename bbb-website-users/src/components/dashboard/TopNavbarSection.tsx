@@ -126,6 +126,18 @@ export default function TopNavbarSection() {
     }] : [])
   ];
 
+  const [hasViewedNotifications, setHasViewedNotifications] = useState(false);
+  const [lastNotificationCount, setLastNotificationCount] = useState(0);
+
+  useEffect(() => {
+    if (totalNotifications > lastNotificationCount) {
+      setHasViewedNotifications(false);
+    }
+    setLastNotificationCount(totalNotifications);
+  }, [totalNotifications, lastNotificationCount]);
+
+  const showNotificationBadge = !hasViewedNotifications && totalNotifications > 0;
+
   useEffect(() => {
     setMounted(true);
     setIsDarkMode(resolvedTheme === "dark");
@@ -217,12 +229,14 @@ export default function TopNavbarSection() {
             )}
 
             {/* Notification Bell */}
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={(open) => {
+              if (open) setHasViewedNotifications(true);
+            }}>
               <DropdownMenuTrigger className="relative group outline-none">
                 <div className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-muted-foreground group-hover:text-primary transition-colors">
                   <Bell className="w-5 h-5" />
                 </div>
-                {totalNotifications > 0 && (
+                {showNotificationBadge && (
                   <Badge className="absolute -top-1 -right-1 size-5 rounded-full text-[10px] flex items-center justify-center p-0 border-2 border-white dark:border-zinc-950 bg-[#E51E44] text-white">
                     {totalNotifications}
                   </Badge>

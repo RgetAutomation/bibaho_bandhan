@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { IUsers } from "./interface/IUsers";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,15 +8,19 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar, CheckCircle2, Hash, Info, Phone, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import CardMarkButton from "./CardMarkButton";
 
-export default function UserCardView({ user }: { user: IUsers }) {
+export default function UserCardView({ user, showMarkButton = false }: { user: IUsers, showMarkButton?: boolean }) {
+  const [isMarked, setIsMarked] = useState(false);
+
   const fullName = `${user.title} ${user.firstName} ${user.middleName || ""} ${
     user.lastName
   }`.trim();
 
   return (
-    <Card className="mb-0 w-full rounded-2xl shadow-lg">
-      <CardHeader className="flex items-center gap-4">
+    <Card className={cn("mb-0 w-full rounded-2xl shadow-lg relative transition-all duration-300", isMarked ? "ring-2 ring-primary shadow-primary/40" : "")}>
+      {showMarkButton && <CardMarkButton isMarked={isMarked} onToggle={() => setIsMarked(!isMarked)} />}
+      <CardHeader className="flex items-center gap-4 pt-6">
         <Avatar className="h-16 w-16">
           <AvatarImage
             src={

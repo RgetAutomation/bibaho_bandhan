@@ -18,6 +18,7 @@ import rateLimit from "express-rate-limit";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import { authUser } from "./utils/auth.js";
 import asyncHandler from "./utils/asyncHandler.js";
+import successStoryRoute from "./routes/success-story.route.js";
 
 const app = express();
 
@@ -131,5 +132,8 @@ app.use("/api/v1/coupons", couponRoute);
 
 // Others Routes
 app.use("/api/v1/other", othersRoute);
+
+// Success Stories Route
+app.use("/api/v1/success-stories", successStoryRoute);
 
 export default app;

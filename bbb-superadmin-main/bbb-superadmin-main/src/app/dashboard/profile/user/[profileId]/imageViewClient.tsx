@@ -71,7 +71,7 @@ export default function ImageViewClient({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border bg-neutral-200 p-4 dark:bg-neutral-800">
+    <div className="flex h-full flex-col gap-3 rounded-2xl border bg-neutral-200 p-4 dark:bg-neutral-800">
       {image ? (
         <Image
           width={200}
@@ -86,7 +86,7 @@ export default function ImageViewClient({
         </div>
       )}
       <div
-        className={cn("grid gap-2", canDelete ? "grid-cols-2" : "grid-cols-1")}
+        className={cn("mt-auto grid gap-2", canDelete ? "grid-cols-2" : "grid-cols-1")}
       >
         {canDelete && (
           <Button

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Crown, Bell, User, Settings, HelpCircle, LogOut, ChevronDown, MessageCircle, MailOpen, HeartHandshake, AlignRight, X, LayoutDashboard, Flame, Bookmark, MessageSquare, Users, Ban } from "lucide-react";
+import { Sun, Moon, Crown, Bell, User, Settings, HelpCircle, LogOut, ChevronDown, MessageCircle, MailOpen, HeartHandshake, AlignRight, X, LayoutDashboard, Flame, Bookmark, MessageSquare, Users, Ban, Megaphone } from "lucide-react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { isPaidUser } from "@/lib/utils";
 import { UserType } from "@/components/enum/userType";
@@ -22,7 +22,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useQuery } from "@tanstack/react-query";
 import { getAllInterestReceived } from "@/actions/userConnections";
-
+import axios from "axios";
+import { MAIN_API_URL } from "@/lib/constant-data";
 interface MobileHeaderProps {
   hideLogo?: boolean;
   className?: string;
@@ -44,6 +45,34 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
     enabled: !!user && user.type === UserType.PAID_USER,
   });
 
+  const { data: activeBroadcasts } = useQuery({
+    queryKey: ["activeBroadcasts"],
+    queryFn: async () => {
+      const res = await axios.get(`${MAIN_API_URL}/broadcasts/active`, { withCredentials: true });
+      return res.data?.data || [];
+    },
+    enabled: !!user,
+  });
+
+  const activeBroadcast = activeBroadcasts?.[0];
+
+  const messageCount = userConversationIds.length;
+  const matchNoticeCount = userSAConversationIds.length;
+  const interestCount = receivedInterests?.length || 0;
+  const totalNotifications = messageCount + matchNoticeCount + interestCount;
+
+  const [hasViewedNotifications, setHasViewedNotifications] = useState(false);
+  const [lastNotificationCount, setLastNotificationCount] = useState(0);
+
+  useEffect(() => {
+    if (totalNotifications > lastNotificationCount) {
+      setHasViewedNotifications(false);
+    }
+    setLastNotificationCount(totalNotifications);
+  }, [totalNotifications, lastNotificationCount]);
+
+  const showNotificationBadge = !hasViewedNotifications && totalNotifications > 0;
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -54,12 +83,6 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
     user.type as UserType,
     new Date(user.planExpiryDate ?? "")
   );
-
-  const messageCount = userConversationIds.length;
-  const matchNoticeCount = userSAConversationIds.length;
-  const interestCount = receivedInterests?.length || 0;
-  
-  const totalNotifications = messageCount + matchNoticeCount + interestCount;
 
   const notifications = [
     ...(messageCount > 0 ? [{
@@ -120,13 +143,27 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
 
       {/* Right Actions */}
       <div className="flex items-center gap-3">
+        {/* Broadcast Icon */}
+        {activeBroadcast && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-broadcast'))}
+            className="relative p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors outline-none"
+            title="View Announcement"
+          >
+            <Megaphone className="w-5 h-5 animate-pulse" />
+            <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-zinc-950 rounded-full"></span>
+          </button>
+        )}
+
         {/* Notification Bell */}
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={(open) => {
+          if (open) setHasViewedNotifications(true);
+        }}>
           <DropdownMenuTrigger className="relative group outline-none">
             <div className="p-1.5 text-gray-500 hover:text-[#9B1C31] transition-colors">
               <Bell className="w-5 h-5" />
             </div>
-            {totalNotifications > 0 && (
+            {showNotificationBadge && (
               <Badge className="absolute top-0 right-0 size-4 rounded-full text-[9px] font-bold flex items-center justify-center p-0 border-2 border-white dark:border-zinc-950 bg-[#E51E44] text-white">
                 {totalNotifications}
               </Badge>
@@ -227,22 +264,6 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
                 <HelpCircle className="mr-2 h-4 w-4 text-muted-foreground" />
                 <span>Help Center</span>
               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="cursor-pointer py-2 text-red-600 focus:text-red-600"
-              onClick={() =>
-                authClient.signOut({
-                  fetchOptions: {
-                    onRequest: () => setLoggingOut(true),
-                    onSuccess: () => router.push("/auth/login"),
-                    onError: () => setLoggingOut(false),
-                  },
-                })
-              }
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>{loggingOut ? "Logging out..." : "Logout"}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

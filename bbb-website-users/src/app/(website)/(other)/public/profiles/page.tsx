@@ -63,10 +63,10 @@ export default function AllPublicProfiles() {
 
       {/* Profiles Grid */}
       {data?.length && data?.length > 0 ? (
-        <div className="w-full flex flex-wrap gap-8 items-center justify-center">
+        <div className="w-full flex flex-wrap gap-6 sm:gap-8 items-stretch justify-center">
           {data?.map((profile: IPublicProfile) => (
             <div
-              className="w-full cursor-pointer sm:w-fit sm:min-w-[13rem] flex flex-col items-center justify-center"
+              className="w-full max-w-[280px] sm:w-[280px] cursor-pointer flex flex-col items-center justify-center"
               key={profile.id}
               onClick={() => setSelectedProfile(profile)}
             >
