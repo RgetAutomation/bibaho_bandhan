@@ -168,6 +168,7 @@ export function ProfileRedesigned({
 
   const [activeTab, setActiveTab] = useState("about");
   const [activePhoto, setActivePhoto] = useState<string | null>(null);
+  const [activeEditSection, setActiveEditSection] = useState<string | null>(null);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
@@ -539,233 +540,286 @@ export function ProfileRedesigned({
             )}
             </Card>
 
-            {/* ─── ABOUT ME ─────────────────────────────────────── */}
-            {hasValue(data.aboutMyself) && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={User} title="About Me" editHref={isOwnProfile ? "/users/account/edit/profile?scrollTo=about-me" : undefined} />
-                <div className="p-5 pt-0">
-                  <p className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed font-medium">
-                    <MaskedText
-                      value={data.aboutMyself}
-                      visible={isFreeOrAbove}
-                      fallback="Description hidden. Upgrade to premium to view."
-                    />
-                  </p>
-                  {/* Personality trait tags */}
-                  {hasValue(data.personalityTraits) && (
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {String(data.personalityTraits).split(',').map((trait, i) => (
-                        <span key={i} className="px-3 py-1 rounded-full bg-[#FCE4EC] dark:bg-rose-950/20 text-[#9B1C31] dark:text-rose-400 text-xs font-bold border border-rose-100 dark:border-rose-900/30">
-                          {trait.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            )}
+            
+            {/* ─── SECTIONS WRAPPER FOR MASONRY LAYOUT ──────────────────── */}
+            <div className="columns-1 md:columns-2 gap-6 space-y-6 md:space-y-0">
+              
+              {/* ─── 1. BASIC INFORMATION & ABOUT ME ────────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const basicItems = [
+                    { label: "Date of Birth", value: formattedDob, show: hasValue(data.dob) },
+                    { label: "Age", value: data.age ? `${data.age} Years` : null, show: !!data.age },
+                    { label: "Marital Status", value: data.maritalStatus, show: hasValue(data.maritalStatus) },
+                    { label: "Children", value: data.children !== undefined && data.children !== null ? String(data.children) : null, show: data.children !== undefined && data.children !== null },
+                    { label: "Children Living With", value: data.childrenLivingWith, show: hasValue(data.childrenLivingWith) },
+                    { label: "Mother Tongue", value: data.motherTongue, show: hasValue(data.motherTongue) },
+                    { label: "Spoken Languages", value: data.spokenLanguages, show: hasValue(data.spokenLanguages) },
+                    { label: "Blood Group", value: data.bloodGroup, show: hasValue(data.bloodGroup), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.bloodGroup} /> },
+                    { label: "Specially Abled", value: data.speciallyAble ? "Yes" : "No", show: data.speciallyAble !== undefined && data.speciallyAble !== null },
+                    { label: "Disability Details", value: data.disabilityDetails, show: hasValue(data.disabilityDetails) },
+                    { label: "Address", value: data.addressLine1 || data.addressLine2 ? `${data.addressLine1} ${data.addressLine2}`.trim() : null, show: hasValue(data.addressLine1) || hasValue(data.addressLine2), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={`${data.addressLine1} ${data.addressLine2}`} /> },
+                    { label: "City/Village", value: data.townVillage, show: hasValue(data.townVillage) },
+                    { label: "District", value: data.dist, show: hasValue(data.dist) },
+                    { label: "State", value: data.state, show: hasValue(data.state) },
+                    { label: "Country", value: data.country, show: hasValue(data.country) },
+                    { label: "Pincode", value: data.pinCode, show: hasValue(data.pinCode) },
+                  ].filter(i => i.show);
+                  return (basicItems.length > 0 || hasValue(data.aboutMyself)) ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={Info} title="Basic Information & About Me" onEditClick={isOwnProfile ? () => setActiveEditSection("basic-info") : undefined} />
+                      
+                      {hasValue(data.aboutMyself) && (
+                        <div className="px-5 pb-5">
+                          <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-1.5">About Me</p>
+                          <p className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed font-medium">
+                            <MaskedText
+                              value={data.aboutMyself}
+                              visible={isFreeOrAbove}
+                              fallback="Description hidden. Upgrade to premium to view."
+                            />
+                          </p>
+                        </div>
+                      )}
 
-            {/* ─── BASIC INFORMATION ────────────────────────────── */}
-            {(() => {
-              const basicItems = [
-                { label: "Date of Birth", value: formattedDob, show: hasValue(data.dob) },
-                { label: "Age", value: data.age ? `${data.age} Years` : null, show: !!data.age },
-                { label: "Height", value: data.height ? formatHeight(data.height) : null, show: hasValue(data.height) },
-                { label: "Marital Status", value: data.maritalStatus, show: hasValue(data.maritalStatus) },
-                { label: "Community", value: data.caste, show: hasValue(data.caste), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.caste} /> },
-                { label: "Mother Tongue", value: data.motherTongue, show: hasValue(data.motherTongue) },
-                { label: "Blood Group", value: data.bloodGroup, show: hasValue(data.bloodGroup), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.bloodGroup} /> },
-                { label: "Religion", value: data.religion, show: hasValue(data.religion) },
-              ].filter(i => i.show);
-              return basicItems.length > 0 ? (
-                <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                  <SectionHeader icon={Info} title="Basic Information" editHref={isOwnProfile ? "/users/account/edit/profile?scrollTo=basic-info" : undefined} />
-                  <div className="px-5 pb-5">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                      {basicItems.map(item => (
-                        <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
-                      ))}
-                    </div>
-                  </div>
-                </Card>
-              ) : null;
-            })()}
-
-            {/* ─── EDUCATION & CAREER ───────────────────────────── */}
-            {(hasValue(data.education) || hasValue(data.profession)) && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={GraduationCap} title="Education & Career" editHref={isOwnProfile ? "/users/account/edit/profile?scrollTo=education" : undefined} />
-                <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                  {hasValue(data.education) && <InfoCell label="Highest Qualification" value={data.education} />}
-                  {hasValue(data.profession) && <InfoCell label="Profession" value={data.profession} />}
-                  {hasValue(data.organizationName) && (
-                    <InfoCell label="Company" value={<MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.organizationName} />} />
-                  )}
-                  {hasValue(data.monthlyIncome) && (
-                    <InfoCell label="Annual Income" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.monthlyIncome} />} />
-                  )}
-                  {hasValue(data.workExperience) && <InfoCell label="Work Experience" value={data.workExperience} />}
-                  {hasValue(data.collegeInstitution) && <InfoCell label="College / Institution" value={data.collegeInstitution} />}
-                  {hasValue(data.fieldOfStudy) && <InfoCell label="Field of Study" value={data.fieldOfStudy} />}
-                  {hasValue(data.passingYear) && <InfoCell label="Passing Year" value={data.passingYear} />}
-                </div>
-              </Card>
-            )}
-
-            {/* ─── FAMILY DETAILS ───────────────────────────────── */}
-            {hasFamilyData && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={Home} title="Family Details" editHref={isOwnProfile ? "/users/account/edit/profile?scrollTo=family" : undefined} />
-                <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                  {hasValue(data.familyType) && <InfoCell label="Family Type" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyType} />} />}
-                  {hasValue(data.fatherProfession) && <InfoCell label="Father" value={<MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.fatherProfession} />} />}
-                  {hasValue(data.mothersOccupation) && <InfoCell label="Mother" value={<MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.mothersOccupation} />} />}
-                  {(hasValue(data.noOfBrothers) || hasValue(data.noOfSisters)) && (
-                    <InfoCell label="Siblings" value={
-                      <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={
-                        [data.noOfBrothers ? `${data.noOfBrothers} Brother(s)` : null, data.noOfSisters ? `${data.noOfSisters} Sister(s)` : null].filter(Boolean).join(', ')
-                      } />
-                    } />
-                  )}
-                  {hasValue(data.familyValues) && <InfoCell label="Family Values" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyValues} />} />}
-                  {hasValue(data.familyStatus) && <InfoCell label="Family Status" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyStatus} />} />}
-                </div>
-                {hasValue(data.familyBackground) && (
-                  <div className="mx-5 mb-5 pt-4 border-t border-[#F5EBEB] dark:border-zinc-800">
-                    <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-1.5">Family Background</p>
-                    <p className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed font-medium">
-                      <MaskedText visible={isFreeOrAbove} fallback="Family background hidden. Upgrade to view." value={data.familyBackground} />
-                    </p>
-                  </div>
-                )}
-              </Card>
-            )}
-
-            {/* ─── LIFESTYLE & INTERESTS ────────────────────────── */}
-            {hasLifestyleData && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={Sparkles} title="Lifestyle & Interests" editHref={isOwnProfile ? "/users/account/edit/profile" : undefined} />
-                <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                  {hasValue(data.eatingHabits) && <InfoCell label="Diet" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.eatingHabits} />} />}
-                  {hasValue(data.smokingHabits) && <InfoCell label="Smoking" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.smokingHabits} />} />}
-                  {hasValue(data.drinkingHabits) && <InfoCell label="Drinking" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.drinkingHabits} />} />}
-                  {hasValue(data.motherTongue) && <InfoCell label="Languages" value={data.motherTongue} />}
-                </div>
-                {hasValue(data.hobbies) && (
-                  <div className="mx-5 mb-5 pt-4 border-t border-[#F5EBEB] dark:border-zinc-800">
-                    <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-2.5">Hobbies</p>
-                    <div className="flex flex-wrap gap-2">
-                      {String(data.hobbies).split(',').map((h, i) => (
-                        <span key={i} className="px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-400 text-xs font-bold border border-pink-100 dark:border-pink-900/30">
-                          {h.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Card>
-            )}
-
-            {/* ─── PARTNER PREFERENCES ──────────────────────────── */}
-            {hasPartnerData && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={Heart} title="Partner Preferences" editHref={isOwnProfile ? "/users/account/edit/profile?scrollTo=partner-preferences" : undefined} />
-                <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                  {hasValue(data.partnerAgeRange) && <InfoCell label="Age Range" value={data.partnerAgeRange} />}
-                  {hasValue(data.partnerHeightRange) && <InfoCell label="Height Range" value={data.partnerHeightRange} />}
-                  {hasValue(data.partnerReligion) && <InfoCell label="Religion" value={data.partnerReligion} />}
-                  {hasValue(data.partnerMinimumQualification) && (
-                    <InfoCell label="Education" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.partnerMinimumQualification} />} />
-                  )}
-                  {hasValue(data.partnerPreferredState) && <InfoCell label="Location" value={data.partnerPreferredState} />}
-                  {hasValue(data.partnerMaritalStatus) && <InfoCell label="Marital Status" value={data.partnerMaritalStatus} />}
-                  {hasValue(data.partnerPersonalityExpectation) && <InfoCell label="Expectation" value={data.partnerPersonalityExpectation} />}
-                </div>
-                {hasValue(data.partnerDescription) && (
-                  <div className="mx-5 mb-5 p-3 bg-pink-50 dark:bg-pink-950/20 rounded-xl flex items-start gap-2.5">
-                    <Heart className="w-4 h-4 text-pink-600 dark:text-pink-400 mt-0.5 shrink-0" />
-                    <p className="text-xs text-pink-600 dark:text-pink-400 font-bold leading-relaxed">
-                      <MaskedText visible={isFreeOrAbove} fallback="Partner description is hidden. Upgrade to premium to view." value={data.partnerDescription} />
-                    </p>
-                  </div>
-                )}
-              </Card>
-            )}
-
-            {/* ─── ASTROLOGY ────────────────────────────────────── */}
-            {hasHoroscopeData && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={Sparkles} title="Astrology Details" editHref={isOwnProfile ? "/users/account/edit/profile?scrollTo=astrology" : undefined} />
-                <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                  {hasValue(data.rashi) && <InfoCell label="Rashi / Moon Sign" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.rashi} />} />}
-                  {hasValue(data.nakshatra) && <InfoCell label="Nakshatra / Star" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.nakshatra} />} />}
-                  {data.manglikDosh !== null && data.manglikDosh !== undefined && <InfoCell label="Manglik Dosh" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.manglikDosh ? "Yes" : "No"} />} />}
-                  {hasValue(data.birthTime) && <InfoCell label="Time of Birth" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.birthTime} />} />}
-                  {hasValue(data.cityOfBirth) && <InfoCell label="City of Birth" value={<MaskedText visible={isPaidOrConnected} fallback="Upgrade" value={data.cityOfBirth} />} />}
-                  {hasValue(data.countryOfBirth) && <InfoCell label="Country of Birth" value={<MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.countryOfBirth} />} />}
-                </div>
-              </Card>
-            )}
-
-            {/* ─── PHOTOS ───────────────────────────────────────── */}
-            {profileImages.length > 0 && (
-              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                <SectionHeader icon={ImageIcon} title="Photos" editHref={isOwnProfile ? "/users/account/update-images" : undefined} editLabel={isOwnProfile ? "Edit" : undefined} />
-                <div className="px-5 pb-5">
-                  <div className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {profileImages.map((img, idx) => {
-                      const isActive = (activePhoto === img.url) || (!activePhoto && idx === 0);
-                      return (
-                        <button
-                          key={img.id || idx}
-                          onClick={() => setActivePhoto(img.url)}
-                          className={`relative aspect-square w-24 md:w-28 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-zinc-900 border-2 transition-all ${
-                            isActive
-                              ? "border-[#9B1C31] dark:border-[#E35269] shadow-sm"
-                              : "border-transparent hover:border-gray-300 dark:hover:border-zinc-700"
-                          }`}
-                        >
-                          <Image src={img.url || "/placeholder-user.jpg"} alt={`Photo ${idx + 1}`} fill className="object-cover" />
-                          {idx === 0 && (
-                            <div className="absolute bottom-1 left-1 bg-[#9B1C31] text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                              Main
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                    {isOwnProfile && (
-                      <Link href="/users/account/update-images" className="relative aspect-square w-24 md:w-28 rounded-2xl flex-shrink-0 flex flex-col items-center justify-center bg-rose-50 dark:bg-rose-950/10 border-2 border-dashed border-rose-200 dark:border-rose-900/40 text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/20 transition-colors gap-1">
-                        <ImageIcon className="w-5 h-5" />
-                        <span className="text-[10px] font-bold">Add Photos</span>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* ─── PLANS/UPGRADE ────────────────────────────────── */}
-            {!isPaid.paid && isPaid.reason === NotPaidUserReason.PLAN_EXPIRED && (
-              <Card className="border border-red-100 dark:border-red-950 shadow-xs bg-red-50/20 dark:bg-red-950/10 rounded-2xl p-6 text-center flex flex-col items-center">
-                <Info className="w-12 h-12 text-[#9B1C31] dark:text-[#E35269] mb-4" />
-                <h3 className="text-base font-extrabold text-gray-800 dark:text-zinc-200 mb-2">Your Plan Has Expired</h3>
-                <p className="text-xs text-gray-500 dark:text-zinc-400 w-4/5 mb-6 leading-relaxed font-semibold">
-                  Please Upgrade Your Plan To Continue Using Our Services and view contact details.
-                </p>
-                <Link href="/users/plan">
-                  <Button className="rounded-full bg-[#9B1C31] hover:bg-[#801426] text-white px-6 font-bold py-5 border-none shadow-sm shadow-[#9B1C31]/20">
-                    Explore Plans
-                  </Button>
-                </Link>
-              </Card>
-            )}
-
-            {!isPaid.paid && isPaid.reason === NotPaidUserReason.FREE_USER && (
-              <div className="mt-8">
-                <PlansSection showFreeSection={false} userType={userType} />
+                      {basicItems.length > 0 && (
+                        <div className="px-5 pb-5 pt-2">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+                            {basicItems.map(item => (
+                              <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  ) : null;
+                })()}
               </div>
-            )}
+
+              {/* ─── 2. EDUCATION & CAREER ───────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const eduItems = [
+                    { label: "Highest Qualification", value: data.education, show: hasValue(data.education) },
+                    { label: "Profession", value: data.profession, show: hasValue(data.profession) },
+                    
+                    { label: "Annual Income", value: data.monthlyIncome, show: hasValue(data.monthlyIncome), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.monthlyIncome} /> },
+                    { label: "Work Experience", value: data.workExperience, show: hasValue(data.workExperience) },
+                    { label: "Company", value: data.organizationName, show: hasValue(data.organizationName), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.organizationName} /> },
+                    { label: "College/Institution", value: data.collegeInstitution, show: hasValue(data.collegeInstitution), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.collegeInstitution} /> },
+                  ].filter(i => i.show);
+                  return eduItems.length > 0 ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={GraduationCap} title="Education & Career" onEditClick={isOwnProfile ? () => setActiveEditSection("career-education") : undefined} />
+                      <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                        {eduItems.map(item => (
+                          <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                        ))}
+                      </div>
+                    </Card>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* ─── 3. RELIGION & ASTROLOGY DETAILS ────────────────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const astroItems = [
+                    { label: "Religion", value: data.religion, show: hasValue(data.religion) },
+                    { label: "Community", value: data.caste, show: hasValue(data.caste), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.caste} /> },
+                    { label: "Sub-Caste", value: data.subCaste, show: hasValue(data.subCaste) },
+                    { label: "Gotra", value: data.gotra, show: hasValue(data.gotra) },
+                    { label: "Rashi / Moon Sign", value: data.rashi, show: hasValue(data.rashi), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.rashi} /> },
+                    { label: "Nakshatra / Star", value: data.nakshatra, show: hasValue(data.nakshatra), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.nakshatra} /> },
+                    { label: "Manglik Dosh", value: data.manglikDosh ? "Yes" : "No", show: data.manglikDosh !== null && data.manglikDosh !== undefined, masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.manglikDosh ? "Yes" : "No"} /> },
+                    { label: "Time of Birth", value: data.birthTime, show: hasValue(data.birthTime), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.birthTime} /> },
+                    { label: "City of Birth", value: data.cityOfBirth, show: hasValue(data.cityOfBirth), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade" value={data.cityOfBirth} /> },
+                    { label: "Country of Birth", value: data.countryOfBirth, show: hasValue(data.countryOfBirth), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade" value={data.countryOfBirth} /> },
+                  ].filter(i => i.show);
+                  return astroItems.length > 0 ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={Sparkles} title="Religion & Astrology Details" onEditClick={isOwnProfile ? () => setActiveEditSection("religion-background") : undefined} />
+                      <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                        {astroItems.map(item => (
+                          <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                        ))}
+                      </div>
+                    </Card>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* ─── 4. PHYSICAL ATTRIBUTES & LIFESTYLE ────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const lifestyleItems = [
+                    { label: "Height", value: data.height ? formatHeight(data.height) : null, show: hasValue(data.height) },
+                    { label: "Weight", value: data.weight, show: hasValue(data.weight) },
+                    { label: "Body Type", value: data.bodyType, show: hasValue(data.bodyType) },
+                    { label: "Skin Tone", value: data.skinTone, show: hasValue(data.skinTone) },
+                    { label: "Health Screening", value: data.healthScreening, show: hasValue(data.healthScreening) },
+                    { label: "Diet", value: data.eatingHabits, show: hasValue(data.eatingHabits), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.eatingHabits} /> },
+                    { label: "Smoking", value: data.smokingHabits, show: hasValue(data.smokingHabits), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.smokingHabits} /> },
+                    { label: "Drinking", value: data.drinkingHabits, show: hasValue(data.drinkingHabits), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.drinkingHabits} /> },
+                    { label: "Life Goals", value: data.lifeGoals, show: hasValue(data.lifeGoals) },
+                  ].filter(i => i.show);
+                  
+                  return (lifestyleItems.length > 0 || hasValue(data.hobbies) || hasValue(data.personalityTraits)) ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={Activity} title="Physical Attributes & Lifestyle" onEditClick={isOwnProfile ? () => setActiveEditSection("physical-attributes") : undefined} />
+                      
+                      {lifestyleItems.length > 0 && (
+                        <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                          {lifestyleItems.map(item => (
+                            <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Hobbies */}
+                      {hasValue(data.hobbies) && (
+                        <div className="mx-5 mb-5 pt-4 border-t border-[#F5EBEB] dark:border-zinc-800">
+                          <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-2.5">Hobbies</p>
+                          <div className="flex flex-wrap gap-2">
+                            {String(data.hobbies).split(',').map((h, i) => (
+                              <span key={i} className="px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-400 text-xs font-bold border border-pink-100 dark:border-pink-900/30">
+                                {h.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Personality Traits */}
+                      {hasValue(data.personalityTraits) && (
+                        <div className="mx-5 mb-5 pt-4 border-t border-[#F5EBEB] dark:border-zinc-800">
+                          <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-2.5">Personality Traits</p>
+                          <div className="flex flex-wrap gap-2">
+                            {String(data.personalityTraits).split(',').map((trait, i) => (
+                              <span key={i} className="px-3 py-1 rounded-full bg-[#FCE4EC] dark:bg-rose-950/20 text-[#9B1C31] dark:text-rose-400 text-xs font-bold border border-rose-100 dark:border-rose-900/30">
+                                {trait.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* ─── 5. FAMILY DETAILS ───────────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const familyItems = [
+                    { label: "Family Type", value: data.familyType, show: hasValue(data.familyType), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyType} /> },
+                    { label: "Family Status", value: data.familyStatus, show: hasValue(data.familyStatus), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyStatus} /> },
+                    { label: "Family Values", value: data.familyValues, show: hasValue(data.familyValues), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyValues} /> },
+                    { label: "Father's Occupation", value: data.fatherProfession, show: hasValue(data.fatherProfession), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.fatherProfession} /> },
+                    { label: "Mother's Occupation", value: data.mothersOccupation, show: hasValue(data.mothersOccupation), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.mothersOccupation} /> },
+                    { label: "Brothers", value: [data.noOfBrothers ? `${data.noOfBrothers} Brother(s)` : null, data.noOfMarriedBrothers ? `${data.noOfMarriedBrothers} Married` : null].filter(Boolean).join(', '), show: hasValue(data.noOfBrothers) || hasValue(data.noOfMarriedBrothers) },
+                    { label: "Sisters", value: [data.noOfSisters ? `${data.noOfSisters} Sister(s)` : null, data.noOfMarriedSisters ? `${data.noOfMarriedSisters} Married` : null].filter(Boolean).join(', '), show: hasValue(data.noOfSisters) || hasValue(data.noOfMarriedSisters) },
+                    { label: "Family Location", value: data.familyLocation, show: hasValue(data.familyLocation) },
+                    { label: "Ancestral Origin", value: data.ancestralOrigin, show: hasValue(data.ancestralOrigin) },
+                    { label: "Family Background", value: data.familyMembers, show: hasValue(data.familyMembers), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyMembers} /> },
+                  ].filter(i => i.show);
+                  return familyItems.length > 0 ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={Home} title="Family Details" onEditClick={isOwnProfile ? () => setActiveEditSection("family-details") : undefined} />
+                      <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                        {familyItems.map(item => (
+                          <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                        ))}
+                      </div>
+                    </Card>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* ─── 6. PARTNER PREFERENCES (BASIC) ──────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const prefBasicItems = [
+                    { label: "Age Range", value: data.partnerAgeRange, show: hasValue(data.partnerAgeRange) },
+                    { label: "Height Range", value: data.partnerHeightRange, show: hasValue(data.partnerHeightRange) },
+                    { label: "Marital Status", value: data.partnerMaritalStatus, show: hasValue(data.partnerMaritalStatus) },
+                    { label: "Children Acceptability", value: data.partnerChildren, show: hasValue(data.partnerChildren) },
+                    { label: "Religion", value: data.partnerReligion, show: hasValue(data.partnerReligion) },
+                    { label: "Community", value: data.partnerCaste, show: hasValue(data.partnerCaste) },
+                    { label: "Mother Tongue", value: data.partnerMotherTongue, show: hasValue(data.partnerMotherTongue) },
+                    { label: "Manglik Acceptability", value: data.partnerManglik, show: hasValue(data.partnerManglik) },
+                  ].filter(i => i.show);
+                  return (prefBasicItems.length > 0 || hasValue(data.aboutMyPartner)) ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={Heart} title="Partner Preferences (Basic)" onEditClick={isOwnProfile ? () => setActiveEditSection("partner-basic") : undefined} />
+                      {prefBasicItems.length > 0 && (
+                        <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                          {prefBasicItems.map(item => (
+                            <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} />
+                          ))}
+                        </div>
+                      )}
+                      {hasValue(data.aboutMyPartner) && (
+                        <div className="mx-5 mb-5 p-3 bg-pink-50 dark:bg-pink-950/20 rounded-xl flex items-start gap-2.5">
+                          <Heart className="w-4 h-4 text-pink-600 dark:text-pink-400 mt-0.5 shrink-0" />
+                          <p className="text-xs text-pink-600 dark:text-pink-400 font-bold leading-relaxed">
+                            <MaskedText visible={isFreeOrAbove} fallback="Partner description is hidden. Upgrade to premium to view." value={data.aboutMyPartner} />
+                          </p>
+                        </div>
+                      )}
+                    </Card>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* ─── 7. PARTNER PREFERENCES (ADVANCED) ──────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {(() => {
+                  const prefAdvItems = [
+                    { label: "Education", value: data.partnerMinimumQualification, show: hasValue(data.partnerMinimumQualification), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.partnerMinimumQualification} /> },
+                    
+                    
+                    { label: "Location", value: data.partnerPreferredState, show: hasValue(data.partnerPreferredState) },
+                    
+                    
+                    { label: "Expectation", value: data.partnerPersonalityExpectation, show: hasValue(data.partnerPersonalityExpectation) },
+                  ].filter(i => i.show);
+                  return prefAdvItems.length > 0 ? (
+                    <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                      <SectionHeader icon={Heart} title="Partner Preferences (Advanced)" onEditClick={isOwnProfile ? () => setActiveEditSection("partner-advanced") : undefined} />
+                      <div className="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                        {prefAdvItems.map(item => (
+                          <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} />
+                        ))}
+                      </div>
+                    </Card>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* ─── 8. PHOTOS ───────────────────────────────────────── */}
+              <div className="break-inside-avoid mb-6">
+                {profileImages.length > 0 && (
+                  <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
+                    <SectionHeader icon={ImageIcon} title="Photos" editHref={isOwnProfile ? "/users/account/update-images" : undefined} editLabel={isOwnProfile ? "Edit" : undefined} />
+                    <div className="px-5 pb-5">
+                      <div className="grid grid-cols-3 gap-2">
+                        {profileImages.slice(0, 6).map((img, idx) => (
+                          <button
+                            key={img.id || idx}
+                            onClick={() => setActivePhoto(img.url)}
+                            className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-zinc-900 border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-700 transition-all"
+                          >
+                            <Image src={img.url || "/placeholder-user.jpg"} alt={`Photo ${idx + 1}`} fill className="object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
+
+            </div>
           </div>
 
           {/* ──── RIGHT COLUMN: Contact + Completion + Gallery ──── */}
@@ -949,7 +1003,7 @@ function ContactRow({
   label,
   value,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: any;
   label: string;
   value: string;
 }) {
@@ -971,11 +1025,13 @@ function SectionHeader({
   icon: Icon,
   title,
   editHref,
+  onEditClick,
   editLabel = "Edit",
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: any;
   title: string;
   editHref?: string;
+  onEditClick?: () => void;
   editLabel?: string;
 }) {
   return (
@@ -986,12 +1042,17 @@ function SectionHeader({
         </div>
         <h3 className="text-sm font-extrabold text-gray-800 dark:text-zinc-200">{title}</h3>
       </div>
-      {editHref && (
+      {onEditClick ? (
+        <button onClick={onEditClick} className="flex items-center gap-1.5 text-[11px] font-bold text-[#9B1C31] dark:text-rose-400 hover:text-[#7a1527] dark:hover:text-rose-300 transition-colors bg-[#FCE4EC] dark:bg-rose-950/20 px-2.5 py-1 rounded-lg border border-rose-100 dark:border-rose-900/30">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          {editLabel}
+        </button>
+      ) : editHref ? (
         <a href={editHref} className="flex items-center gap-1.5 text-[11px] font-bold text-[#9B1C31] dark:text-rose-400 hover:text-[#7a1527] dark:hover:text-rose-300 transition-colors bg-[#FCE4EC] dark:bg-rose-950/20 px-2.5 py-1 rounded-lg border border-rose-100 dark:border-rose-900/30">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           {editLabel}
         </a>
-      )}
+      ) : null}
     </div>
   );
 }
