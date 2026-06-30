@@ -78,8 +78,8 @@ export default function ReportPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FCFAF8] dark:bg-zinc-950 items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-[#F0E8E8] dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+    <div className="flex flex-col min-h-[100dvh] md:min-h-screen bg-white md:bg-[#FCFAF8] dark:bg-zinc-900 md:dark:bg-zinc-950 items-center justify-start md:justify-center p-0 md:p-8">
+      <div className="w-full flex-1 md:flex-none max-w-lg bg-white dark:bg-zinc-900 border-0 md:border md:border-[#F0E8E8] md:dark:border-zinc-800 rounded-none md:rounded-3xl shadow-none md:shadow-sm overflow-hidden flex flex-col">
         {/* Header Area */}
         <div className="p-6 md:p-8 pb-4 md:pb-6 border-b border-[#F0E8E8] dark:border-zinc-800 bg-[#FCFAF8] dark:bg-zinc-950/50 text-center">
           <div className="w-14 h-14 bg-red-50 dark:bg-red-950/20 text-[#9B1C31] dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-100 dark:border-red-900/30">
@@ -141,7 +141,7 @@ export default function ReportPage() {
                 )}
               />
 
-              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <div className="pt-2 flex flex-row gap-3">
                 <Button
                   type="button"
                   variant="outline"

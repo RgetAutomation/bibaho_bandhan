@@ -228,6 +228,12 @@ model User {
   matchingPayments           MatchingPayment[]           @relation("MatchingPaymentUser")
   subscriptions              UserSubscription[]
 
+  shortlistsCreated          Shortlist[]                 @relation("UserShortlists")
+  shortlistedBy              Shortlist[]                 @relation("ShortlistedBy")
+
+    privateNotesWritten        PrivateNote[]               @relation("UserPrivateNotes")
+    privateNotesTarget         PrivateNote[]               @relation("TargetPrivateNotes")
+
   @@unique([username])
   @@index([gender, blocked])
   @@index([type, planExpiryDate])
@@ -235,6 +241,39 @@ model User {
   @@index([ghotokId])
   @@map("User")
 }
+
+// Shortlist Model
+model Shortlist {
+  id          String   @id @default(cuid())
+  userId      String   // The user who is shortlisting
+  profileId   String   // The user being shortlisted
+  createdAt   DateTime @default(now())
+
+  user        User     @relation("UserShortlists", fields: [userId], references: [id], onDelete: Cascade)
+  profile     User     @relation("ShortlistedBy", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+  @@index([userId])
+  @@index([profileId])
+}
+
+// Private Note Model
+model PrivateNote {
+  id        String   @id @default(cuid())
+  userId    String
+  targetId  String
+  note      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User @relation("UserPrivateNotes", fields: [userId], references: [id], onDelete: Cascade)
+  targetUser User @relation("TargetPrivateNotes", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetId])
+  @@index([userId])
+  @@index([targetId])
+}
+
 
 // User Session Model (For User)
 model UserSession {

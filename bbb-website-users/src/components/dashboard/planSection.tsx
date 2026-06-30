@@ -221,18 +221,18 @@ export function PlansSection({
           )}
 
           <div className="relative w-full group">
-            {/* Left Scroll Arrow (Mobile Only) */}
+            {/* Left Scroll Arrow */}
             <button 
               onClick={scrollLeft}
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-30 md:hidden flex items-center justify-center w-8 h-8 bg-transparent text-gray-500 dark:text-zinc-400 active:scale-95 transition-transform"
+              className="absolute left-1 md:-left-2 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-transparent md:bg-white/80 dark:md:bg-zinc-800/80 md:backdrop-blur-sm md:shadow-md md:rounded-full text-gray-500 dark:text-zinc-400 active:scale-95 transition-all md:hover:bg-white md:hover:text-rose-500"
               aria-label="Scroll left"
             >
-              <ChevronLeft className="w-7 h-7 pr-0.5 drop-shadow-sm" />
+              <ChevronLeft className="w-7 h-7 pr-0.5 md:w-7 md:h-7 md:pr-0.5 drop-shadow-sm md:drop-shadow-none" />
             </button>
 
             <div 
               ref={scrollContainerRef}
-              className={cn("flex md:grid overflow-x-auto snap-x snap-mandatory md:overflow-visible gap-4 md:gap-6 w-full mt-4 md:mt-8 md:px-10 max-w-7xl mx-auto pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth", gridClassName || "md:grid-cols-2 xl:grid-cols-3")}
+              className="flex overflow-x-auto snap-x snap-mandatory gap-4 md:gap-6 w-full mt-4 md:mt-4 md:px-6 max-w-7xl mx-auto pt-4 md:pt-8 pb-6 md:pb-10 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth"
             >
               {plans
                 ?.filter((plan) => !( (hasUsedFreePlan || isFreePlanActive) && Number(plan.price) === 0))
@@ -256,13 +256,13 @@ export function PlansSection({
                 })}
             </div>
 
-            {/* Right Scroll Arrow (Mobile Only) */}
+            {/* Right Scroll Arrow */}
             <button 
               onClick={scrollRight}
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-30 md:hidden flex items-center justify-center w-8 h-8 bg-transparent text-gray-500 dark:text-zinc-400 active:scale-95 transition-transform"
+              className="absolute right-1 md:-right-2 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-transparent md:bg-white/80 dark:md:bg-zinc-800/80 md:backdrop-blur-sm md:shadow-md md:rounded-full text-gray-500 dark:text-zinc-400 active:scale-95 transition-all md:hover:bg-white md:hover:text-rose-500"
               aria-label="Scroll right"
             >
-              <ChevronRight className="w-7 h-7 pl-0.5 drop-shadow-sm" />
+              <ChevronRight className="w-7 h-7 pl-0.5 md:w-7 md:h-7 md:pl-0.5 drop-shadow-sm md:drop-shadow-none" />
             </button>
           </div>
         </div>
@@ -299,7 +299,7 @@ export function PlanCard({
     <motion.div
       transition={{ duration: 0.3 }}
       className={cn(
-        "relative flex flex-col p-4 lg:p-5 rounded-2xl transition-all h-full border-2 shrink-0 w-[85vw] md:w-auto snap-center",
+        "relative flex flex-col p-4 lg:p-5 rounded-2xl transition-all h-full border-2 shrink-0 w-[85vw] md:w-[320px] lg:w-[340px] snap-center",
         isPopular 
           ? "border-rose-500 bg-gradient-to-b from-rose-50/80 to-card dark:from-rose-950/20 dark:to-card shadow-xl shadow-rose-500/10 scale-100 lg:scale-[1.03] z-10" 
           : "border-border bg-card hover:border-rose-300/50 dark:hover:border-rose-800 shadow-sm",

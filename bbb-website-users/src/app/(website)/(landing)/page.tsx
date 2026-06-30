@@ -72,6 +72,9 @@ import { PersonalInfo, personalInfoSchema } from "@/schema/authUserSchema";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCreateAccountStore } from "@/lib/createAccountStore";
+import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
+import { usePasswordStore } from "@/lib/passwordStore";
+import { useTemporaryPhotoStore } from "@/lib/temporaryPhotoStore";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Suspense, useEffect, useState } from "react";
@@ -1317,6 +1320,14 @@ function SignupForm() {
       return;
     }
     setLoading(true);
+
+    // Clear previous data from any older signup session
+    useCreateAccountStore.getState().clearData();
+    useUpdatingProfileStore.getState().clearData();
+    usePasswordStore.getState().clearPassword();
+    useTemporaryPhotoStore.getState().clearPhotos();
+
+    // Set the new user data
     setData(data);
     router.push("/account");
   }

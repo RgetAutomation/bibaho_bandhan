@@ -234,7 +234,7 @@ export default function ProfileEditPage() {
         setTimeout(() => {
           const element = document.getElementById(section);
           if (element) {
-            const scrollContainer = document.querySelector('form.overflow-y-auto');
+            const scrollContainer = document.querySelector('.overflow-y-auto');
             if (scrollContainer) {
               const elementTop = element.getBoundingClientRect().top;
               const containerTop = scrollContainer.getBoundingClientRect().top;

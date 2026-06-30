@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,6 +43,7 @@ import { PaginationResponse } from "@/components/interface/AxiosResponse";
 import { sendConnectionRequest } from "@/actions/userConnections";
 import { getConversations } from "@/actions/usersChats";
 import { getAllInterestReceived, getAllInterestSent } from "@/actions/userConnections";
+import { fetchSelfProfileDetails } from "@/actions/users";
 import LoadingPage from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -69,7 +70,7 @@ const CircularProgress = ({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          className="stroke-zinc-150 dark:stroke-zinc-800"
+          className="stroke-zinc-200 dark:stroke-zinc-800"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -103,6 +104,165 @@ export default function UsersPage() {
   const [interestTab, setInterestTab] = useState<"received" | "sent">("received");
   const [messageFilter, setMessageFilter] = useState<"all" | "unread" | "online" | "verified">("all");
   const [showAllStats, setShowAllStats] = useState(false);
+  const [isChatHeadExpanded, setIsChatHeadExpanded] = useState(false);
+  const [snapSide, setSnapSide] = useState<"left" | "right">("right");
+  
+  // Dragging state for Chat Head
+  const dragContainerRef = useRef<HTMLDivElement>(null);
+  const dragPos = useRef({ x: 0, y: 0 });          // Absolute total dragged position
+  const snappedPos = useRef({ x: 0, y: 0 });       // Container's anchored position
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const hasMoved = useRef(false);
+  
+  // Physics tracking for throwing
+  const velocity = useRef({ x: 0, y: 0 });
+  const pointerHistory = useRef<{x: number, y: number, time: number}[]>([]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('.no-drag')) return;
+    
+    dragStartPos.current = {
+      x: e.clientX - dragPos.current.x,
+      y: e.clientY - dragPos.current.y
+    };
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    hasMoved.current = false;
+    
+    velocity.current = { x: 0, y: 0 };
+    pointerHistory.current = [{ x: e.clientX, y: e.clientY, time: performance.now() }];
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging) {
+      hasMoved.current = true;
+      const now = performance.now();
+      pointerHistory.current.push({ x: e.clientX, y: e.clientY, time: now });
+      pointerHistory.current = pointerHistory.current.filter(p => now - p.time < 100);
+      
+      if (pointerHistory.current.length > 1) {
+        const oldest = pointerHistory.current[0];
+        const dt = now - oldest.time;
+        if (dt > 0) {
+          velocity.current = {
+            x: (e.clientX - oldest.x) / dt,
+            y: (e.clientY - oldest.y) / dt
+          };
+        }
+      }
+      
+      const newX = e.clientX - dragStartPos.current.x;
+      const newY = e.clientY - dragStartPos.current.y;
+      dragPos.current = { x: newX, y: newY };
+      
+      const offsetX = newX - snappedPos.current.x;
+      const offsetY = newY - snappedPos.current.y;
+      
+      if (dragContainerRef.current) {
+        const avatars = dragContainerRef.current.querySelectorAll('.chat-avatar');
+        avatars.forEach((avatar, index) => {
+          const el = avatar as HTMLElement;
+          // Staggered transition for trailing effect
+          el.style.transition = `transform ${index * 0.08}s ease-out`;
+          el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        });
+        
+        const badge = dragContainerRef.current.querySelector('.chat-badge') as HTMLElement;
+        if (badge) {
+          badge.style.transition = 'none';
+          badge.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        }
+      }
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsDragging(false);
+    (e.currentTarget as Element).releasePointerCapture(e.pointerId);
+
+    if (dragContainerRef.current && hasMoved.current) {
+      const releaseAbsoluteX = dragPos.current.x;
+      const releaseAbsoluteY = dragPos.current.y;
+      
+      const rect = dragContainerRef.current.getBoundingClientRect();
+      const offsetX = releaseAbsoluteX - snappedPos.current.x;
+      const offsetY = releaseAbsoluteY - snappedPos.current.y;
+      
+      const visualLeft = rect.left + offsetX;
+      const visualCenterX = visualLeft + rect.width / 2;
+      const windowWidth = window.innerWidth;
+      
+      const projectedX = visualCenterX + velocity.current.x * 250;
+      const isGoingLeft = projectedX < windowWidth / 2;
+      
+      // Update DOM anchor instantly to avoid React render delays
+      if (isGoingLeft) {
+        dragContainerRef.current.style.left = '0px';
+        dragContainerRef.current.style.right = 'auto';
+        dragContainerRef.current.classList.remove('items-end');
+        dragContainerRef.current.classList.add('items-start');
+        setSnapSide("left");
+      } else {
+        dragContainerRef.current.style.right = '0px';
+        dragContainerRef.current.style.left = 'auto';
+        dragContainerRef.current.classList.remove('items-start');
+        dragContainerRef.current.classList.add('items-end');
+        setSnapSide("right");
+      }
+      
+      const newRect = dragContainerRef.current.getBoundingClientRect();
+      const startLocalX = visualLeft - newRect.left;
+      let targetY = releaseAbsoluteY + velocity.current.y * 150;
+      
+      const minScreenY = 16; // Top edge + 16px padding
+      const maxScreenY = window.innerHeight - 16; // Bottom edge + 16px padding
+      
+      const maxUp = minScreenY - (newRect.top - snappedPos.current.y);
+      const maxDown = maxScreenY - (newRect.bottom - snappedPos.current.y);
+      
+      if (targetY < maxUp) targetY = maxUp;
+      if (targetY > maxDown) targetY = maxDown;
+      
+      const startLocalY = releaseAbsoluteY - targetY;
+      
+      // Reset absolute dragged X to 0 since we changed the anchor!
+      dragPos.current.x = 0;
+      dragPos.current.y = targetY;
+      snappedPos.current = { x: 0, y: targetY };
+      
+      // 1. Instantly move container to new snapped position
+      dragContainerRef.current.style.transition = 'none';
+      dragContainerRef.current.style.transform = `translate(0px, ${targetY}px)`;
+      
+      // 2. Instantly offset children so they remain visually exactly where dropped
+      const elementsToSnap = dragContainerRef.current.querySelectorAll('.chat-avatar, .chat-badge');
+      elementsToSnap.forEach((el) => {
+        (el as HTMLElement).style.transition = 'none';
+        (el as HTMLElement).style.transform = `translate(${startLocalX}px, ${startLocalY}px)`;
+      });
+      
+      // 3. Animate them back to 0,0 relative to the container
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          elementsToSnap.forEach((el, index) => {
+            const htmlEl = el as HTMLElement;
+            const isAvatar = htmlEl.classList.contains('chat-avatar');
+            const delay = isAvatar ? index * 0.05 : 0;
+            htmlEl.style.transition = `transform ${0.5 + delay}s cubic-bezier(0.15, 0.85, 0.3, 1.1)`;
+            htmlEl.style.transform = `translate(0px, 0px)`;
+          });
+        });
+      });
+    }
+  };
+
+  const handleToggleExpanded = () => {
+    if (!hasMoved.current) {
+      setIsChatHeadExpanded(!isChatHeadExpanded);
+    }
+  };
 
   const { userConversationIds } = useNotificationStore();
 
@@ -143,6 +303,37 @@ export default function UsersPage() {
     enabled: !!user && user.type === UserType.PAID_USER
   });
 
+  // Fetch self profile details
+  const { data: selfProfile } = useQuery({
+    queryKey: ["selfProfileDetails"],
+    queryFn: () => fetchSelfProfileDetails(),
+    enabled: !!user
+  });
+
+  const calculateCompletion = (profile: any) => {
+    if (!profile) return 0;
+    const fields = [
+      profile.caste,
+      profile.height,
+      profile.weight,
+      profile.education,
+      profile.profession,
+      profile.state,
+      profile.townVillage,
+      profile.aboutMyself,
+      profile.fatherProfession,
+      profile.mothersOccupation,
+      profile.noOfBrothers,
+      profile.noOfSisters,
+      profile.familyStatus,
+      profile.familyType,
+      profile.familyValues,
+      profile.eatingHabits,
+    ];
+    const filled = fields.filter((f) => f !== null && f !== undefined && f !== "").length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
   if (isPending || !mounted) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center min-h-screen">
@@ -168,9 +359,11 @@ export default function UsersPage() {
   const isIdVerified = user.isProfileComplete;
 
   // Approximate profile completion percentage
-  const completionPercentage = user.isProfileComplete 
-    ? 100 
-    : Math.min(90, 40 + (isMobileVerified ? 10 : 0) + (isEmailVerified ? 10 : 0) + (isPhotoVerified ? 15 : 0));
+  const completionPercentage = selfProfile 
+    ? calculateCompletion(selfProfile) 
+    : (user.isProfileComplete 
+      ? 100 
+      : Math.min(90, 40 + (isMobileVerified ? 10 : 0) + (isEmailVerified ? 10 : 0) + (isPhotoVerified ? 15 : 0)));
 
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -243,7 +436,7 @@ export default function UsersPage() {
           </div>
         </div>
         {/* Welcome & Completeness Row */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 bg-gradient-to-r from-rose-50/50 to-rose-100/50 dark:from-zinc-900 dark:to-zinc-800/80 border border-rose-100 dark:border-zinc-800/80 p-3 xl:p-4 rounded-xl shadow-xs">
+        <div className="mt-3 md:mt-0 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 bg-gradient-to-r from-rose-50/50 to-rose-100/50 dark:from-zinc-900 dark:to-zinc-800/80 border border-rose-100 dark:border-zinc-800/80 p-3 xl:p-4 rounded-xl shadow-xs">
           
           {/* Left: Avatar + User Details */}
           <div className="flex items-center gap-3">
@@ -786,16 +979,25 @@ export default function UsersPage() {
             <h3 className="font-extrabold text-[13px] text-gray-900 dark:text-white">Profile Strength</h3>
           </div>
           <div className="flex items-center gap-2">
-            <CircularProgress percentage={user.isProfileComplete ? 100 : 92} size={80} strokeWidth={6} />
+            <CircularProgress percentage={completionPercentage} size={80} strokeWidth={6} />
             <div className="flex flex-col">
-              <span className="text-xs font-extrabold text-[#E51E44] dark:text-rose-400">Excellent!</span>
-              <p className="text-[10px] text-gray-600 dark:text-zinc-400 mt-0.5 leading-snug font-medium">
-                You&apos;re almost there! Complete your profile to get more matches.
-              </p>
+              <span className={`text-xs font-extrabold ${completionPercentage === 100 ? "text-green-600 dark:text-green-500" : "text-[#E51E44] dark:text-rose-400"}`}>
+                Excellent! {completionPercentage === 100 && "🎉"}
+              </span>
+              <div className="text-[10px] text-gray-600 dark:text-zinc-400 mt-0.5 leading-snug font-medium">
+                {completionPercentage === 100 ? (
+                  <>
+                    <p>Your profile is complete.</p>
+                    <p className="text-gray-900 dark:text-white font-bold mt-1">Great job!</p>
+                  </>
+                ) : (
+                  <p>You&apos;re almost there! Complete your profile to get more matches.</p>
+                )}
+              </div>
             </div>
           </div>
           <Button onClick={() => router.push("/users/account")} className="w-full bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold rounded-lg text-[10px] py-1.5 h-auto shadow-sm">
-            Improve Now
+            {completionPercentage === 100 ? "Edit Profile" : "Improve Now"}
           </Button>
         </Card>
 
@@ -853,6 +1055,42 @@ export default function UsersPage() {
           </div>
         </Card>
 
+        {/* AI Recommended Matches */}
+        {recommendedMatches && recommendedMatches.length > 0 && (
+          <Card className="p-2.5 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-[12px] text-gray-900 dark:text-white">AI Recommended Matches</h3>
+              <span className="bg-[#fb7185] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-none">New</span>
+            </div>
+            
+            <div className="flex items-center pb-0.5">
+              {recommendedMatches.slice(0, 5).map((match, i) => (
+                <div 
+                  key={match.id} 
+                  className={`w-7 h-7 rounded-full border-2 border-white dark:border-zinc-900 overflow-hidden relative ${i > 0 ? '-ml-2' : ''} shadow-sm`}
+                  style={{ zIndex: 10 - i }}
+                >
+                  <Image 
+                    src={match.avatar || (match as any).image || (match.gender === "MALE" ? "/groom.webp" : "/bride.webp")} 
+                    alt={(match as any).name || "User"} 
+                    fill 
+                    className="object-cover" 
+                  />
+                </div>
+              ))}
+              {recommendedMatches.length > 5 && (
+                <div className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-900 bg-gray-100 dark:bg-zinc-800 flex items-center justify-center -ml-2 shadow-sm relative" style={{ zIndex: 0 }}>
+                  <span className="text-[8px] font-bold text-gray-600 dark:text-zinc-400">+{recommendedMatches.length - 5}</span>
+                </div>
+              )}
+            </div>
+            
+            <Button onClick={() => router.push("/users/matching")} className="w-full bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold rounded-lg text-[10px] py-1 h-auto shadow-sm">
+              View Matches
+            </Button>
+          </Card>
+        )}
+
         {/* Go Premium Widget */}
         {!isPaid.paid && (
           <div className="relative overflow-hidden bg-gradient-to-b from-amber-50 to-orange-100/60 dark:from-amber-900/20 dark:to-orange-900/30 p-3 rounded-2xl border border-amber-100 dark:border-amber-900/30 space-y-3">
@@ -905,6 +1143,93 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile Floating Recommended Matches (Chat Head) */}
+      {recommendedMatches && recommendedMatches.length > 0 && (
+        <div 
+          ref={dragContainerRef}
+          className={`xl:hidden fixed bottom-[72px] sm:bottom-20 z-[9999] flex flex-col gap-3 touch-none ${snapSide === "left" ? "items-start" : "items-end"}`}
+          style={{ 
+            transform: `translate(${dragPos.current.x}px, ${dragPos.current.y}px)`,
+            left: snapSide === 'left' ? '0px' : 'auto',
+            right: snapSide === 'right' ? '0px' : 'auto'
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          {isChatHeadExpanded && (
+            <div className={`flex flex-col gap-3 mb-2 no-drag origin-bottom animate-in zoom-in-50 fade-in duration-200 ${snapSide === "left" ? "items-start" : "items-center"}`}>
+              {recommendedMatches.slice(0, 4).map((match, i) => (
+                <div 
+                  key={match.id} 
+                  onClick={() => router.push(`/users/profile/${match.id}`)}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[2.5px] border-white dark:border-zinc-800 overflow-hidden relative shadow-xl shadow-black/10 hover:scale-110 transition-transform cursor-pointer bg-white"
+                >
+                  <Image 
+                    src={match.avatar || (match as any).image || (match.gender === "MALE" ? "/groom.webp" : "/bride.webp")} 
+                    alt={(match as any).name || "User"} 
+                    fill 
+                    className="object-cover" 
+                  />
+                </div>
+              ))}
+              <div 
+                onClick={() => router.push("/users/matching")}
+                className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs shadow-lg cursor-pointer"
+              >
+                All
+              </div>
+            </div>
+          )}
+
+          <div 
+            onClick={handleToggleExpanded}
+            className={`cursor-pointer flex flex-col gap-1 animate-in fade-in zoom-in-75 duration-300 hover:scale-105 transition-transform ${snapSide === "left" ? "items-start" : "items-end"}`}
+          >
+            {!isChatHeadExpanded && (
+              <div className="chat-badge">
+                <div className="bg-[#E51E44] text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-rose-500/20 text-center animate-bounce">
+                  New Matches
+                </div>
+              </div>
+            )}
+            <div className="flex items-center">
+              {!isChatHeadExpanded ? (
+                recommendedMatches.slice(0, 3).map((match, i) => (
+                  <div 
+                    key={match.id} 
+                    className={`chat-avatar w-12 h-12 sm:w-14 sm:h-14 rounded-full border-[2.5px] border-white dark:border-zinc-800 overflow-hidden relative shadow-xl shadow-black/10 ${i > 0 ? '-ml-8 sm:-ml-9' : ''}`}
+                    style={{ zIndex: 10 - i }}
+                  >
+                    <Image 
+                      src={match.avatar || (match as any).image || (match.gender === "MALE" ? "/groom.webp" : "/bride.webp")} 
+                      alt={(match as any).name || "User"} 
+                      fill 
+                      className="object-cover" 
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#E51E44] flex items-center justify-center shadow-lg border-[3px] border-white dark:border-zinc-900 text-white">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
+      </div>
+      {/* ------------------------------------------------------------- */}
     </div>
   );
 }

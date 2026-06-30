@@ -12,7 +12,7 @@ import { UserType } from "@/components/enum/userType";
 import { IConnectionRequest } from "@/components/interface/IConnectionRequest";
 import LoadingPage from "@/components/loader";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, UserRound, UserX, XCircle, Heart, CheckCircle2, MapPin, Briefcase, GraduationCap, MoreVertical, Users, Clock, Eye, MessageCircle, ShieldCheck, Bookmark, Flag, Ban, Ruler, Crown, CheckCircle, Search, Filter } from "lucide-react";
+import { Trash2, UserRound, UserX, XCircle, Heart, CheckCircle2, MapPin, Briefcase, GraduationCap, MoreVertical, Users, Clock, Eye, MessageCircle, ShieldCheck, Bookmark, Flag, Ban, Ruler, Crown, CheckCircle, Search, Filter, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,6 +28,7 @@ import { LoadingButton } from "@/components/loadingButton";
 import toast from "react-hot-toast";
 import ApiErrorPage from "@/components/apiErrorPage";
 import { isAxiosError } from "axios";
+import api from "@/lib/axiosInstance";
 import { isPaidUser, NotPaidUserReason } from "@/lib/utils";
 import { PlansSection } from "@/components/dashboard/planSection";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -107,6 +108,7 @@ function LoadConnectionPage({
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showMobileAdvFilters, setShowMobileAdvFilters] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -130,19 +132,19 @@ function LoadConnectionPage({
           <div className="flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-xl w-full md:w-auto shrink-0 shadow-inner z-10 relative">
             <Link 
               href="/users/interests?type=received" 
-              className={`flex-1 md:flex-none text-center px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${paramsType !== "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-[0_3px_10px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-zinc-700/60 dark:shadow-[0_3px_10px_rgba(0,0,0,0.4)]" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
+              className={`flex-1 md:flex-none text-center px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all ${paramsType !== "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
             >
               Received
             </Link>
             <Link 
               href="/users/interests?type=sent" 
-              className={`flex-1 md:flex-none text-center px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${paramsType === "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-[0_3px_10px_rgba(0,0,0,0.12)] border border-gray-200/60 dark:border-zinc-700/60 dark:shadow-[0_3px_10px_rgba(0,0,0,0.4)]" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
+              className={`flex-1 md:flex-none text-center px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all ${paramsType === "sent" ? "bg-white dark:bg-zinc-900 text-[#E51E44] shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
             >
               Sent
             </Link>
           </div>
 
-          <div className="w-full md:w-auto md:absolute md:right-0 z-10">
+          <div className="w-full lg:hidden md:absolute md:right-0 z-10">
             <div className="flex gap-2 items-center w-full">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -155,31 +157,46 @@ function LoadConnectionPage({
                 />
               </div>
               <button 
-                onClick={() => setShowMobileFilters(!showMobileFilters)}
-                className={`md:hidden shrink-0 flex items-center justify-center p-2 rounded-xl border transition-colors ${showMobileFilters ? "bg-[#E51E44]/10 border-[#E51E44]/30 text-[#E51E44]" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-gray-400"}`}
+                onClick={() => { setShowMobileAdvFilters(!showMobileAdvFilters); setShowMobileFilters(false); }}
+                className={`md:hidden shrink-0 flex items-center justify-center p-2 rounded-xl border transition-colors ${showMobileAdvFilters ? "bg-[#E51E44]/10 border-[#E51E44]/30 text-[#E51E44]" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-gray-400"}`}
               >
                 <Filter className="w-[18px] h-[18px]" />
+              </button>
+              <button 
+                onClick={() => { setShowMobileFilters(!showMobileFilters); setShowMobileAdvFilters(false); }}
+                className={`md:hidden shrink-0 flex items-center justify-center p-2 rounded-xl border transition-colors ${showMobileFilters ? "bg-[#E51E44]/10 border-[#E51E44]/30 text-[#E51E44]" : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-500 dark:text-gray-400"}`}
+              >
+                <ArrowUpDown className="w-[18px] h-[18px]" />
               </button>
             </div>
           </div>
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col items-center relative z-0">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col items-center relative z-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <div className="w-full max-w-6xl">
           {paramsType === "sent" ? (
-            <InterestsSentComponent userType={userType} searchQuery={debouncedSearchQuery} showMobileFilters={showMobileFilters} setShowMobileFilters={setShowMobileFilters} />
+            <InterestsSentComponent userType={userType} searchQuery={debouncedSearchQuery} inputValue={searchQuery} setInputValue={setSearchQuery} showMobileFilters={showMobileFilters} setShowMobileFilters={setShowMobileFilters} showMobileAdvFilters={showMobileAdvFilters} setShowMobileAdvFilters={setShowMobileAdvFilters} />
           ) : (
-            <InterestsReveivedComponent userType={userType} searchQuery={debouncedSearchQuery} showMobileFilters={showMobileFilters} setShowMobileFilters={setShowMobileFilters} />
+            <InterestsReveivedComponent userType={userType} searchQuery={debouncedSearchQuery} inputValue={searchQuery} setInputValue={setSearchQuery} showMobileFilters={showMobileFilters} setShowMobileFilters={setShowMobileFilters} showMobileAdvFilters={showMobileAdvFilters} setShowMobileAdvFilters={setShowMobileAdvFilters} />
           )}
         </div>
       </div>
+      
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
+      </div>
+      {/* ------------------------------------------------------------- */}
     </div>
   );
 }
 
-function InterestsReveivedComponent({ userType, searchQuery, showMobileFilters, setShowMobileFilters }: { userType: UserType, searchQuery: string, showMobileFilters: boolean, setShowMobileFilters: (val: boolean) => void }) {
+function InterestsReveivedComponent({ userType, searchQuery, inputValue, setInputValue, showMobileFilters, setShowMobileFilters, showMobileAdvFilters, setShowMobileAdvFilters }: { userType: UserType, searchQuery: string, inputValue?: string, setInputValue?: (val: string) => void, showMobileFilters: boolean, setShowMobileFilters: (val: boolean) => void, showMobileAdvFilters?: boolean, setShowMobileAdvFilters?: (val: boolean) => void }) {
   const [filterType, setFilterType] = useState("all");
+  const [secFilters, setSecFilters] = useState({ religion: "", community: "", profession: "", location: "" });
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["interestsReceived"],
@@ -231,14 +248,19 @@ function InterestsReveivedComponent({ userType, searchQuery, showMobileFilters, 
       if (!senderName.includes(q)) return false;
     }
 
+    if (secFilters.religion && request.sender?.profile?.religion !== secFilters.religion) return false;
+    if (secFilters.community && request.sender?.profile?.subCaste !== secFilters.community && request.sender?.profile?.caste !== secFilters.community) return false;
+    if (secFilters.profession && request.sender?.profile?.profession !== secFilters.profession) return false;
+    if (secFilters.location && request.sender?.profile?.state !== secFilters.location) return false;
+
     return true;
   });
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start mt-2">
       <div className="flex-1 w-full space-y-4">
-        <div className={`${showMobileFilters ? "flex" : "hidden"} md:flex sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 items-center justify-center md:justify-start w-full`}>
-          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} setShowMobileFilters={setShowMobileFilters} />
+        <div className={`${showMobileFilters || showMobileAdvFilters ? "flex" : "hidden"} md:flex sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 items-center justify-center md:justify-start w-full`}>
+          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} setShowMobileFilters={setShowMobileFilters} showMobileFilters={showMobileFilters} showMobileAdvFilters={showMobileAdvFilters} interestType="received" secFilters={secFilters} setSecFilters={setSecFilters} />
         </div>
       <div className="space-y-2 flex flex-col flex-1">
         <AnimatePresence mode="popLayout">
@@ -278,6 +300,16 @@ function InterestsReveivedComponent({ userType, searchQuery, showMobileFilters, 
       </div>
 
       <div className="hidden lg:block w-[260px] shrink-0 sticky top-4 space-y-4">
+        <div className="relative w-full">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={inputValue || ""}
+            onChange={(e) => setInputValue?.(e.target.value)}
+            placeholder="Search profiles..."
+            className="w-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-xl pl-8 pr-3 py-2 text-[13px] focus:outline-none transition-all shadow-xs font-medium text-gray-900 dark:text-white"
+          />
+        </div>
         <InterestSummarySidebar data={data} title="Received Summary" />
         <InterestDonutChart data={data} subtext="Total Received" />
         <PremiumWidget />
@@ -286,8 +318,9 @@ function InterestsReveivedComponent({ userType, searchQuery, showMobileFilters, 
   );
 }
 
-function InterestsSentComponent({ userType, searchQuery, showMobileFilters, setShowMobileFilters }: { userType: UserType, searchQuery: string, showMobileFilters: boolean, setShowMobileFilters: (val: boolean) => void }) {
+function InterestsSentComponent({ userType, searchQuery, inputValue, setInputValue, showMobileFilters, setShowMobileFilters, showMobileAdvFilters, setShowMobileAdvFilters }: { userType: UserType, searchQuery: string, inputValue?: string, setInputValue?: (val: string) => void, showMobileFilters: boolean, setShowMobileFilters: (val: boolean) => void, showMobileAdvFilters?: boolean, setShowMobileAdvFilters?: (val: boolean) => void }) {
   const [filterType, setFilterType] = useState("all");
+  const [secFilters, setSecFilters] = useState({ religion: "", community: "", profession: "", location: "" });
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["interestsSent"],
@@ -339,14 +372,19 @@ function InterestsSentComponent({ userType, searchQuery, showMobileFilters, setS
       if (!receiverName.includes(q)) return false;
     }
 
+    if (secFilters.religion && request.receiver?.profile?.religion !== secFilters.religion) return false;
+    if (secFilters.community && request.receiver?.profile?.subCaste !== secFilters.community && request.receiver?.profile?.caste !== secFilters.community) return false;
+    if (secFilters.profession && request.receiver?.profile?.profession !== secFilters.profession) return false;
+    if (secFilters.location && request.receiver?.profile?.state !== secFilters.location) return false;
+
     return true;
   });
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start mt-2">
       <div className="flex-1 w-full space-y-4">
-        <div className={`${showMobileFilters ? "flex" : "hidden"} md:flex sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 items-center justify-center md:justify-start w-full`}>
-          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} setShowMobileFilters={setShowMobileFilters} />
+        <div className={`${showMobileFilters || showMobileAdvFilters ? "flex" : "hidden"} md:flex sticky top-0 z-20 bg-gray-50/95 dark:bg-zinc-950/95 backdrop-blur-md pb-3 pt-1 -mx-4 px-4 md:-mx-0 md:px-0 items-center justify-center md:justify-start w-full`}>
+          <FilterTabs data={data} filterType={filterType} setFilterType={setFilterType} setShowMobileFilters={setShowMobileFilters} showMobileFilters={showMobileFilters} showMobileAdvFilters={showMobileAdvFilters} interestType="sent" secFilters={secFilters} setSecFilters={setSecFilters} />
         </div>
       <div className="space-y-2 flex flex-col flex-1">
         <AnimatePresence mode="popLayout">
@@ -386,6 +424,16 @@ function InterestsSentComponent({ userType, searchQuery, showMobileFilters, setS
       </div>
 
       <div className="hidden lg:block w-[260px] shrink-0 sticky top-4 space-y-4">
+        <div className="relative w-full">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={inputValue || ""}
+            onChange={(e) => setInputValue?.(e.target.value)}
+            placeholder="Search profiles..."
+            className="w-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-xl pl-8 pr-3 py-2 text-[13px] focus:outline-none transition-all shadow-xs font-medium text-gray-900 dark:text-white"
+          />
+        </div>
         <InterestSummarySidebar data={data} title="Sent Summary" />
         <InterestDonutChart data={data} subtext="Total Sent" />
         <PremiumWidget />
@@ -425,8 +473,83 @@ function ProfileCard({
   const [accepting, setAccepting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+  const [isShortlisted, setIsShortlisted] = useState(false);
 
   const profileUser = interestType === "received" ? request.sender : request.receiver;
+
+  useEffect(() => {
+    if (profileUser?.id) {
+      const saved = localStorage.getItem("shortlistedUsers");
+      if (saved) {
+        try {
+          const list = JSON.parse(saved);
+          setIsShortlisted(list.includes(profileUser.id));
+        } catch(e) {}
+      }
+    }
+  }, [profileUser?.id]);
+
+  const handleShortlist = () => {
+    if (!profileUser?.id) return;
+    try {
+      // Manage ID list
+      const saved = localStorage.getItem("shortlistedUsers");
+      let list: string[] = [];
+      if (saved) list = JSON.parse(saved);
+
+      // Manage full user data
+      const savedData = localStorage.getItem("shortlistedUserData");
+      let dataMap: Record<string, any> = {};
+      if (savedData) dataMap = JSON.parse(savedData);
+
+      if (list.includes(profileUser.id)) {
+        list = list.filter(id => id !== profileUser.id);
+        delete dataMap[profileUser.id];
+        setIsShortlisted(false);
+        toast.success("Removed from shortlist");
+      } else {
+        list.push(profileUser.id);
+        // Determine interest status
+        let isInterestSent = false;
+        let isInterestReceived = false;
+        if (request.status === ConnectionStatus.ACCEPTED) {
+          isInterestSent = true;
+          isInterestReceived = true;
+        } else if (request.status === ConnectionStatus.SENT) {
+          if (interestType === "sent") isInterestSent = true;
+          if (interestType === "received") isInterestReceived = true;
+        }
+
+        // Save the full user object so shortlist page can show it
+        dataMap[profileUser.id] = {
+          id: profileUser.id,
+          title: profileUser.title,
+          firstName: (profileUser as any).firstName,
+          lastName: profileUser.lastName,
+          gender: profileUser.gender,
+          avatar: profileUser.avatar,
+          isGhotokOwned: profileUser.isGhotokOwned,
+          profile: (profileUser as any).profile,
+          isInterestSent,
+          isInterestReceived
+        };
+        setIsShortlisted(true);
+        toast.success("Added to shortlist");
+      }
+      localStorage.setItem("shortlistedUsers", JSON.stringify(list));
+      localStorage.setItem("shortlistedUserData", JSON.stringify(dataMap));
+      window.dispatchEvent(new Event("shortlistUpdated"));
+      
+      // Sync with backend
+      try {
+        api.post(`/users/shortlist/${profileUser.id}`);
+      } catch (err) {
+        console.error("Failed to sync shortlist with backend", err);
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  };
 
   async function handleAcceptConnection(receivedRequest: string) {
     setAccepting(true);
@@ -537,6 +660,11 @@ function ProfileCard({
                 Matchmaker
               </div>
             )}
+            {/* Image Count Badge Mobile */}
+            <div className="absolute bottom-0 left-0 bg-black/50 backdrop-blur-md text-white text-[8px] font-bold px-1 py-0.5 rounded-sm flex items-center gap-0.5 shadow-sm z-10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              {((profileUser as any)?.profile?.profileImages?.length || (profileUser as any)?.profileImages?.length || 1)}
+            </div>
           </div>
         </ProfileLinkWrapper>
 
@@ -599,13 +727,13 @@ function ProfileCard({
           ) : (
             <>
               <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 rounded-md flex items-center justify-center gap-1 w-full">
-                <Link href={`/chat?userId=${profileUser?.id}`}><MessageCircle className="w-3 h-3" /> Message</Link>
+                <Link href={`/users/chat?userId=${profileUser?.id}`}><MessageCircle className="w-3 h-3" /> Message</Link>
               </Button>
               <Button variant="outline" size="sm" asChild className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white border-none rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
                 <Link href={`/users/profile/${profileUser?.id}`}><Eye className="w-3 h-3" /> Profile</Link>
               </Button>
-              <Button variant="outline" size="sm" className="h-7 px-2 text-[9px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 rounded-md flex items-center justify-center gap-1 w-full">
-                <Bookmark className="w-3 h-3" /> Shortlist
+              <Button onClick={handleShortlist} variant="outline" size="sm" className={`h-7 px-2 text-[9px] font-bold rounded-md flex items-center justify-center gap-1 w-full transition-colors ${isShortlisted ? 'bg-rose-100 text-[#E51E44] border-rose-300 hover:bg-rose-200' : 'text-gray-700 border-gray-200 hover:bg-gray-50'}`}>
+                <Bookmark className={`w-3 h-3 ${isShortlisted ? 'fill-[#E51E44] text-[#E51E44]' : ''}`} /> {isShortlisted ? 'Saved' : 'Shortlist'}
               </Button>
             </>
           )}
@@ -639,6 +767,12 @@ function ProfileCard({
                 Matchmaker
               </div>
             )}
+
+            {/* Image Count Badge Desktop */}
+            <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-md text-white text-[10px] md:text-xs font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              {((profileUser as any)?.profile?.profileImages?.length || (profileUser as any)?.profileImages?.length || 1)}
+            </div>
           </div>
         </div>
       </ProfileLinkWrapper>
@@ -678,6 +812,27 @@ function ProfileCard({
         {profileUser?.profile?.height && (
           <div className="flex items-center gap-1.5 text-[11px] md:text-xs font-semibold text-gray-600 dark:text-zinc-400 mt-1.5">
             <Ruler className="w-3.5 h-3.5 shrink-0" /> {profileUser.profile.height}
+          </div>
+        )}
+
+        {/* Profile Attribute Badges */}
+        {((profileUser?.profile as any)?.familyType || (profileUser?.profile as any)?.familyValues || (profileUser?.profile as any)?.smokingHabits || (profileUser?.profile as any)?.eatingHabits) && (
+          <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mt-2.5">
+            {((profileUser?.profile as any)?.familyType || (profileUser?.profile as any)?.familyValues) && (
+              <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md">
+                {((profileUser?.profile as any)?.familyType || (profileUser?.profile as any)?.familyValues)}
+              </span>
+            )}
+            {(profileUser?.profile as any)?.smokingHabits && (
+              <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md">
+                {(profileUser?.profile as any)?.smokingHabits === "No" ? "Non-Smoker" : (profileUser?.profile as any)?.smokingHabits === "Yes" ? "Smoker" : (profileUser?.profile as any)?.smokingHabits}
+              </span>
+            )}
+            {(profileUser?.profile as any)?.eatingHabits && (
+              <span className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md">
+                {(profileUser?.profile as any)?.eatingHabits}
+              </span>
+            )}
           </div>
         )}
 
@@ -828,6 +983,15 @@ function ProfileCard({
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={handleShortlist}
+                  className={`rounded-xl w-full text-[11px] font-bold h-8 flex items-center justify-center gap-1.5 transition-colors ${isShortlisted ? 'bg-rose-100 text-[#E51E44] border-rose-300 hover:bg-rose-200' : 'text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                >
+                  <Bookmark className={`w-3.5 h-3.5 ${isShortlisted ? 'fill-[#E51E44] text-[#E51E44]' : ''}`} />
+                  {isShortlisted ? 'Saved' : 'Shortlist'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="rounded-xl w-full text-[11px] font-bold text-gray-700 border-gray-200 hover:bg-gray-50 h-8 flex items-center justify-center gap-1.5"
                   onClick={() => handleDeleteConnection(request.id as string)}
                   disabled={deleting}
@@ -857,7 +1021,7 @@ function ProfileCard({
                   className="rounded-xl w-full text-[11px] font-bold text-[#E51E44] border-rose-200 hover:bg-rose-50 h-8 flex items-center justify-center gap-1.5"
                   asChild
                 >
-                  <Link href={`/chat?userId=${profileUser?.id}`}>
+                  <Link href={`/users/chat?userId=${profileUser?.id}`}>
                     <MessageCircle className="w-3.5 h-3.5" />
                     Message
                   </Link>
@@ -876,10 +1040,11 @@ function ProfileCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-xl w-full text-[11px] font-bold text-[#E51E44] border-rose-200 hover:bg-rose-50 h-8 flex items-center justify-center gap-1.5"
+                  onClick={handleShortlist}
+                  className={`rounded-xl w-full text-[11px] font-bold h-8 flex items-center justify-center gap-1.5 transition-colors ${isShortlisted ? 'bg-rose-100 text-[#E51E44] border-rose-300 hover:bg-rose-200' : 'text-[#E51E44] border-rose-200 hover:bg-rose-50'}`}
                 >
-                  <Bookmark className="w-3.5 h-3.5" />
-                  Shortlist
+                  <Bookmark className={`w-3.5 h-3.5 ${isShortlisted ? 'fill-[#E51E44] text-[#E51E44]' : ''}`} />
+                  {isShortlisted ? 'Saved' : 'Shortlist'}
                 </Button>
               </>
             )}
@@ -1056,8 +1221,44 @@ function InterestSummarySidebar({ data, title }: { data: IConnectionRequest[] | 
   );
 }
 
-function FilterTabs({ data, filterType, setFilterType, setShowMobileFilters }: { data: IConnectionRequest[] | undefined, filterType: string, setFilterType: (val: string) => void, setShowMobileFilters?: (val: boolean) => void }) {
+function FilterTabs({ 
+  data, filterType, setFilterType, setShowMobileFilters, showMobileFilters, showMobileAdvFilters, interestType = "received", secFilters, setSecFilters 
+}: { 
+  data: IConnectionRequest[] | undefined, filterType: string, setFilterType: (val: string) => void, setShowMobileFilters?: (val: boolean) => void,
+  showMobileFilters?: boolean, showMobileAdvFilters?: boolean,
+  interestType?: "received" | "sent",
+  secFilters?: { religion: string, community: string, profession: string, location: string },
+  setSecFilters?: React.Dispatch<React.SetStateAction<{ religion: string, community: string, profession: string, location: string }>>
+}) {
+  const [showDesktopFilters, setShowDesktopFilters] = useState(false);
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+
+  const targetProfiles = data?.map(req => interestType === "received" ? req.sender?.profile : req.receiver?.profile).filter(Boolean) || [];
+  const uniqueReligions = Array.from(new Set(targetProfiles.map((p: any) => p.religion).filter(Boolean)));
+  const uniqueCommunities = Array.from(new Set(targetProfiles.map((p: any) => p.subCaste || p.caste).filter(Boolean)));
+  const uniqueProfessions = Array.from(new Set(targetProfiles.map((p: any) => p.profession).filter(Boolean)));
+  const uniqueLocations = Array.from(new Set(targetProfiles.map((p: any) => p.state).filter(Boolean)));
+
+  const FilterDropdown = ({ title, options, value, onChange }: { title: string, options: string[], value: string, onChange: (val: string) => void }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={`flex items-center shrink-0 gap-1.5 px-4 py-1.5 border rounded-full text-[11px] font-bold transition-colors ${value ? 'border-[#E51E44]/30 bg-rose-50 text-[#E51E44] dark:bg-[#E51E44]/10' : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}>
+          <span className="truncate max-w-[80px]">{value || title}</span>
+          <svg className="w-3.5 h-3.5 opacity-70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto z-[999999]">
+        <DropdownMenuItem onClick={() => onChange("")} className={!value ? "bg-gray-100 dark:bg-zinc-800 font-bold" : ""}>
+          All {title}s
+        </DropdownMenuItem>
+        {options.map((opt) => (
+          <DropdownMenuItem key={opt} onClick={() => onChange(opt)} className={value === opt ? "bg-rose-50 text-rose-600 dark:bg-rose-900/20 font-bold" : ""}>
+            {opt}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
   
   const allCount = data?.length || 0;
   const newCount = data?.filter(r => new Date(r.createdAt) > threeDaysAgo).length || 0;
@@ -1073,9 +1274,9 @@ function FilterTabs({ data, filterType, setFilterType, setShowMobileFilters }: {
   ];
 
   return (
-    <>
+    <div className="w-full flex flex-col">
       {/* Mobile View (Chat-style horizontal scroll) */}
-      <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-1 scrollbar-hide w-full">
+      <div className={`${showMobileFilters !== false ? "flex" : "hidden"} md:hidden items-center gap-2 overflow-x-auto pb-1 scrollbar-hide w-full`}>
         {tabs.map(tab => {
           const isActive = filterType === tab.id;
           return (
@@ -1124,8 +1325,31 @@ function FilterTabs({ data, filterType, setFilterType, setShowMobileFilters }: {
             </button>
           )
         })}
+        
+        <div className="w-[1px] h-6 bg-gray-200 dark:bg-zinc-700 mx-1"></div>
+        
+        <button
+          onClick={() => setShowDesktopFilters(!showDesktopFilters)}
+          className={`flex shrink-0 items-center justify-center p-2 rounded-lg transition-colors ${showDesktopFilters ? "bg-[#E51E44]/10 text-[#E51E44]" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 dark:text-gray-400"}`}
+        >
+          <Filter className="w-4 h-4" />
+        </button>
       </div>
-    </>
+
+      {/* Desktop Filter Bar (Secondary) */}
+      <div className={`${showMobileAdvFilters ? "flex overflow-x-auto scrollbar-hide pb-1" : "hidden"} ${showDesktopFilters ? "md:flex" : "md:hidden"} md:flex-row items-center justify-between md:mt-3 md:bg-white md:dark:bg-zinc-900 md:border md:border-gray-100 md:dark:border-zinc-800 md:p-2 md:rounded-xl md:shadow-sm w-full transition-all duration-200`}>
+        <div className="flex items-center gap-2 md:flex-wrap w-max md:w-auto md:flex-1 pr-4 md:pr-0">
+          {uniqueReligions.length > 0 && <FilterDropdown title="Religion" options={uniqueReligions as string[]} value={secFilters?.religion || ""} onChange={(v) => setSecFilters?.(prev => ({ ...prev, religion: v }))} />}
+          {uniqueCommunities.length > 0 && <FilterDropdown title="Community" options={uniqueCommunities as string[]} value={secFilters?.community || ""} onChange={(v) => setSecFilters?.(prev => ({ ...prev, community: v }))} />}
+          {uniqueProfessions.length > 0 && <FilterDropdown title="Profession" options={uniqueProfessions as string[]} value={secFilters?.profession || ""} onChange={(v) => setSecFilters?.(prev => ({ ...prev, profession: v }))} />}
+          {uniqueLocations.length > 0 && <FilterDropdown title="Location" options={uniqueLocations as string[]} value={secFilters?.location || ""} onChange={(v) => setSecFilters?.(prev => ({ ...prev, location: v }))} />}
+          
+        </div>
+        <button onClick={() => setSecFilters?.({ religion: "", community: "", profession: "", location: "" })} className="text-[#E51E44] text-[11px] font-bold hover:underline px-2 mr-1 shrink-0">
+          Reset
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -1214,7 +1438,7 @@ function InterestDonutChart({ data, subtext }: { data: IConnectionRequest[] | un
           
           <div className="absolute inset-0 flex flex-col items-center justify-center pt-0.5">
             <span className="text-2xl font-black text-gray-900 dark:text-white leading-none">{total}</span>
-            <span className="text-[9px] font-bold text-gray-500 uppercase mt-1">{subtext}</span>
+            <span className="text-[7.5px] font-extrabold text-gray-500 uppercase mt-0.5 tracking-wider">{subtext}</span>
           </div>
         </div>
 
@@ -1310,6 +1534,13 @@ function PremiumWidget() {
           </div>
         </div>
       )}
+      
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
+      </div>
     </div>
   );
 }

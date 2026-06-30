@@ -13,13 +13,28 @@ import { isPaidUser, NotPaidUserReason } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { format } from "date-fns";
-import { Info, Loader2, Ban, Users, Calendar, Clock, ShieldCheck, Briefcase, MapPin, Edit3, MoreVertical, CheckCircle2, LineChart, Shield, MessageCircle, EyeOff, Heart, SlidersHorizontal } from "lucide-react";
+import { Info, Loader2, Ban, Users, Calendar, Clock, ShieldCheck, Briefcase, MapPin, Edit3, MoreVertical, CheckCircle2, LineChart, Shield, MessageCircle, EyeOff, Heart, SlidersHorizontal, Eye, Flag } from "lucide-react";
 import React, { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 export default function BlockedUserPage() {
   const { user, isPending } = useAuthSession();
+  const router = useRouter();
   const userType = user?.type as UserType;
   const isPaid = isPaidUser(userType, new Date(user?.planExpiryDate as string));
 
@@ -27,6 +42,45 @@ export default function BlockedUserPage() {
   const [sortBy, setSortBy] = useState("recent");
   const [searchQuery, setSearchQuery] = useState("");
   const selectTriggerRef = useRef<HTMLButtonElement>(null);
+  
+  // Note editing state
+  const [editingNoteUser, setEditingNoteUser] = useState<{id: string, name: string} | null>(null);
+  const [noteText, setNoteText] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [privateNotes, setPrivateNotes] = useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem("blockedUserNotes");
+      if (stored) {
+        setPrivateNotes(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error("Failed to parse private notes from localStorage");
+    }
+  }, []);
+
+  const handleSaveNote = async () => {
+    if (!editingNoteUser) return;
+    setSavingNote(true);
+    // Save to localStorage
+    setTimeout(() => {
+      const updatedNotes = {
+        ...privateNotes,
+        [editingNoteUser.id]: noteText
+      };
+      setPrivateNotes(updatedNotes);
+      localStorage.setItem("blockedUserNotes", JSON.stringify(updatedNotes));
+      
+      toast.success("Private note saved successfully");
+      setSavingNote(false);
+      setEditingNoteUser(null);
+      setNoteText("");
+    }, 400);
+  };
+  
+  // Avatar viewing state
+  const [viewingAvatar, setViewingAvatar] = useState<string | null>(null);
 
   const {
     data: blockedUsers,
@@ -261,8 +315,8 @@ export default function BlockedUserPage() {
               const locationParts = [blockedUser.profile?.dist, blockedUser.profile?.state].filter(Boolean);
               const location = locationParts.length > 0 ? locationParts.join(", ") : "Location not specified";
               const ageLocation = [age, location].filter(Boolean).join(", ");
-              const reason = "Not Interested"; // Placeholder data (not implemented in backend)
-              const note = "No note added"; // Placeholder data (not implemented in backend)
+              const reason = "Not Interested"; // Placeholder data
+              const note = privateNotes[blockedUser.userId] || "No note added";
               
               const fallbackAvatar = blockedUser.gender === "FEMALE" ? "/bride.webp" : "/groom.webp";
               
@@ -272,7 +326,10 @@ export default function BlockedUserPage() {
                 className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-2.5 md:p-4 flex flex-row md:flex-col lg:flex-row gap-3 md:gap-5 shadow-sm hover:shadow-md transition-shadow relative"
               >
                 {/* Left: Avatar with badge */}
-                <div className="relative shrink-0 flex items-center justify-center">
+                <div 
+                  className="relative shrink-0 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => setViewingAvatar(blockedUser.avatar || fallbackAvatar)}
+                >
                   <Avatar className="w-12 h-12 md:w-[72px] md:h-[72px] rounded-xl border-2 border-white dark:border-zinc-900 shadow-sm">
                     <AvatarImage
                       src={blockedUser.avatar || fallbackAvatar}
@@ -315,16 +372,26 @@ export default function BlockedUserPage() {
                   </div>
                 </div>
 
-                {/* Middle: Reason & Note — hidden on mobile */}
-                <div className="hidden md:flex flex-col flex-1 gap-3 justify-center pl-4 border-t-0 pt-0">
+                {/* Middle: Note Preview — hidden on mobile */}
+                <div className="hidden md:flex flex-col flex-1 justify-center pl-4 border-t-0 pt-0">
                   <div className="flex">
-                    <span className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold px-2.5 py-1 rounded-md flex items-center">
-                      Reason: {reason}
+                    <span 
+                      onClick={() => {
+                        setNoteText(privateNotes[blockedUser.userId] || "");
+                        setEditingNoteUser({
+                          id: blockedUser.userId,
+                          name: `${blockedUser.title || ""} ${blockedUser.lastName}`.trim()
+                        });
+                      }}
+                      className="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold px-2.5 py-1 rounded-md flex items-center cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
+                    >
+                      <Edit3 className="w-3 h-3 mr-1.5" />
+                      {privateNotes[blockedUser.userId] ? (
+                        `Note: ${privateNotes[blockedUser.userId].split(" ").slice(0, 3).join(" ")}${privateNotes[blockedUser.userId].split(" ").length > 3 ? "..." : ""}`
+                      ) : (
+                        "Add a private note"
+                      )}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-gray-500 dark:text-zinc-400">
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span className="text-[12px] font-bold">Personal note: {note}</span>
                   </div>
                 </div>
 
@@ -339,19 +406,82 @@ export default function BlockedUserPage() {
                   </div>
                   
                   {/* Unblock Button */}
-                  <Button
-                    className="w-auto px-2.5 md:w-[140px] rounded-lg text-[10px] md:text-[12px] font-bold h-6 md:h-8 flex items-center justify-center gap-1 bg-transparent md:bg-white text-rose-600 md:text-emerald-600 border border-rose-200 md:border-emerald-200 hover:bg-rose-50 md:hover:bg-emerald-50 dark:border-rose-900/50 md:dark:border-emerald-800 dark:text-rose-400 md:dark:text-emerald-400 dark:hover:bg-rose-900/20 shadow-none md:shadow-xs transition-colors"
-                    variant="outline"
-                    disabled={loadingUnblocking === blockedUser.id}
-                    onClick={() => handleUnblockUser(blockedUser.userId)}
-                  >
-                    {loadingUnblocking === blockedUser.id ? (
-                      <Loader2 className="animate-spin w-3 h-3 mx-auto" />
-                    ) : (
-                      <><Ban className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" /> <span className="mt-0.5 md:mt-0">Unblock</span></>
-                    )}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        className="w-auto px-2.5 md:w-[140px] rounded-lg text-[10px] md:text-[12px] font-bold h-6 md:h-8 flex items-center justify-center gap-1 bg-transparent md:bg-white text-rose-600 md:text-emerald-600 border border-rose-200 md:border-emerald-200 hover:bg-rose-50 md:hover:bg-emerald-50 dark:border-rose-900/50 md:dark:border-emerald-800 dark:text-rose-400 md:dark:text-emerald-400 dark:hover:bg-rose-900/20 shadow-none md:shadow-xs transition-colors"
+                        variant="outline"
+                        disabled={loadingUnblocking === blockedUser.id}
+                      >
+                        {loadingUnblocking === blockedUser.id ? (
+                          <Loader2 className="animate-spin w-3 h-3 mx-auto" />
+                        ) : (
+                          <><Ban className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" /> <span className="mt-0.5 md:mt-0">Unblock</span></>
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-2xl max-w-xs p-5">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-gray-900 dark:text-white font-extrabold text-base">Unblock User?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-500 dark:text-zinc-400 text-[13px] font-medium leading-relaxed">
+                          Are you sure you want to unblock {blockedUser.title || ""} {blockedUser.lastName}? They will be able to view your profile and contact you again.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="mt-4 flex flex-row items-center justify-end gap-2 w-full sm:space-x-0">
+                        <AlertDialogCancel className="mt-0 flex-1 sm:flex-initial rounded-xl border-gray-200 dark:border-zinc-800 font-bold hover:bg-gray-50 dark:hover:bg-zinc-900 text-[13px] h-9">Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleUnblockUser(blockedUser.userId)}
+                          className="flex-1 sm:flex-initial rounded-xl bg-[#E51E44] hover:bg-[#c9183b] text-white font-bold text-[13px] h-9 shadow-sm shadow-[#E51E44]/20"
+                        >
+                          Confirm
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
 
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 md:h-8 md:w-8 rounded-full ml-1">
+                        <MoreVertical className="w-4 h-4 md:w-5 md:h-5 text-gray-500" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-zinc-950 border-gray-100 dark:border-zinc-800 shadow-xl rounded-xl">
+                      <DropdownMenuItem 
+                        className="text-[13px] font-medium p-2 text-gray-700 dark:text-zinc-300 focus:bg-gray-50 dark:focus:bg-zinc-900 cursor-pointer"
+                        onClick={() => router.push(`/users/profile/${blockedUser.userId}`)}
+                      >
+                        <Eye className="w-4 h-4 mr-2 text-gray-500" />
+                        View Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-[13px] font-medium p-2 text-gray-700 dark:text-zinc-300 focus:bg-gray-50 dark:focus:bg-zinc-900 cursor-pointer"
+                        onClick={() => {
+                          setNoteText(privateNotes[blockedUser.userId] || ""); // Load existing note
+                          setEditingNoteUser({
+                            id: blockedUser.userId,
+                            name: `${blockedUser.title || ""} ${blockedUser.lastName}`.trim()
+                          });
+                        }}
+                      >
+                        <Edit3 className="w-4 h-4 mr-2 text-gray-500" />
+                        {privateNotes[blockedUser.userId] ? "Edit Private Note" : "Add Private Note"}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-[13px] font-medium p-2 text-gray-700 dark:text-zinc-300 focus:bg-gray-50 dark:focus:bg-zinc-900 cursor-pointer flex items-center"
+                        onClick={() => {
+                          if (isPaid?.paid) {
+                            router.push(`/users/profile/${blockedUser.userId}/report`);
+                          } else {
+                            toast.error("Reporting is a premium feature. Please upgrade your plan.");
+                          }
+                        }}
+                      >
+                        <Flag className="w-4 h-4 mr-2 text-gray-500" />
+                        Report Member
+                        {!isPaid?.paid && <Shield className="w-3 h-3 ml-auto text-amber-500" />}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
               </div>
@@ -438,10 +568,74 @@ export default function BlockedUserPage() {
                        </div>
                        <span className="text-[11px] font-bold text-gray-500 dark:text-zinc-400 mt-1 leading-snug">You'll stay safe and in control.</span>
                     </div>
-                 </div>
-               </div>
+                  </div>
+                </div>
 
             </div>
+
+            {/* Edit Note Dialog */}
+            <Dialog open={!!editingNoteUser} onOpenChange={(open) => !open && setEditingNoteUser(null)}>
+              <DialogContent className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-2xl w-[92vw] max-w-[300px] p-4 !top-[20%] !translate-y-0 sm:!top-[50%] sm:!translate-y-[-50%] sm:max-w-md sm:p-6">
+                <DialogHeader className="space-y-1">
+                  <DialogTitle className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Edit3 className="w-4 h-4 text-gray-500" />
+                    Private Note
+                  </DialogTitle>
+                  <DialogDescription className="text-xs font-medium text-gray-500 dark:text-zinc-400">
+                    Add a private note about {editingNoteUser?.name}. Only you can see this.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-1">
+                  <Textarea
+                    placeholder="E.g., I blocked this user because..."
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    className="min-h-[80px] sm:min-h-[120px] resize-none border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 text-[13px] font-medium rounded-xl p-3 focus-visible:ring-rose-500 focus-visible:border-rose-500 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <DialogFooter className="mt-1 sm:space-x-2 flex flex-row justify-end gap-2 w-full">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setEditingNoteUser(null)}
+                    className="flex-1 sm:flex-initial rounded-xl border-gray-200 dark:border-zinc-800 font-bold hover:bg-gray-50 dark:hover:bg-zinc-900 text-[12px] h-9"
+                    disabled={savingNote}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleSaveNote}
+                    disabled={savingNote}
+                    className="flex-1 sm:flex-initial rounded-xl bg-[#E51E44] hover:bg-[#c9183b] text-white font-bold text-[12px] h-9 shadow-sm shadow-[#E51E44]/20"
+                  >
+                    {savingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save Note"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* View Avatar Dialog */}
+            <Dialog open={!!viewingAvatar} onOpenChange={(open) => !open && setViewingAvatar(null)}>
+              <DialogContent className="bg-transparent border-none shadow-none p-0 max-w-sm sm:max-w-md w-[90vw] flex justify-center items-center [&>button]:hidden outline-none">
+                <DialogTitle className="sr-only">View User Avatar</DialogTitle>
+                {viewingAvatar && (
+                  <div className="relative w-full h-auto max-h-[80vh] flex justify-center items-center">
+                    <img 
+                      src={viewingAvatar} 
+                      alt="User Avatar" 
+                      className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl"
+                    />
+                    <button 
+                      onClick={() => setViewingAvatar(null)}
+                      className="absolute -top-12 sm:-top-4 sm:-right-12 right-0 bg-white/20 hover:bg-white/40 backdrop-blur-md text-white p-2 rounded-full transition-colors"
+                    >
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
 
             </div>
 
@@ -458,6 +652,13 @@ export default function BlockedUserPage() {
           />
         </div>
       )}
+
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
+      </div>
     </div>
   );
 }

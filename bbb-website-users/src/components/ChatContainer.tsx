@@ -8,7 +8,8 @@ import { useNotificationStore } from "@/hooks/useNotificationStore";
 import { MessageInput } from "./MessageInput";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { OnlineStatus } from "./OnlineStatus";
-import { useEffect, useMemo, useRef } from "react";
+import { ChatProfileSidebar } from "./profile/ChatProfileSidebar";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -62,6 +63,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const prevHeightRef = useRef(0);
   const firstMessageIdRef = useRef<string | null>(null);
   const isFirstLoadRef = useRef(true);
+
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
 
   const { sendMessage, participant } = useMessages(
     conversationId,
@@ -239,7 +242,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden w-full fixed top-0 left-0 right-0 h-[100dvh] z-40 md:relative md:h-auto md:z-auto bg-white dark:bg-zinc-950">
+    <div className="flex flex-row flex-1 min-h-0 overflow-hidden w-full fixed top-0 left-0 right-0 h-[100dvh] z-40 md:relative md:h-auto md:z-auto bg-white dark:bg-zinc-950">
+      <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden relative border-r border-zinc-100 dark:border-zinc-800">
       {/* Top bar */}
       <div
         className={
@@ -294,11 +298,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <div className="flex items-center gap-2 shrink-0 ml-auto">
           <Button
             size={"sm"}
-            asChild
+            onClick={() => setShowProfileSidebar(!showProfileSidebar)}
             className={"rounded-full hidden md:inline-flex"}
-            variant={"outline"}
+            variant={showProfileSidebar ? "default" : "outline"}
           >
-            <Link href={`/users/profile/${participant?.id}`}>Profile</Link>
+            Profile
           </Button>
           <MobileHeader hideLogo={true} className="flex md:hidden items-center z-40 bg-transparent border-none p-0" />
         </div>
@@ -394,6 +398,22 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           disabled={!participant?.id}
         />
       )}
+      </div>
+
+      {/* Right Sidebar */}
+      <AnimatePresence>
+        {showProfileSidebar && participant?.id && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: "auto", opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="hidden md:flex flex-col h-full bg-white dark:bg-zinc-950 overflow-hidden"
+          >
+            <ChatProfileSidebar profileId={participant.id} onClose={() => setShowProfileSidebar(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

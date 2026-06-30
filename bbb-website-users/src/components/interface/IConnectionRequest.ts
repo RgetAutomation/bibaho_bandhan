@@ -19,6 +19,8 @@ export interface IConnectionRequest {
       height: string;
       profession: string;
       subCaste: string;
+      caste?: string;
+      religion?: string;
       dist: string;
       state: string;
     };
@@ -37,6 +39,8 @@ export interface IConnectionRequest {
       height: string;
       profession: string;
       subCaste: string;
+      caste?: string;
+      religion?: string;
       dist: string;
       state: string;
     };

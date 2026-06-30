@@ -179,10 +179,10 @@ export default function Step9FaceVerify({ onBack }: { onBack: () => void }) {
 
         passwordStore.clearPassword();
         toast.success("Account created and profile fully completed!");
-        router.replace("/users/home");
+        window.location.href = "/users/home";
       } else {
         toast.error("Account created, but profile update failed.");
-        router.replace("/users/home");
+        window.location.href = "/users/home";
       }
     } catch (error) {
       const errorMessage = isAxiosError(error) ? error?.response?.data?.message || "Failed to complete setup" : "Failed to complete setup";

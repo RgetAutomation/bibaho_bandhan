@@ -54,6 +54,11 @@ import {
   uploadImages,
   getVipProfiles,
   getMySubscriptions,
+  getShortlistedMe,
+  getShortlistedByMe,
+  toggleShortlist,
+  getPrivateNotes,
+  upsertPrivateNote,
 } from "../controllers/user.controller.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import {
@@ -92,6 +97,41 @@ userRoute.get(
   "/profile/:id/view",
   authorize([UserType.FREE_USER, UserType.PAID_USER]),
   asyncHandler(getUserById)
+);
+
+//api/v1/users/shortlist/me
+userRoute.get(
+  "/shortlist/me",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(getShortlistedMe)
+);
+
+//api/v1/users/shortlist/by-me
+userRoute.get(
+  "/shortlist/by-me",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(getShortlistedByMe)
+);
+
+//api/v1/users/shortlist/:profileId
+userRoute.post(
+  "/shortlist/:profileId",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(toggleShortlist)
+);
+
+//api/v1/users/notes
+userRoute.get(
+  "/notes",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(getPrivateNotes)
+);
+
+//api/v1/users/notes/:targetId
+userRoute.put(
+  "/notes/:targetId",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(upsertPrivateNote)
 );
 
 //api/v1/users/profile/self

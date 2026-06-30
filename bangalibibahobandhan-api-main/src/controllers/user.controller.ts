@@ -645,7 +645,7 @@ export async function updateProfile(req: Request, res: Response) {
 
     // Shared profile data (avoid repetition)
     const profileData = {
-      dob: data.dob,
+      dob: new Date(data.dob),
       maritalStatus: data.maritalStatus ?? "SINGLE",
       children: data.children,
       bloodGroup: data.bloodGroup,
@@ -3469,5 +3469,157 @@ export async function getVipProfiles(req: Request, res: Response) {
   } catch (error) {
     console.log(error);
     return res.status(500).json(new ApiError(500, "Server error"));
+  }
+}
+
+// Shortlist Feature
+
+export async function toggleShortlist(req: Request, res: Response) {
+  try {
+    const profileId = req.params.profileId as string;
+    const userId = req.user.id as string;
+
+    if (!profileId || !userId) {
+      return res.status(400).json(new ApiError(400, "Missing user ID or profile ID"));
+    }
+
+    if (userId === profileId) {
+      return res.status(400).json(new ApiError(400, "You cannot shortlist yourself"));
+    }
+
+    const existing = await prisma.shortlist.findUnique({
+      where: {
+        userId_profileId: {
+          userId,
+          profileId,
+        },
+      },
+    });
+
+    if (existing) {
+      await prisma.shortlist.delete({
+        where: { id: existing.id },
+      });
+      return res.status(200).json(new ApiResponse(200, "Removed from shortlist", null));
+    } else {
+      await prisma.shortlist.create({
+        data: {
+          userId,
+          profileId,
+        },
+      });
+      return res.status(201).json(new ApiResponse(201, "Added to shortlist", null));
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(new ApiError(500, "Server error"));
+  }
+}
+
+export async function getShortlistedMe(req: Request, res: Response) {
+  try {
+    const userId = req.user.id as string;
+
+    const shortlists = await prisma.shortlist.findMany({
+      where: { profileId: userId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            publicId: true,
+            title: true,
+            firstName: true,
+            lastName: true,
+            gender: true,
+            avatar: true,
+            isGhotokOwned: true,
+            profile: true,
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const profiles = shortlists.map((s: any) => s.user);
+
+    return res.status(200).json(new ApiResponse(200, "Shortlisted me profiles", profiles));
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(new ApiError(500, "Server error"));
+  }
+}
+
+export async function getShortlistedByMe(req: Request, res: Response) {
+  try {
+    const userId = req.user.id as string;
+
+    const shortlists = await prisma.shortlist.findMany({
+      where: { userId: userId },
+      include: {
+        profile: {
+          select: {
+            id: true,
+            publicId: true,
+            title: true,
+            firstName: true,
+            lastName: true,
+            gender: true,
+            avatar: true,
+            isGhotokOwned: true,
+            profile: true,
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const profiles = shortlists.map((s: any) => s.profile);
+
+    return res.status(200).json(new ApiResponse(200, "Shortlisted by me profiles", profiles));
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(new ApiError(500, "Server error"));
+  }
+}
+
+
+export async function getPrivateNotes(req: Request, res: Response) {
+  try {
+    const userId = req.user.id as string;
+    const notes = await prisma.privateNote.findMany({
+      where: { userId }
+    });
+    return res.status(200).json(new ApiResponse(200, 'Private notes fetched successfully', notes));
+  } catch (error) {
+    console.error('Error fetching private notes', error);
+    return res.status(500).json(new ApiError(500, 'Internal Server Error'));
+  }
+}
+
+export async function upsertPrivateNote(req: Request, res: Response) {
+  try {
+    const userId = req.user.id as string;
+    const targetId = req.params.targetId as string;
+    const { note } = req.body;
+
+    if (!targetId || note === undefined) {
+      return res.status(400).json(new ApiError(400, 'Missing targetId or note text'));
+    }
+
+    const savedNote = await prisma.privateNote.upsert({
+      where: {
+        userId_targetId: {
+          userId,
+          targetId
+        }
+      },
+      update: { note },
+      create: { userId, targetId, note }
+    });
+
+    return res.status(200).json(new ApiResponse(200, 'Private note saved successfully', savedNote));
+  } catch (error) {
+    console.error('Error saving private note', error);
+    return res.status(500).json(new ApiError(500, 'Internal Server Error'));
   }
 }

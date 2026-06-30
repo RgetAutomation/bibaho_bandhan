@@ -34,8 +34,96 @@ import {
   BadgeCheck,
   Flame,
   Target,
-  Bookmark
+  Bookmark,
+  ChevronDown
 } from "lucide-react";
+
+const ageOptions = Array.from({length: 33}, (_, i) => {
+  const age = i + 18; // 18 to 50
+  return { label: `${age}`, value: `${age}`, numericValue: age };
+});
+
+const heightOptions = Array.from({length: 25}, (_, i) => {
+  const inches = i + 54; // 4'6" to 6'6"
+  const feet = Math.floor(inches / 12);
+  const inch = inches % 12;
+  return { label: `${feet}' ${inch}"`, value: `${feet}'${inch}`, numericValue: inches };
+});
+
+const parseHeight = (h: string) => {
+  if (!h) return 0;
+  const parts = h.match(/(\d+)'\s*(\d+)/);
+  if (parts) {
+    return parseInt(parts[1]) * 12 + parseInt(parts[2]);
+  }
+  return 0;
+};
+
+const RangeWithSlider = ({ title, minVal, maxVal, setMinVal, setMaxVal, options, minRange, maxRange }: any) => {
+  const minNum = options.find((o: any) => o.value === minVal)?.numericValue ?? minRange;
+  const maxNum = options.find((o: any) => o.value === maxVal)?.numericValue ?? maxRange;
+  
+  const minPercent = ((minNum - minRange) / (maxRange - minRange)) * 100;
+  const maxPercent = ((maxNum - minRange) / (maxRange - minRange)) * 100;
+
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <label className="text-[13px] font-extrabold text-gray-900 dark:text-zinc-100">{title}</label>
+      </div>
+      
+      {/* Visual Slider */}
+      <div className="px-2 mb-3">
+        <div className="relative h-[3px] bg-gray-200 dark:bg-zinc-800 rounded-full w-full flex items-center">
+          <div className="absolute h-full bg-[#E51E44] rounded-full pointer-events-none" style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
+          
+          <input 
+            type="range"
+            min={minRange}
+            max={maxRange}
+            value={minNum}
+            onChange={(e) => {
+              const val = Math.min(Number(e.target.value), maxNum - 1);
+              const option = options.find((o: any) => o.numericValue === val) || options.reduce((prev: any, curr: any) => Math.abs(curr.numericValue - val) < Math.abs(prev.numericValue - val) ? curr : prev);
+              setMinVal(option.value);
+            }}
+            className="absolute w-full h-[3px] appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#E51E44] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-[#E51E44] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full cursor-pointer"
+          />
+          <input 
+            type="range"
+            min={minRange}
+            max={maxRange}
+            value={maxNum}
+            onChange={(e) => {
+              const val = Math.max(Number(e.target.value), minNum + 1);
+              const option = options.find((o: any) => o.numericValue === val) || options.reduce((prev: any, curr: any) => Math.abs(curr.numericValue - val) < Math.abs(prev.numericValue - val) ? curr : prev);
+              setMaxVal(option.value);
+            }}
+            className="absolute w-full h-[3px] appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#E51E44] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-[#E51E44] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full cursor-pointer"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <select value={minVal} onChange={(e) => setMinVal(e.target.value)} className="w-full text-[11px] font-bold text-gray-700 dark:text-zinc-300 py-1.5 px-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-md outline-none focus:border-rose-400 appearance-none">
+            <option value="">Min {options[0]?.label}</option>
+            {options.map((o: any) => <option key={`min-${o.value}`} value={o.value}>{o.label}</option>)}
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+        <span className="text-[11px] font-bold text-gray-900 dark:text-zinc-300">to</span>
+        <div className="relative flex-1">
+          <select value={maxVal} onChange={(e) => setMaxVal(e.target.value)} className="w-full text-[11px] font-bold text-gray-700 dark:text-zinc-300 py-1.5 px-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-md outline-none focus:border-rose-400 appearance-none">
+            <option value="">Max {options[options.length - 1]?.label}</option>
+            {options.map((o: any) => <option key={`max-${o.value}`} value={o.value}>{o.label}</option>)}
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function MatchingPage() {
   const { user, isPending } = useAuthSession();
@@ -99,17 +187,45 @@ export default function MatchingPage() {
     }
   }, []);
 
-  const toggleShortlist = (id: string) => {
+  const toggleShortlist = async (match: AllUsers) => {
+    const id = match.id!;
     let updated = [...shortlistedUsers];
+    
+    const savedData = localStorage.getItem("shortlistedUserData");
+    let dataMap: Record<string, any> = {};
+    if (savedData) dataMap = JSON.parse(savedData);
+
     if (updated.includes(id)) {
       updated = updated.filter(savedId => savedId !== id);
+      delete dataMap[id];
       toast.success("Removed from shortlist");
     } else {
       updated.push(id);
+      dataMap[id] = {
+        id: match.id,
+        title: match.title,
+        firstName: (match as any).firstName,
+        lastName: match.lastName,
+        gender: match.gender,
+        avatar: match.avatar,
+        isGhotokOwned: match.isGhotokOwned,
+        profile: match.profile,
+        isInterestSent: false,
+        isInterestReceived: false
+      };
       toast.success("Added to shortlist");
     }
     setShortlistedUsers(updated);
     localStorage.setItem("shortlistedUsers", JSON.stringify(updated));
+    localStorage.setItem("shortlistedUserData", JSON.stringify(dataMap));
+    window.dispatchEvent(new Event("shortlistUpdated"));
+
+    // Sync with backend
+    try {
+      await api.post(`/users/shortlist/${id}`);
+    } catch(e) {
+      console.error("Failed to sync shortlist with backend", e);
+    }
   };
 
   const { ref: loadMoreRef, inView } = useInView();
@@ -145,6 +261,16 @@ export default function MatchingPage() {
       
       if (appliedFilters.ageFrom && age && age < parseInt(appliedFilters.ageFrom)) isValid = false;
       if (appliedFilters.ageTo && age && age > parseInt(appliedFilters.ageTo)) isValid = false;
+      
+      if (appliedFilters.heightFrom || appliedFilters.heightTo) {
+        const hInches = parseHeight(height);
+        const hFrom = appliedFilters.heightFrom ? parseHeight(appliedFilters.heightFrom) : 0;
+        const hTo = appliedFilters.heightTo ? parseHeight(appliedFilters.heightTo) : 999;
+        if (hInches > 0) {
+          if (hFrom > 0 && hInches < hFrom) isValid = false;
+          if (hTo < 999 && hInches > hTo) isValid = false;
+        }
+      }
       
       // Just simple checks, if user selects "All Religions" or leaves empty, we skip
       if (appliedFilters.location && appliedFilters.location !== "All Locations" && dist && state && !`${dist}, ${state}`.toLowerCase().includes(appliedFilters.location.toLowerCase())) isValid = false;
@@ -271,36 +397,20 @@ export default function MatchingPage() {
 
           <div className="space-y-4">
             {/* Age Range */}
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Age</label>
-              <div className="flex items-center gap-2">
-                <select value={ageFrom} onChange={(e) => setAgeFrom(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">From</option>
-                  <option value="20">20</option><option value="22">22</option><option value="25">25</option><option value="28">28</option>
-                </select>
-                <span className="text-xs font-bold text-gray-400">To</span>
-                <select value={ageTo} onChange={(e) => setAgeTo(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">To</option>
-                  <option value="25">25</option><option value="28">28</option><option value="32">32</option><option value="35">35</option>
-                </select>
-              </div>
-            </div>
+            <RangeWithSlider 
+              title="Age" 
+              minVal={ageFrom} maxVal={ageTo} 
+              setMinVal={setAgeFrom} setMaxVal={setAgeTo} 
+              options={ageOptions} minRange={18} maxRange={50} 
+            />
 
             {/* Height Range */}
-            <div>
-              <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">Height</label>
-              <div className="flex items-center gap-2">
-                <select value={heightFrom} onChange={(e) => setHeightFrom(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">From</option>
-                  <option value="4'10">4' 10"</option><option value="5'0">5' 0"</option><option value="5'5">5' 5"</option>
-                </select>
-                <span className="text-xs font-bold text-gray-400">To</span>
-                <select value={heightTo} onChange={(e) => setHeightTo(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">To</option>
-                  <option value="5'5">5' 5"</option><option value="5'10">5' 10"</option><option value="6'0">6' 0"</option>
-                </select>
-              </div>
-            </div>
+            <RangeWithSlider 
+              title="Height" 
+              minVal={heightFrom} maxVal={heightTo} 
+              setMinVal={setHeightFrom} setMaxVal={setHeightTo} 
+              options={heightOptions} minRange={54} maxRange={78} 
+            />
 
             {/* Marital Status (Checkboxes) */}
             <div>
@@ -342,11 +452,14 @@ export default function MatchingPage() {
               { label: "Profession", state: profession, setter: setProfession, options: ["Software Engineer", "Doctor", "Teacher", "Business"] }
             ].map((field, idx) => (
               <div key={idx}>
-                <label className="text-xs font-bold text-gray-700 dark:text-zinc-300 mb-1.5 block">{field.label}</label>
-                <select value={field.state} onChange={(e) => field.setter(e.target.value)} className="w-full text-xs font-semibold p-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-lg outline-none focus:border-rose-400">
-                  <option value="">All {field.label}</option>
-                  {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
+                <label className="text-[11px] font-bold text-gray-700 dark:text-zinc-300 mb-1 block">{field.label}</label>
+                <div className="relative">
+                  <select value={field.state} onChange={(e) => field.setter(e.target.value)} className="w-full text-[11px] font-semibold py-1.5 px-2 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-md outline-none focus:border-rose-400 appearance-none">
+                    <option value="">All {field.label}</option>
+                    {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
               </div>
             ))}
 
@@ -431,7 +544,7 @@ export default function MatchingPage() {
         </div>
 
         {/* Main Column */}
-        <div id="matching-scroll-container" className="flex-1 flex flex-col space-y-6 pt-2 h-full overflow-y-auto snap-y snap-mandatory md:snap-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pr-2">
+        <div id="matching-scroll-container" className="flex-1 flex flex-col space-y-6 pt-2 h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pr-2">
 
         {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -461,7 +574,7 @@ export default function MatchingPage() {
             const height = match.profile.height || "";
 
             return (
-              <Card key={match.id} className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow p-0 gap-0 flex flex-col xl:flex-row snap-start md:snap-align-none scroll-mt-2">
+              <Card key={match.id} className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs group hover:shadow-md transition-shadow p-0 gap-0 flex flex-col xl:flex-row scroll-mt-2">
                 {/* Image */}
                 <div className="relative aspect-square xl:aspect-auto w-full xl:w-[220px] bg-gray-100 dark:bg-zinc-800 shrink-0">
                   <Image
@@ -549,7 +662,7 @@ export default function MatchingPage() {
                     {shortlistedUsers.includes(match.id!) ? (
                       <Button
                         size="sm"
-                        onClick={() => toggleShortlist(match.id!)}
+                        onClick={() => toggleShortlist(match)}
                         className="flex-1 md:flex-[1.2] rounded-xl text-[10px] md:text-xs py-2 bg-rose-50 text-[#E51E44] hover:bg-rose-100 h-auto font-bold flex items-center justify-center gap-1 shadow-sm px-1 md:px-2 border border-[#E51E44]/30"
                       >
                         <Bookmark className="w-3.5 h-3.5 fill-[#E51E44]" />
@@ -559,7 +672,7 @@ export default function MatchingPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => toggleShortlist(match.id!)}
+                        onClick={() => toggleShortlist(match)}
                         className="flex-1 md:flex-[1.2] rounded-xl text-[10px] md:text-xs py-2 text-[#E51E44] hover:text-[#C81A3C] border-[#E51E44]/30 hover:bg-rose-50 h-auto font-bold flex items-center justify-center gap-1 shadow-sm px-1 md:px-2"
                       >
                         <Bookmark className="w-3.5 h-3.5" />
@@ -671,6 +784,13 @@ export default function MatchingPage() {
       </div>
       </div>
       </div>
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
+      </div>
+      {/* ------------------------------------------------------------- */}
     </div>
   );
 }

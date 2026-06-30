@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchProfileCompletionStatus } from "@/actions/getProfileCompletedStatus";
-import { fetchProfileImages } from "@/actions/users";
+import { fetchProfileImages, fetchSelfProfileDetails } from "@/actions/users";
 import DashboardHeader from "@/components/dashboard/header";
 import { UserGender } from "@/components/enum/userGender";
 import { UserType } from "@/components/enum/userType";
@@ -38,7 +38,7 @@ import {
   Camera,
   ChevronRight,
   Copy,
-  CreditCard,
+  CreditCard, CheckCircle,
   Crown,
   Hash,
   HelpCircle,
@@ -51,6 +51,7 @@ import {
   Phone,
   Settings,
   UserRound,
+  Shield,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -74,11 +75,46 @@ export default function ProfilePage() {
     new Date(user?.planExpiryDate as string),
   );
 
+  
+  const { data: selfProfile } = useQuery({
+    queryKey: ["selfProfileDetails"],
+    queryFn: () => fetchSelfProfileDetails(),
+    enabled: !!user
+  });
+
+  const calculateCompletion = (profile: any) => {
+    if (!profile) return 0;
+    const fields = [
+      profile.caste,
+      profile.height,
+      profile.weight,
+      profile.education,
+      profile.profession,
+      profile.state,
+      profile.townVillage,
+      profile.aboutMyself,
+      profile.fatherProfession,
+      profile.mothersOccupation,
+      profile.noOfBrothers,
+      profile.noOfSisters,
+      profile.familyStatus,
+      profile.familyType,
+      profile.familyValues,
+      profile.eatingHabits,
+    ];
+    const filled = fields.filter((f) => f !== null && f !== undefined && f !== "").length;
+    return Math.round((filled / fields.length) * 100);
+  };
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["accountDetils"],
     queryFn: fetchProfileCompletionStatus,
     enabled: true,
   });
+
+  const completionPercentage = selfProfile 
+    ? calculateCompletion(selfProfile) 
+    : (data?.isProfileComplete ? 100 : 75);
 
   const { data: imagesData, isLoading: isImagesLoading } = useQuery({
     queryKey: ["fetchProfileImages"],
@@ -124,9 +160,9 @@ export default function ProfilePage() {
       <div className="flex flex-col gap-3 overflow-y-auto pb-24 sm:pb-6">
         {/* Profile Card View */}
         <div className="flex flex-col gap-5 px-4 md:px-6 lg:px-8 pt-4 md:pt-6 w-full">
-          <div className="w-full flex flex-row items-start justify-start gap-4 sm:gap-6 md:gap-10 pb-6 border-b">
+          <div className="w-full flex flex-row items-stretch justify-start gap-4 sm:gap-6 md:gap-10 pb-6 border-b">
             {/* Avatar with gradient ring */}
-            <div className="relative shrink-0 group">
+            <div className="relative shrink-0 group md:w-40 lg:w-48">
               <Image
                 alt="Avatar"
                 src={
@@ -139,7 +175,7 @@ export default function ProfilePage() {
                 width={256}
                 height={320}
                 priority
-                className="w-24 sm:w-48 md:w-56 lg:w-64 h-auto aspect-[4/5] object-cover rounded-2xl shadow-lg border-2"
+                className="w-24 sm:w-32 md:w-40 lg:w-48 h-auto aspect-[4/5] object-cover rounded-2xl shadow-lg border-2"
               />
               {/* Pending Badge */}
               {!error && data?.verificationStatus !== "APPROVED" && (
@@ -148,19 +184,19 @@ export default function ProfilePage() {
                   Pending
                 </div>
               )}
-              {!error && data?.verificationStatus === "APPROVED" && (
-                <Link
-                  href={PROFILE_CHANGE_AVATAR_LINK}
-                  className="absolute bottom-3 right-3 bg-rose-600 text-white p-2.5 sm:p-3 rounded-full shadow-xl hover:bg-rose-700 hover:scale-110 transition-all border-2 border-white dark:border-zinc-950"
-                  title="Change Profile Image"
-                >
-                  <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Link>
-              )}
+                {!error && data?.verificationStatus === "APPROVED" && (
+                  <Link
+                    href={PROFILE_CHANGE_AVATAR_LINK}
+                    className="absolute bottom-3 right-3 bg-rose-600 text-white p-1.5 sm:p-3 rounded-full shadow-xl hover:bg-rose-700 hover:scale-110 transition-all border-2 border-white dark:border-zinc-950"
+                    title="Change Profile Image"
+                  >
+                    <Camera className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                  </Link>
+                )}
             </div>
 
             {/* User Info */}
-            <div className="flex flex-col items-start gap-1 sm:gap-2 pt-1 sm:pt-2">
+            <div className="flex-1 flex flex-col items-start gap-1 sm:gap-2 pt-1 sm:pt-2">
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight">
                   {user?.name} {user?.middleName} {user?.lastName}
@@ -254,6 +290,79 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
+
+            {/* Membership Card (Desktop Only) */}
+            <div className="hidden lg:flex flex-col h-full justify-between min-w-[280px]">
+              <div>
+                <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-200 mb-4">Membership</h3>
+                
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center shrink-0 relative">
+                    <Shield className="w-8 h-8 text-rose-600 fill-rose-600" />
+                    <Crown className="w-3.5 h-3.5 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mt-[-2px]" strokeWidth={3} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-[15px] text-gray-900 dark:text-white">
+                      {paidUser.paid ? "Premium Plan" : "Free Plan"}
+                    </span>
+                    {user?.planExpiryDate ? (
+                      <span className="text-[13px] font-semibold text-rose-600 mt-0.5">
+                        Valid till {format(new Date(user.planExpiryDate), "dd MMM yyyy")}
+                      </span>
+                    ) : (
+                      <span className="text-[13px] font-semibold text-rose-600 mt-0.5">
+                        Basic Access
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2.5 mb-4">
+                  {paidUser.paid ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-600 dark:text-zinc-400">Unlimited Messaging</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-600 dark:text-zinc-400">View Contact Details</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-600 dark:text-zinc-400">Priority Matchmaking Support</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-gray-400 shrink-0" />
+                        <span className="text-xs font-medium text-gray-500 dark:text-zinc-400">Search & View Profiles</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-gray-400 shrink-0" />
+                        <span className="text-xs font-medium text-gray-500 dark:text-zinc-400">Send Interest Requests</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="text-xs font-medium text-gray-700 dark:text-zinc-300">Upgrade to chat directly</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 font-bold bg-white dark:bg-zinc-900"
+                asChild
+              >
+                <Link href={SUBSCRIPTION_PAGE_LINK}>
+                  Manage Membership
+                </Link>
+              </Button>
+            </div>
+
           </div>
 
           {/* Profile Update Actions (Mobile Only) */}
@@ -297,7 +406,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             
             {/* Edit Contact Details */}
-            <Link href={PROFILE_EDIT_CONTACT_DETAILS_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+            <Link href={PROFILE_EDIT_CONTACT_DETAILS_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
               <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                 <UserRound className="w-6 h-6 text-rose-500" />
               </div>
@@ -311,7 +420,7 @@ export default function ProfilePage() {
 
             {/* Edit Profile Details */}
             {!error && data?.isProfileComplete === true && (
-              <Link href={PROFILE_EDIT_PROFILE_DETAILS_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+              <Link href={PROFILE_EDIT_PROFILE_DETAILS_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <Settings className="w-6 h-6 text-rose-500" />
                 </div>
@@ -326,7 +435,7 @@ export default function ProfilePage() {
 
             {/* Photo Gallery */}
             {!error && data?.isProfileComplete === true && (
-              <Link href={PROFILE_CHANGE_AVATAR_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+              <Link href={PROFILE_CHANGE_AVATAR_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <ImageIcon className="w-6 h-6 text-rose-500" />
                 </div>
@@ -340,7 +449,7 @@ export default function ProfilePage() {
             )}
 
             {/* Change Password */}
-            <Link href={PROFILE_EDIT_CHANGE_PASSWORD_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+            <Link href={PROFILE_EDIT_CHANGE_PASSWORD_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
               <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                 <KeyRound className="w-6 h-6 text-rose-500" />
               </div>
@@ -354,7 +463,7 @@ export default function ProfilePage() {
 
             {/* Payment History */}
             {user?.gender === UserGender.MALE && (
-              <Link href={PAYMENTS_LIST_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+              <Link href={PAYMENTS_LIST_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <CreditCard className="w-6 h-6 text-rose-500" />
                 </div>
@@ -369,7 +478,7 @@ export default function ProfilePage() {
 
             {/* Blocked Users */}
             {!error && data?.isProfileComplete === true && (
-              <Link href={BLOCKED_USER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+              <Link href={BLOCKED_USER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <Ban className="w-6 h-6 text-rose-500" />
                 </div>
@@ -383,7 +492,7 @@ export default function ProfilePage() {
             )}
 
             {/* Reported Profiles */}
-            <Link href={REPORTED_USER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+            <Link href={REPORTED_USER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
               <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                 <MessageCircleWarning className="w-6 h-6 text-rose-500" />
               </div>
@@ -397,7 +506,7 @@ export default function ProfilePage() {
 
             {/* Matching */}
             {user?.gender === UserGender.MALE && user?.type === UserType.PAID_USER && (
-              <Link href={MATCHING_LINK} onClick={() => resetUserSAMessage()} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+              <Link href={MATCHING_LINK} onClick={() => resetUserSAMessage()} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
                 <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                   <MessageCircleHeart className="w-6 h-6 text-rose-500" />
                 </div>
@@ -416,7 +525,7 @@ export default function ProfilePage() {
             )}
 
             {/* Help Center */}
-            <Link href={HELP_CENTER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md transition-all cursor-pointer gap-4 group">
+            <Link href={HELP_CENTER_LINK} className="flex items-center p-5 rounded-2xl border border-border bg-card hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer gap-4 group">
               <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0">
                 <HelpCircle className="w-6 h-6 text-rose-500" />
               </div>
@@ -436,10 +545,10 @@ export default function ProfilePage() {
           </div>
 
           {/* Mobile Logout Button */}
-          <div className="md:hidden mt-6 pb-8 flex justify-center">
+          <div className="md:hidden mt-2 pb-2 flex justify-center">
             <Button
               variant="ghost"
-              className="text-xs text-muted-foreground hover:text-destructive hover:bg-transparent font-medium py-2"
+              className="text-sm text-muted-foreground hover:text-destructive hover:bg-transparent font-medium py-2.5 px-4"
               onClick={() =>
                 authClient.signOut({
                   fetchOptions: {

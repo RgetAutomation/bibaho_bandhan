@@ -48,5 +48,16 @@ export default function TeamPage() {
     );
   }
 
-  return <MatchingChatClient currentUserId={user.id} />;
+  return (
+    <>
+      <MatchingChatClient currentUserId={user.id} />
+      
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
+      </div>
+    </>
+  );
 }

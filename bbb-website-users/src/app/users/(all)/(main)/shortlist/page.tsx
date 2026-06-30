@@ -41,8 +41,11 @@ import {
   Eye,
   Ruler,
   Search,
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
@@ -71,20 +74,103 @@ export default function ShortlistPage() {
     setVisibleCount(4);
   }, [activeTab]);
 
-  // Load shortlisted IDs from localStorage on mount
+  const [savedUserData, setSavedUserData] = useState<Record<string, any>>({});
+
+  // Note editing state
+  const [editingNoteUser, setEditingNoteUser] = useState<{id: string, name: string} | null>(null);
+  const [noteText, setNoteText] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [privateNotes, setPrivateNotes] = useState<Record<string, string>>({});
+
+  // Fetch private notes from API
+  const { data: dbNotes } = useQuery({
+    queryKey: ["privateNotes"],
+    queryFn: async () => {
+      const res = await api.get<{ data: { targetId: string, note: string }[] }>("/users/notes");
+      return res.data.data;
+    },
+    enabled: !!user && user.type === UserType.PAID_USER
+  });
+
+  // Sync DB notes to local state
   useEffect(() => {
-    const saved = localStorage.getItem("shortlistedUsers");
-    if (saved) {
-      try {
-        setShortlistedIds(JSON.parse(saved));
-      } catch (e) {}
+    if (dbNotes && Array.isArray(dbNotes)) {
+      const notesMap: Record<string, string> = {};
+      dbNotes.forEach(n => {
+        notesMap[n.targetId] = n.note;
+      });
+      setPrivateNotes(notesMap);
+      // Migrate legacy localStorage notes if any
+      const legacy = localStorage.getItem("shortlistedUserNotes");
+      if (legacy) {
+        try {
+          const parsed = JSON.parse(legacy);
+          // Only sync those that don't exist in DB to prevent overrides
+          Object.keys(parsed).forEach(async (tid) => {
+            if (!notesMap[tid]) {
+               await api.put(`/users/notes/${tid}`, { note: parsed[tid] });
+            }
+          });
+          localStorage.removeItem("shortlistedUserNotes");
+        } catch(e) {}
+      }
     }
+  }, [dbNotes]);
+
+  const handleSaveNote = async () => {
+    if (!editingNoteUser) return;
+    setSavingNote(true);
+    try {
+      const res = await api.put(`/users/notes/${editingNoteUser.id}`, { note: noteText });
+      if (res.data.success) {
+        setPrivateNotes(prev => ({
+          ...prev,
+          [editingNoteUser.id]: noteText
+        }));
+        toast.success("Private note saved successfully");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save private note");
+    } finally {
+      setSavingNote(false);
+      setEditingNoteUser(null);
+      setNoteText("");
+    }
+  };
+
+  // Load saved user data (from interests page shortlist)
+  useEffect(() => {
+    const loadSaved = () => {
+      const saved = localStorage.getItem("shortlistedUsers");
+      if (saved) {
+        try { setShortlistedIds(JSON.parse(saved)); } catch (e) {}
+      }
+      const savedData = localStorage.getItem("shortlistedUserData");
+      if (savedData) {
+        try { setSavedUserData(JSON.parse(savedData)); } catch (e) {}
+      }
+    };
+    loadSaved();
+    window.addEventListener("shortlistUpdated", loadSaved);
+    return () => window.removeEventListener("shortlistUpdated", loadSaved);
   }, []);
+
 
   const handleRemoveShortlist = (id: string) => {
     const updated = shortlistedIds.filter(savedId => savedId !== id);
     setShortlistedIds(updated);
     localStorage.setItem("shortlistedUsers", JSON.stringify(updated));
+    // Also remove from saved user data
+    const savedData = localStorage.getItem("shortlistedUserData");
+    if (savedData) {
+      try {
+        const dataMap = JSON.parse(savedData);
+        delete dataMap[id];
+        localStorage.setItem("shortlistedUserData", JSON.stringify(dataMap));
+      } catch(e) {}
+    }
+    setSavedUserData(prev => { const next = {...prev}; delete next[id]; return next; });
     toast.success("Removed from shortlist");
   };
 
@@ -92,6 +178,31 @@ export default function ShortlistPage() {
     const data = await sendConnectionRequest(receiverId);
     if (data.success) {
       toast.success(data.message || "Interest sent successfully");
+      
+      // Update local storage and state so the user doesn't disappear if backend filters them out
+      const savedData = localStorage.getItem("shortlistedUserData");
+      if (savedData) {
+        try {
+          const dataMap = JSON.parse(savedData);
+          if (dataMap[receiverId]) {
+            dataMap[receiverId].isInterestSent = true;
+            localStorage.setItem("shortlistedUserData", JSON.stringify(dataMap));
+          } else {
+             // If not in local storage but in API, try to find in allUsers and save
+             const userFromApi = allUsers?.find(u => u.id === receiverId);
+             if (userFromApi) {
+                dataMap[receiverId] = {
+                  ...userFromApi,
+                  isInterestSent: true,
+                  isInterestReceived: false
+                };
+                localStorage.setItem("shortlistedUserData", JSON.stringify(dataMap));
+             }
+          }
+          setSavedUserData(dataMap);
+        } catch(e) {}
+      }
+      
       refetch();
     } else {
       toast.error(data.message || "Failed to send interest");
@@ -108,18 +219,61 @@ export default function ShortlistPage() {
     enabled: !!user && user.type === UserType.PAID_USER
   });
 
-  const shortlistedUsers = useMemo(() => {
-    if (!allUsers || shortlistedIds.length === 0) return [];
-    return allUsers.filter(u => shortlistedIds.includes(u.id!));
-  }, [allUsers, shortlistedIds]);
+  const { data: apiShortlistedByMeUsers, isPending: isShortlistedByMeLoading } = useQuery({
+    queryKey: ["shortlistedByMeProfiles"],
+    queryFn: async () => {
+      const res = await api.get<{ data: AllUsers[] }>("/users/shortlist/by-me");
+      return res.data.data;
+    },
+    enabled: !!user
+  });
 
-  const shortlistedMeUsers = useMemo(() => {
-    if (!allUsers) return [];
-    // Mock some users who shortlisted the current user deterministically for demo purposes
-    return [...allUsers].sort((a, b) => (b.id || "").localeCompare(a.id || "")).slice(0, 4);
-  }, [allUsers]);
+
+  const shortlistedUsers = useMemo(() => {
+    const localSaved = [...shortlistedIds];
+    const userMap = new Map<string, AllUsers>();
+
+    // Start with API users that match local saved IDs
+    if (allUsers) {
+      allUsers.forEach(u => {
+        if (u.id && localSaved.includes(u.id)) {
+          userMap.set(u.id, u);
+        }
+      });
+    }
+
+    // Add local offline user data
+    localSaved.forEach(id => {
+      if (!userMap.has(id) && savedUserData[id]) {
+        userMap.set(id, savedUserData[id]);
+      }
+    });
+
+    // Add database synced users (from other devices)
+    if (apiShortlistedByMeUsers) {
+      apiShortlistedByMeUsers.forEach(u => {
+        if (u && u.id) {
+          userMap.set(u.id, u);
+        }
+      });
+    }
+
+    return Array.from(userMap.values());
+  }, [allUsers, shortlistedIds, savedUserData, apiShortlistedByMeUsers]);
+
+  const { data: apiShortlistedMeUsers, isPending: isShortlistedMeLoading } = useQuery({
+    queryKey: ["shortlistedMeProfiles"],
+    queryFn: async () => {
+      const res = await api.get<{ data: AllUsers[] }>("/users/shortlist/me");
+      return res.data.data;
+    },
+    enabled: !!user && user.type === UserType.PAID_USER
+  });
+
+  const shortlistedMeUsers = apiShortlistedMeUsers || [];
 
   const displayUsers = activeTab === "Shortlisted by Me" ? shortlistedUsers : shortlistedMeUsers;
+  const isCurrentTabLoading = activeTab === "Shortlisted by Me" ? (isLoading || isShortlistedByMeLoading) : isShortlistedMeLoading;
 
   const sortedDisplayUsers = useMemo(() => {
     let users = [...displayUsers];
@@ -163,15 +317,25 @@ export default function ShortlistPage() {
     <div className="flex flex-col h-[calc(100vh-80px)] bg-gray-50/50 dark:bg-zinc-950">
       
       {/* Static Header Section */}
-      <div className="w-full px-4 md:px-6 xl:px-8 pt-2 md:pt-4 pb-2 shrink-0 z-30 relative bg-gray-50/50 dark:bg-zinc-950 border-b border-transparent">
-        <div className="w-full max-w-6xl mx-auto flex flex-col xl:flex-row items-center gap-4 relative justify-center w-full">
+      <div className="w-full px-4 pt-4 pb-2 shrink-0 z-30 relative bg-gray-50/50 dark:bg-zinc-950 border-b border-transparent">
+        <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-4 relative justify-center">
           
-          {/* Left: Heading */}
-          <div className="hidden md:flex w-full xl:w-auto xl:absolute xl:left-0 z-0 flex-col items-center xl:items-start text-center xl:text-left">
-            <h1 className="text-xl md:text-[22px] font-extrabold text-gray-900 dark:text-white flex items-center gap-2 justify-center xl:justify-start">
+          {/* Left: Heading & Desktop Sort */}
+          <div className="hidden md:flex w-full md:w-auto md:absolute md:left-0 z-0 flex-row items-center gap-3 text-center md:text-left">
+            <h1 className="text-xl md:text-[22px] font-extrabold text-gray-900 dark:text-white flex items-center gap-2 justify-center md:justify-start">
               <Star className="w-6 h-6 md:w-7 md:h-7 stroke-[#E51E44] fill-none stroke-[2.5px]" />
-              My Shortlist ({shortlistedUsers.length})
+              My Shortlist
             </h1>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-auto h-auto p-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-sm focus:ring-0 flex items-center justify-center [&>svg:last-child]:hidden">
+                <Filter className="w-[18px] h-[18px] text-gray-500 dark:text-gray-400 shrink-0" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent" className="text-[12px] font-bold">Recent</SelectItem>
+                <SelectItem value="match" className="text-[12px] font-bold">Match Score</SelectItem>
+                <SelectItem value="new" className="text-[12px] font-bold">Newest</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           {/* Center: Tabs */}
@@ -199,26 +363,22 @@ export default function ShortlistPage() {
           </div>
 
           {/* Right: Search & Sort By */}
-          <div className="w-full md:w-auto xl:absolute xl:right-0 z-10">
-            <div className="flex gap-2 items-center w-full justify-between md:justify-center">
-              <div className="relative flex-1 md:hidden">
+          <div className="w-full xl:hidden md:absolute md:right-0 md:w-[240px] z-10">
+            <div className="flex gap-2 items-center w-full justify-between md:justify-end">
+              <div className="relative flex-1 md:flex-none w-full">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by name..."
-                  className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E51E44]/20 transition-all shadow-sm"
+                  className="w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none transition-all shadow-sm"
                 />
               </div>
-              <div className="flex items-center gap-1.5 bg-transparent sm:bg-white sm:dark:bg-zinc-900 sm:rounded-xl sm:p-0.5 sm:shadow-sm sm:border sm:border-gray-100 sm:dark:border-zinc-800 shrink-0">
-                <span className="text-[12px] font-bold text-gray-500 whitespace-nowrap pl-2.5 hidden sm:block">Sort:</span>
+              <div className="flex items-center shrink-0 md:hidden">
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-auto h-auto p-2 sm:p-0 sm:w-[110px] sm:h-7 bg-white dark:bg-zinc-900 sm:bg-transparent border border-gray-200 dark:border-zinc-800 sm:border-none rounded-xl sm:rounded-lg text-[12px] text-gray-900 dark:text-white font-bold shadow-sm sm:shadow-none focus:ring-0 sm:px-2 flex items-center justify-center [&>svg:last-child]:hidden sm:[&>svg:last-child]:block">
-                    <div className="hidden sm:block w-full text-left">
-                      <SelectValue />
-                    </div>
-                    <Filter className="w-[18px] h-[18px] sm:hidden text-gray-500 dark:text-gray-400 shrink-0" />
+                  <SelectTrigger className="w-auto h-auto p-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-sm focus:ring-0 flex items-center justify-center [&>svg:last-child]:hidden">
+                    <Filter className="w-[18px] h-[18px] text-gray-500 dark:text-gray-400 shrink-0" />
                   </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="recent" className="text-[12px] font-bold">Recent</SelectItem>
@@ -234,13 +394,15 @@ export default function ShortlistPage() {
       </div>
 
       {/* Main Scrolling Area */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 xl:px-8 pb-24 md:pb-6 flex flex-col xl:flex-row items-start gap-6 relative z-0">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 md:pb-6 flex flex-col items-center relative z-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         
-        {/* Main Column */}
-        <div className="flex-1 flex flex-col space-y-6 min-w-0 pt-2 w-full max-w-4xl mx-auto xl:mx-0">
+        <div className="w-full max-w-6xl flex flex-col xl:flex-row items-start gap-6">
+          
+          {/* Main Column */}
+          <div className="flex-1 flex flex-col space-y-6 min-w-0 pt-2 w-full">
 
         {/* Content List */}
-        {isLoading ? (
+        {isCurrentTabLoading ? (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-[200px] bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-2xl shadow-xs animate-pulse" />
@@ -323,11 +485,12 @@ export default function ShortlistPage() {
 
               return (
                 <motion.div 
+                  layout
                   key={match.id} 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                  transition={{ duration: 0.25, layout: { duration: 0.25, ease: "easeInOut" } }}
                   className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-0 md:p-4 flex flex-col md:flex-row gap-0 md:gap-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden md:overflow-visible"
                 >
                   {/* Mobile View */}
@@ -382,7 +545,7 @@ export default function ShortlistPage() {
                       </Button>
 
                       {statusObj.text === 'Mutual Interest' ? (
-                        <Button size="sm" onClick={() => router.push(`/users/chat`)} className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
+                        <Button size="sm" onClick={() => router.push(`/users/chat?userId=${match.id}`)} className="h-7 px-2 text-[9px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white rounded-md shadow-sm flex items-center justify-center gap-1 w-full">
                           <MessageSquare className="w-3 h-3" /> Message
                         </Button>
                       ) : match.isInterestSent ? (
@@ -462,8 +625,22 @@ export default function ShortlistPage() {
                       <div className="flex items-center gap-1.5">
                         <Star className="w-3.5 h-3.5" /> {activeTab === "Shortlisted by Me" ? `Added to shortlist ${daysAgo} days ago` : `Shortlisted you ${daysAgo} days ago`}
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Edit3 className="w-3.5 h-3.5" /> Nice personality, good family background
+                      <div 
+                        className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => {
+                          setNoteText(privateNotes[match.id] || "");
+                          setEditingNoteUser({
+                            id: match.id,
+                            name: `${(match as any).title || ""} ${match.lastName}`.trim()
+                          });
+                        }}
+                      >
+                        <Edit3 className="w-3.5 h-3.5 shrink-0" /> 
+                        <span className="truncate">
+                          {privateNotes[match.id] 
+                            ? `${privateNotes[match.id].split(" ").slice(0, 3).join(" ")}${privateNotes[match.id].split(" ").length > 3 ? "..." : ""}`
+                            : "Add a note"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -526,7 +703,7 @@ export default function ShortlistPage() {
                       </Button>
                       {statusObj.text === 'Mutual Interest' ? (
                         <Button
-                          onClick={() => router.push(`/users/chat`)}
+                          onClick={() => router.push(`/users/chat?userId=${match.id}`)}
                           className="w-full rounded-xl h-9 text-[12px] font-bold bg-[#E51E44] hover:bg-[#C81A3C] text-white flex items-center justify-center gap-1.5"
                         >
                           <MessageSquare className="w-3.5 h-3.5" /> Message
@@ -551,8 +728,16 @@ export default function ShortlistPage() {
                       <Button
                         variant="outline"
                         className="w-full rounded-xl h-9 text-[12px] font-bold text-amber-600 border-amber-200 hover:bg-amber-50 flex items-center justify-center gap-1.5"
+                        onClick={() => {
+                          setNoteText(privateNotes[match.id] || "");
+                          setEditingNoteUser({
+                            id: match.id,
+                            name: `${(match as any).title || ""} ${match.lastName}`.trim()
+                          });
+                        }}
                       >
-                        <Bookmark className="w-3.5 h-3.5" /> Notes
+                        <Bookmark className="w-3.5 h-3.5" /> 
+                        {privateNotes[match.id] ? "Edit Note" : "Notes"}
                       </Button>
                     </div>
                   </div>
@@ -564,6 +749,46 @@ export default function ShortlistPage() {
             </AnimatePresence>
           </div>
         )}
+
+        {/* Edit Note Dialog */}
+        <Dialog open={!!editingNoteUser} onOpenChange={(open) => !open && setEditingNoteUser(null)}>
+          <DialogContent className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-2xl w-[92vw] max-w-[300px] p-4 !top-[20%] !translate-y-0 sm:!top-[50%] sm:!translate-y-[-50%] sm:max-w-md sm:p-6">
+            <DialogHeader className="space-y-1">
+              <DialogTitle className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-gray-500" />
+                Private Note
+              </DialogTitle>
+              <DialogDescription className="text-xs font-medium text-gray-500 dark:text-zinc-400">
+                Add a private note about {editingNoteUser?.name}. Only you can see this.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-1">
+              <Textarea
+                placeholder="E.g., I shortlisted this user because..."
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                className="min-h-[80px] sm:min-h-[120px] resize-none border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 text-[13px] font-medium rounded-xl p-3 focus-visible:ring-rose-500 focus-visible:border-rose-500 text-gray-900 dark:text-white"
+              />
+            </div>
+            <DialogFooter className="mt-1 sm:space-x-2 flex flex-row justify-end gap-2 w-full">
+              <Button 
+                variant="outline" 
+                onClick={() => setEditingNoteUser(null)}
+                className="flex-1 sm:flex-initial rounded-xl border-gray-200 dark:border-zinc-800 font-bold hover:bg-gray-50 dark:hover:bg-zinc-900 text-[12px] h-9"
+                disabled={savingNote}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveNote}
+                disabled={savingNote}
+                className="flex-1 sm:flex-initial rounded-xl bg-[#E51E44] hover:bg-[#c9183b] text-white font-bold text-[12px] h-9 shadow-sm shadow-[#E51E44]/20"
+              >
+                {savingNote ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save Note"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         
         {/* Load More Button */}
         {!isLoading && displayUsers.length > visibleCount && (
@@ -581,11 +806,31 @@ export default function ShortlistPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="hidden xl:flex flex-col w-[250px] shrink-0 space-y-4 sticky top-0 h-fit max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-6">
+        <div className="hidden xl:flex flex-col w-[250px] shrink-0 space-y-4 sticky top-0 h-fit max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-6 pt-2">
+          
+          <div className="relative w-full">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search profiles..."
+              className="w-full bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800/80 rounded-xl pl-8 pr-3 py-2 text-[13px] focus:outline-none transition-all shadow-xs font-medium text-gray-900 dark:text-white"
+            />
+          </div>
+
           <ShortlistOverviewSidebar users={displayUsers} />
           <SmartTipsSidebar />
         </div>
 
+        </div>
+      </div>
+      
+      {/* --- WATERMARK SECTION (DELETE THIS TO REMOVE THE WATERMARK) --- */}
+      <div className="fixed inset-0 z-[999999] pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.03] dark:opacity-5">
+        <div className="transform -rotate-45 text-[75px] sm:text-[90px] md:text-[180px] font-black text-black dark:text-white whitespace-nowrap select-none">
+          COMPLETED
+        </div>
       </div>
     </div>
   );
