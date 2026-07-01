@@ -125,7 +125,7 @@ export function Step1BasicEdit({ form }: { form: any }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="maritalStatus" render={({ field }) => (
                 <FormItem><FormLabel>Marital Status<FormBadge type="mandatory" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select marital status" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="NEVER MARRIED">NEVER MARRIED</SelectItem>
@@ -149,7 +149,7 @@ export function Step1BasicEdit({ form }: { form: any }) {
                 )} />
                 <FormField control={form.control} name="childrenLivingWith" render={({ field }) => (
                   <FormItem><FormLabel>Children Living With<FormBadge type="mandatory" /></FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ""}>
                       <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                       <SelectContent>
                         <SelectItem value="Me">Me</SelectItem>
@@ -186,7 +186,7 @@ export function Step1BasicEdit({ form }: { form: any }) {
               )} />
               <FormField control={form.control} name="relationshipWithBrideGroom" render={({ field }) => (
                 <FormItem className="md:col-span-2"><FormLabel>Relationship with Bride/Groom<FormBadge type="mandatory" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select relationship" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Self">Self</SelectItem>

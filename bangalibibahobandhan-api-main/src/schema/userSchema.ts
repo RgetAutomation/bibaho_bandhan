@@ -74,6 +74,7 @@ export const updateUserProfileSchema = object({
   languages: string().optional(),
   familyMembers: string().optional(),
   fatherProfession: string().optional(),
+  fathersOccupation: string().optional(),
   candidatePreferences: string().optional(),
   locationPreferences: string().optional(),
   aboutMyPartner: string().optional(),
@@ -148,4 +149,8 @@ export const updateUserProfileSchema = object({
   familyStatusPreference: string().optional(),
   familyTypePreference: string().optional(),
   familyValuesPreference: string().optional(),
+  motherTongue: string().optional(),
+  spokenLanguages: string().optional(),
+  childrenLivingWith: string().optional(),
+  
 });

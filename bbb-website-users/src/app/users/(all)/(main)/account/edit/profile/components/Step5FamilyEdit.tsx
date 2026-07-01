@@ -47,7 +47,7 @@ export function Step5FamilyEdit({ form }: { form: any }) {
               
               <FormField control={form.control} name="myFamilyStatus" render={({ field }) => (
                 <FormItem><FormLabel>Family Status<FormBadge type="mandatory" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Middle Class">Middle Class</SelectItem>
@@ -60,7 +60,7 @@ export function Step5FamilyEdit({ form }: { form: any }) {
               )} />
               <FormField control={form.control} name="myFamilyType" render={({ field }) => (
                 <FormItem><FormLabel>Family Type<FormBadge type="mandatory" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Joint">Joint Family</SelectItem>
@@ -73,7 +73,7 @@ export function Step5FamilyEdit({ form }: { form: any }) {
               )} />
               <FormField control={form.control} name="myFamilyValues" render={({ field }) => (
                 <FormItem className="md:col-span-2"><FormLabel>Family Values<FormBadge type="recommended" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Orthodox">Orthodox</SelectItem>

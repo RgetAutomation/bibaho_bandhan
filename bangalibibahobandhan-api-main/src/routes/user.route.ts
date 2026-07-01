@@ -48,7 +48,7 @@ import {
   reportProfile,
   sendInterest,
   sendMessage,
-  updateProfile,
+  updateProfile, updateProfilePartial,
   updateProfileAvatar,
   updateProfileSelfie,
   uploadImages,
@@ -146,6 +146,12 @@ userRoute.get(
   "/me/subscriptions",
   authorize([UserType.FREE_USER, UserType.PAID_USER]),
   asyncHandler(getMySubscriptions)
+);
+
+userRoute.patch(
+  "/profile/update-partial",
+  authorize([UserType.FREE_USER, UserType.PAID_USER]),
+  asyncHandler(updateProfilePartial)
 );
 
 //api/v1/users/profile/update
@@ -479,3 +485,6 @@ userRoute.get(
 );
 
 export default userRoute;
+// Trigger nodemon restart
+// Trigger nodemon restart 2
+// Trigger nodemon restart 3

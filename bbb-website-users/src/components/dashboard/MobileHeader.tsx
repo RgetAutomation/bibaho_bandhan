@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Crown, Bell, User, Settings, HelpCircle, LogOut, ChevronDown, MessageCircle, MailOpen, HeartHandshake, AlignRight, X, LayoutDashboard, Flame, Bookmark, MessageSquare, Users, Ban, Megaphone } from "lucide-react";
+import { Sun, Moon, Crown, Bell, User, Settings, HelpCircle, LogOut, ChevronDown, MessageCircle, MailOpen, HeartHandshake, AlignRight, X, LayoutDashboard, Flame, Bookmark, MessageSquare, Users, Ban, Megaphone, Search } from "lucide-react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { isPaidUser } from "@/lib/utils";
 import { UserType } from "@/components/enum/userType";
@@ -117,8 +117,14 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
     }] : [])
   ];
 
+  const isMatchingPage = pathname === "/users/matching";
+  
+  const defaultClassName = isMatchingPage
+    ? "flex md:hidden items-center justify-between bg-transparent border-b-0 px-4 py-3 shrink-0 z-[100] absolute top-0 left-0 right-0 w-full"
+    : "flex md:hidden items-center justify-between bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-800/80 px-4 py-3 shrink-0 z-40 relative";
+
   return (
-    <div className={className ?? "flex md:hidden items-center justify-between bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-800/80 px-4 py-3 shrink-0 z-40 relative"}>
+    <div className={className ?? defaultClassName}>
       {/* Logo */}
       {!hideLogo && (
         <div className="flex items-center">
@@ -144,7 +150,7 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
       {/* Right Actions */}
       <div className="flex items-center gap-3">
         {/* Broadcast Icon */}
-        {activeBroadcast && (
+        {activeBroadcast && !isMatchingPage && (
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('open-broadcast'))}
             className="relative p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors outline-none"
@@ -155,12 +161,22 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
           </button>
         )}
 
+        {/* Search Icon (Only on Matching Page) */}
+        {isMatchingPage && (
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-mobile-search'))}
+            className="p-1.5 transition-colors text-white hover:text-white/80 drop-shadow-md outline-none"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+        )}
+
         {/* Notification Bell */}
         <DropdownMenu onOpenChange={(open) => {
           if (open) setHasViewedNotifications(true);
         }}>
           <DropdownMenuTrigger className="relative group outline-none">
-            <div className="p-1.5 text-gray-500 hover:text-[#9B1C31] transition-colors">
+            <div className={`p-1.5 transition-colors ${isMatchingPage ? 'text-white hover:text-white/80 drop-shadow-md' : 'text-gray-500 hover:text-[#9B1C31]'}`}>
               <Bell className="w-5 h-5" />
             </div>
             {showNotificationBadge && (
@@ -216,62 +232,64 @@ export default function MobileHeader({ hideLogo = false, className }: MobileHead
         </DropdownMenu>
 
         {/* Profile Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger className="shrink-0 outline-none">
-            <Avatar className="w-8 h-8 border border-gray-200 dark:border-zinc-700 shadow-xs hover:border-[#9B1C31] transition-all">
-              <AvatarImage src={user.image || ((user as any).gender === "MALE" ? "/groom.webp" : "/bride.webp")} className="object-cover" />
-              <AvatarFallback className="bg-rose-50 text-[#9B1C31] text-xs font-bold">
-                {user.name?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg mt-2">
-            <div className="flex flex-col space-y-1 p-2 border-b">
-              <p className="text-sm font-medium leading-none">{(user as any).name} {(user as any).lastName || ""}</p>
-              <p className="text-xs leading-none text-muted-foreground">{user.publicId}</p>
-            </div>
-            <DropdownMenuItem asChild className="cursor-pointer py-2">
-              <Link href={`/users/profile/${user.id}`}>
-                <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>My Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            
-            {/* Theme Toggle */}
-            <DropdownMenuItem 
-              className="cursor-pointer py-2"
-              onClick={(e) => {
-                e.preventDefault();
-                setTheme(resolvedTheme === "dark" ? "light" : "dark");
-              }}
-            >
-              {resolvedTheme === "dark" ? (
-                <Sun className="mr-2 h-4 w-4 text-muted-foreground" />
-              ) : (
-                <Moon className="mr-2 h-4 w-4 text-muted-foreground" />
-              )}
-              <span>{resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-            </DropdownMenuItem>
+        {!isMatchingPage && (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="shrink-0 outline-none">
+              <Avatar className="w-8 h-8 border border-gray-200 dark:border-zinc-700 shadow-xs hover:border-[#9B1C31] transition-all">
+                <AvatarImage src={user.image || ((user as any).gender === "MALE" ? "/groom.webp" : "/bride.webp")} className="object-cover" />
+                <AvatarFallback className="bg-rose-50 text-[#9B1C31] text-xs font-bold">
+                  {user.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg mt-2">
+              <div className="flex flex-col space-y-1 p-2 border-b">
+                <p className="text-sm font-medium leading-none">{(user as any).name} {(user as any).lastName || ""}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user.publicId}</p>
+              </div>
+              <DropdownMenuItem asChild className="cursor-pointer py-2">
+                <Link href={`/users/profile/${user.id}`}>
+                  <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <span>My Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              
+              {/* Theme Toggle */}
+              <DropdownMenuItem 
+                className="cursor-pointer py-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                }}
+              >
+                {resolvedTheme === "dark" ? (
+                  <Sun className="mr-2 h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Moon className="mr-2 h-4 w-4 text-muted-foreground" />
+                )}
+                <span>{resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+              </DropdownMenuItem>
 
-            <DropdownMenuItem asChild className="cursor-pointer py-2">
-              <Link href="/users/account">
-                <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Account Settings</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer py-2">
-              <Link href="/users/helpcenter">
-                <HelpCircle className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Help Center</span>
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem asChild className="cursor-pointer py-2">
+                <Link href="/users/account">
+                  <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <span>Account Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer py-2">
+                <Link href="/users/helpcenter">
+                  <HelpCircle className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <span>Help Center</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         {/* Hamburger / Fries Menu Button */}
         <button 
           onClick={() => setIsSidebarOpen(true)}
-          className="p-1 text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+          className={`p-1 transition-colors ${isMatchingPage ? 'text-white hover:text-white/80 drop-shadow-md' : 'text-gray-500 hover:text-gray-900 dark:hover:text-gray-200'}`}
         >
           <AlignRight className="w-5 h-5" />
         </button>

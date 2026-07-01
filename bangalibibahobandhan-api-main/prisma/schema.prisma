@@ -352,6 +352,9 @@ model Profile {
   hobbies             String?
   monthlyIncome       String?
   language            String?
+  motherTongue        String?
+  spokenLanguages     String?
+  childrenLivingWith  String?
   familyMembers       String?
   fatherProfession    String?
   candidatePreference String?

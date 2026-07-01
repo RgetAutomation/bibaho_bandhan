@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdatingProfileStore } from "@/lib/updateProfileStore";
 import StepActions from "./StepActions";
 import { FormBadge } from "@/components/ui-custom/form-badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const step7Schema = updateProfileSchema.pick({
   partnerPreferredCountry: true,
@@ -27,6 +28,8 @@ export const step7Schema = updateProfileSchema.pick({
   familyStatusPreference: true,
   familyTypePreference: true,
   familyValuesPreference: true,
+  isProfilePublic: true,
+  allowSocialPublish: true,
 });
 
 export type Step7Schema = z.infer<typeof step7Schema>;
@@ -52,6 +55,8 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
       familyStatusPreference: stateData.familyStatusPreference || "",
       familyTypePreference: stateData.familyTypePreference || "",
       familyValuesPreference: stateData.familyValuesPreference || "",
+      isProfilePublic: stateData.isProfilePublic ?? true,
+      allowSocialPublish: stateData.allowSocialPublish ?? false,
     },
   });
 
@@ -211,6 +216,57 @@ export default function Step7PartnerAdvanced({ onComplete, onBack }: { onComplet
                 </FormItem>
               )} />
             </div>
+          </div>
+
+          {/* Privacy Settings */}
+          <div className="space-y-4 bg-transparent md:bg-white dark:md:bg-card p-0 md:p-6 md:rounded-2xl border-0 md:border border-border shadow-none md:shadow-sm">
+            <h3 className="text-lg font-semibold border-b pb-2 text-primary">Privacy Settings</h3>
+            
+            <FormField
+              control={form.control}
+              name="isProfilePublic"
+              render={({ field }) => (
+                <FormItem className="hover:bg-primary/20 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-primary/30 dark:has-[[aria-checked=true]]:bg-primary/20">
+                  <FormControl>
+                    <Checkbox
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-normal">
+                    <div className="grid gap-1.5 font-normal">
+                      <p className="text-sm leading-none font-medium">Public Profile Visibility</p>
+                      <p className="text-muted-foreground text-sm">
+                        Enable this option to make your profile visible on our public landing page. This helps others discover you more easily.
+                      </p>
+                    </div>
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="allowSocialPublish"
+              render={({ field }) => (
+                <FormItem className="hover:bg-primary/20 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-primary/30 dark:has-[[aria-checked=true]]:bg-primary/20">
+                  <FormControl>
+                    <Checkbox
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-normal">
+                    <div className="grid gap-1.5 font-normal">
+                      <p className="text-sm leading-none font-medium">Social Media Sharing</p>
+                      <p className="text-muted-foreground text-sm">
+                        By selecting this option to allow your profile to be shared on our social media platforms.
+                      </p>
+                    </div>
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
           </div>
 
           <StepActions loading={loading} showBack={true} onBack={onBack} submitLabel="Save & Continue" />

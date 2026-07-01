@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingButton } from "@/components/loadingButton";
 import { ProfileProps } from "@/actions/getProfileDetails";
 
+import { Step0AboutMeEdit } from "@/app/users/(all)/(main)/account/edit/profile/components/Step0AboutMeEdit";
 import { Step1BasicEdit } from "@/app/users/(all)/(main)/account/edit/profile/components/Step1BasicEdit";
 import { Step2CareerEdit } from "@/app/users/(all)/(main)/account/edit/profile/components/Step2CareerEdit";
 import { Step3ReligionEdit } from "@/app/users/(all)/(main)/account/edit/profile/components/Step3ReligionEdit";
@@ -35,65 +36,137 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
 
+  const getValidationSchema = () => {
+    switch (sectionId) {
+      case "about-me":
+        return updateProfileSchema.pick({ aboutMyself: true });
+      case "basic-info":
+        return updateProfileSchema.pick({ firstName: true, middleName: true, lastName: true, dob: true, maritalStatus: true, children: true, speciallyAble: true, disabilityDetails: true, bloodGroup: true, motherTongue: true, spokenLanguages: true, whatsappNumber: true, alternatePhone: true });
+      case "career-education":
+        return updateProfileSchema.pick({ employmentType: true, profession: true, occupationDetails: true, designation: true, workExperience: true, organizationName: true, companyName: true, monthlyIncome: true, education: true, collegeInstitution: true, fieldOfStudy: true, passingYear: true });
+      case "religion-background":
+        return updateProfileSchema.pick({ religion: true, caste: true, subCaste: true, gotra: true, manglik: true, rashi: true, nakshatra: true, timeOfBirth: true, cityOfBirth: true, countryOfBirth: true, country: true, state: true, dist: true, addressLine1: true, citizenship: true, ancestralOrigin: true, pinCode: true });
+      case "physical-attributes":
+        return updateProfileSchema.pick({ height: true, weight: true, skinTone: true, bodyType: true, eatingHabits: true, drinkingHabits: true, smokingHabits: true, healthScreening: true, hobbies: true, personalityTraits: true, lifeGoals: true });
+      case "family-details":
+        return updateProfileSchema.pick({ myFamilyType: true, myFamilyStatus: true, myFamilyValues: true, fathersOccupation: true, mothersOccupation: true, noOfBrothers: true, brothersMarriedCount: true, noOfSisters: true, sistersMarriedCount: true, familyMembers: true, familyDescription: true, familyBackground: true, culturalValues: true });
+      case "partner-basic":
+        return updateProfileSchema.pick({ partnerAgeRange: true, partnerHeightRange: true, partnerWeightRange: true, partnerMaritalStatus: true, partnerReligion: true, partnerCaste: true, partnerMotherTongue: true, partnerSpokenLanguages: true });
+      case "partner-advanced":
+        return updateProfileSchema.pick({ partnerMinimumQualification: true, partnerOccupation: true, partnerAnnualIncome: true, partnerEmploymentType: true, partnerEatingHabit: true, partnerDrinkingHabit: true, partnerSmokingHabit: true, partnerDisabilityAcceptable: true, partnerPreferredCountry: true, partnerPreferredState: true, partnerPreferredDistrict: true, partnerDescription: true, partnerPersonalityExpectation: true, partnerFamilyExpectation: true });
+      default:
+        return updateProfileSchema.partial();
+    }
+  };
+
   const form = useForm<any>({
-    resolver: zodResolver(updateProfileSchema),
+    resolver: zodResolver(getValidationSchema()),
     defaultValues: {
+      // Basic
       firstName: "",
       middleName: "",
       lastName: "",
+      dob: "",
+      maritalStatus: "",
+      children: 0,
+      bloodGroup: "",
+      speciallyAble: false,
+      disabilityDetails: "",
       motherTongue: "",
       spokenLanguages: "",
       childrenLivingWith: "",
+      whatsappNumber: "",
+      alternatePhone: "",
       emailId: "",
       phoneNumber: "",
       relationshipWithBrideGroom: "",
+      // Career
       employmentType: "",
+      profession: "",
       occupationDetails: "",
       designation: "",
       companyName: "",
+      workExperience: "",
+      organizationName: "",
+      monthlyIncome: "",
+      education: "",
+      collegeInstitution: "",
+      fieldOfStudy: "",
       passingYear: "",
-      familyType: "",
-      familyStatus: "",
-      familyValues: "",
-      fathersOccupation: "",
-      mothersOccupation: "",
-      noOfBrothers: "",
-      noOfMarriedBrothers: "",
-      noOfSisters: "",
-      noOfMarriedSisters: "",
-      familyLocation: "",
-      partnerAgeRange: "",
-      partnerHeightRange: "",
-      partnerMaritalStatus: "",
-      partnerChildren: "",
-      partnerReligion: "",
-      partnerCaste: "",
-      partnerMotherTongue: "",
-      partnerManglik: "",
-      partnerEducation: "",
-      partnerProfession: "",
-      partnerIncome: "",
-      partnerLocation: "",
-      partnerDiet: "",
-      partnerComplexion: "",
-      partnerBodyType: "",
-      partnerFamilyValues: "",
-      partnerFamilyType: "",
-      partnerPreferredState: "",
-      familyMembers: "",
-      fatherProfession: "",
-      candidatePreferences: "",
-      locationPreferences: "",
-      aboutMyPartner: "",
+      // Religion
+      religion: "",
+      caste: "",
+      subCaste: "",
+      gotra: "",
+      manglik: false,
       rashi: "",
       nakshatra: "",
       timeOfBirth: "",
       cityOfBirth: "",
       countryOfBirth: "",
-      workExperience: "",
-      collegeInstitution: "",
-      fieldOfStudy: "",
-      organizationName: "",
+      country: "",
+      state: "",
+      dist: "",
+      addressLine1: "",
+      addressLine2: "",
+      citizenship: "",
+      ancestralOrigin: "",
+      pinCode: "",
+      // Physical
+      height: "",
+      weight: "",
+      skinTone: "",
+      bodyType: "",
+      eatingHabits: "",
+      drinkingHabits: "",
+      smokingHabits: "",
+      healthScreening: "",
+      hobbies: "",
+      personalityTraits: "",
+      lifeGoals: "",
+      // Family
+      myFamilyType: "",
+      myFamilyStatus: "",
+      myFamilyValues: "",
+      fathersOccupation: "",
+      mothersOccupation: "",
+      noOfBrothers: "",
+      brothersMarriedCount: "",
+      noOfSisters: "",
+      sistersMarriedCount: "",
+      familyMembers: "",
+      familyDescription: "",
+      familyBackground: "",
+      culturalValues: "",
+      // Partner Basic
+      partnerAgeRange: "",
+      partnerHeightRange: "",
+      partnerWeightRange: "",
+      partnerMaritalStatus: "",
+      partnerReligion: "",
+      partnerCaste: "",
+      partnerMotherTongue: "",
+      partnerSpokenLanguages: "",
+      // Partner Advanced
+      partnerMinimumQualification: "",
+      partnerOccupation: "",
+      partnerAnnualIncome: "",
+      partnerEmploymentType: "",
+      partnerEatingHabit: "",
+      partnerPreferredCountry: "",
+      partnerPreferredState: "",
+      partnerPreferredDistrict: "",
+      partnerDrinkingHabit: "",
+      partnerSmokingHabit: "",
+      partnerDisabilityAcceptable: "",
+      partnerDescription: "",
+      partnerPersonalityExpectation: "",
+      partnerFamilyExpectation: "",
+      // Other
+      aboutMyself: "",
+      aboutMyPartner: "",
+      candidatePreferences: "",
+      locationPreferences: "",
     },
   });
 
@@ -102,16 +175,57 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
 
     const formData = {
       ...data,
+      // Basic
+      firstName: data.firstName || "",
+      middleName: data.middleName || "",
+      lastName: data.lastName || "",
       dob: data.dob ?? "",
       maritalStatus: data.maritalStatus ?? "",
       bloodGroup: data.bloodGroup ?? "",
       children: data.children ?? 0,
       speciallyAble: data.speciallyAble || false,
+      disabilityDetails: (data as any).disabilityDetails || "",
+      motherTongue: data.motherTongue || "",
+      spokenLanguages: data.spokenLanguages || "",
+      childrenLivingWith: (data as any).childrenLivingWith || "",
+      whatsappNumber: (data as any).whatsappNumber || "",
+      alternatePhone: (data as any).alternatePhone || "",
+      emailId: data.email || "",
+      phoneNumber: data.phone || "",
+      relationshipWithBrideGroom: (data as any).relationshipWithBrideGroom || "",
+      // Career
+      employmentType: data.employmentType || "",
+      profession: data.profession || "",
+      occupationDetails: (data as any).occupationDetails || "",
+      designation: data.designation || "",
+      companyName: (data as any).companyName || "",
+      workExperience: data.workExperience || "",
+      organizationName: data.organizationName || "",
+      monthlyIncome: data.monthlyIncome ?? "",
+      education: data.education || "",
+      collegeInstitution: data.collegeInstitution || "",
+      fieldOfStudy: data.fieldOfStudy || "",
+      passingYear: data.passingYear || "",
+      // Religion / Background
       religion: data.religion ?? "",
-      gotra: data.gotra || "",
       caste: data.caste ?? "",
       subCaste: data.subCaste || "",
+      gotra: data.gotra || "",
       manglik: data.manglikDosh || false,
+      rashi: data.rashi || "",
+      nakshatra: data.nakshatra || "",
+      timeOfBirth: data.birthTime || "",
+      cityOfBirth: data.cityOfBirth || "",
+      countryOfBirth: data.countryOfBirth || "",
+      country: data.country || "",
+      state: data.state || "",
+      dist: data.dist || "",
+      addressLine1: data.addressLine1 || "",
+      addressLine2: data.addressLine2 || "",
+      citizenship: data.citizenship || "",
+      ancestralOrigin: (data as any).ancestralOrigin || "",
+      pinCode: data.pinCode || "",
+      // Physical
       height: data.height || "",
       weight: data.weight || "",
       skinTone: data.skinTone ?? "",
@@ -119,50 +233,53 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
       eatingHabits: data.eatingHabits || "",
       drinkingHabits: data.drinkingHabits || "",
       smokingHabits: data.smokingHabits || "",
-      addressLine1: data.addressLine1 || "",
-      addressLine2: data.addressLine2 || "",
-      dist: data.dist || "",
-      state: data.state || "",
-      pinCode: data.pinCode || "",
-      whatsappNumber: (data as any).whatsappNumber || "",
-      alternatePhone: (data as any).alternatePhone || "",
-      aboutMyself: data.aboutMyself || "",
-      profession: data.profession || "",
-      education: data.education || "",
+      healthScreening: (data as any).healthScreening || "",
       hobbies: data.hobbies || "",
-      monthlyIncome: data.monthlyIncome ?? "",
-      languages: data.language || "",
-      familyMembers: data.familyMembers || "",
-      fatherProfession: data.fatherProfession || "",
-      candidatePreferences: data.candidatePreference || "",
-      locationPreferences: data.locationPreference || "",
-      aboutMyPartner: data.aboutMyPartner || "",
-      rashi: data.rashi || "",
-      nakshatra: data.nakshatra || "",
-      timeOfBirth: data.birthTime || "",
-      cityOfBirth: data.cityOfBirth || "",
-      countryOfBirth: data.countryOfBirth || "",
-      familyType: data.familyType || "",
+      personalityTraits: (data as any).personalityTraits || "",
+      lifeGoals: (data as any).lifeGoals || "",
+      // Family - use my* form names to match Step5 component
+      myFamilyType: data.familyType || "",
+      myFamilyStatus: (data as any).myFamilyStatus || "",
+      myFamilyValues: data.familyValues || "",
+      fathersOccupation: data.fatherProfession || "",
       mothersOccupation: data.mothersOccupation || "",
       noOfBrothers: data.noOfBrothers || "",
+      brothersMarriedCount: (data as any).brothersMarriedCount || "",
       noOfSisters: data.noOfSisters || "",
-      familyValues: data.familyValues || "",
-      workExperience: data.workExperience || "",
-      collegeInstitution: data.collegeInstitution || "",
-      fieldOfStudy: data.fieldOfStudy || "",
-      organizationName: data.organizationName || "",
+      sistersMarriedCount: (data as any).sistersMarriedCount || "",
+      familyMembers: data.familyMembers || "",
+      familyDescription: (data as any).familyDescription || "",
+      familyBackground: (data as any).familyBackground || "",
+      culturalValues: (data as any).culturalValues || "",
+      // Other
+      aboutMyself: data.aboutMyself || "",
+      aboutMyPartner: data.aboutMyPartner || "",
+      candidatePreferences: data.candidatePreference || "",
+      locationPreferences: data.locationPreference || "",
+      // Partner Basic - use the schema names that Step6 uses
       partnerAgeRange: data.partnerAgeRange || "",
       partnerHeightRange: data.partnerHeightRange || "",
+      partnerWeightRange: (data as any).partnerWeightRange || "",
       partnerMaritalStatus: data.partnerMaritalStatus || "",
       partnerReligion: data.partnerReligion || "",
       partnerCaste: data.partnerCaste || "",
-      partnerEducation: data.partnerEducation || "",
-      partnerProfession: data.partnerProfession || "",
-      partnerIncome: data.partnerIncome || "",
-      partnerLocation: data.partnerLocation || "",
-      partnerDiet: data.partnerDiet || "",
-      partnerComplexion: data.partnerComplexion || "",
       partnerMotherTongue: data.partnerMotherTongue || "",
+      partnerSpokenLanguages: (data as any).partnerSpokenLanguages || "",
+      // Partner Advanced - use schema names (Step7 uses these)
+      partnerMinimumQualification: data.partnerEducation || "",
+      partnerOccupation: data.partnerProfession || "",
+      partnerAnnualIncome: data.partnerIncome || "",
+      partnerEmploymentType: (data as any).partnerEmploymentType || "",
+      partnerEatingHabit: (data as any).partnerDiet || (data as any).partnerEatingHabit || "",
+      partnerPreferredCountry: (data as any).partnerPreferredCountry || "",
+      partnerPreferredState: (data as any).partnerPreferredState || "",
+      partnerPreferredDistrict: (data as any).partnerPreferredDistrict || "",
+      partnerDrinkingHabit: (data as any).partnerDrinkingHabit || "",
+      partnerSmokingHabit: (data as any).partnerSmokingHabit || "",
+      partnerDisabilityAcceptable: (data as any).partnerDisabilityAcceptable || "",
+      partnerDescription: (data as any).partnerDescription || "",
+      partnerPersonalityExpectation: (data as any).partnerPersonalityExpectation || "",
+      partnerFamilyExpectation: (data as any).partnerFamilyExpectation || "",
     };
 
     form.reset(formData);
@@ -170,10 +287,60 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
 
   async function onSubmit(formDataToSubmit: any) {
     setLoading(true);
+
+    let allowedFields: string[] = [];
+    switch (sectionId) {
+      case "about-me":
+        allowedFields = ["aboutMyself"];
+        break;
+      case "basic-info":
+        allowedFields = ["firstName", "middleName", "lastName", "dob", "maritalStatus", "children", "speciallyAble", "disabilityDetails", "bloodGroup", "motherTongue", "spokenLanguages", "whatsappNumber", "alternatePhone", "relationshipWithBrideGroom"];
+        break;
+      case "career-education":
+        allowedFields = ["employmentType", "profession", "occupationDetails", "designation", "workExperience", "organizationName", "companyName", "monthlyIncome", "education", "collegeInstitution", "fieldOfStudy", "passingYear"];
+        break;
+      case "religion-background":
+        allowedFields = ["religion", "caste", "subCaste", "gotra", "manglik", "rashi", "nakshatra", "timeOfBirth", "cityOfBirth", "countryOfBirth", "country", "state", "dist", "addressLine1", "citizenship", "ancestralOrigin", "pinCode"];
+        break;
+      case "physical-attributes":
+        allowedFields = ["height", "weight", "skinTone", "bodyType", "eatingHabits", "drinkingHabits", "smokingHabits", "healthScreening", "hobbies", "personalityTraits", "lifeGoals"];
+        break;
+      case "family-details":
+        allowedFields = ["myFamilyType", "myFamilyStatus", "myFamilyValues", "fathersOccupation", "mothersOccupation", "noOfBrothers", "brothersMarriedCount", "noOfSisters", "sistersMarriedCount", "familyMembers", "familyDescription", "familyBackground", "culturalValues"];
+        break;
+      case "partner-basic":
+        allowedFields = ["partnerAgeRange", "partnerHeightRange", "partnerWeightRange", "partnerMaritalStatus", "partnerReligion", "partnerCaste", "partnerMotherTongue", "partnerSpokenLanguages"];
+        break;
+      case "partner-advanced":
+        allowedFields = ["partnerMinimumQualification", "partnerOccupation", "partnerAnnualIncome", "partnerEmploymentType", "partnerEatingHabit", "partnerDrinkingHabit", "partnerSmokingHabit", "partnerDisabilityAcceptable", "partnerPreferredCountry", "partnerPreferredState", "partnerPreferredDistrict", "partnerDescription", "partnerPersonalityExpectation", "partnerFamilyExpectation"];
+        break;
+      default:
+        allowedFields = Object.keys(formDataToSubmit);
+    }
+
+    const filteredData: Record<string, any> = {};
+    allowedFields.forEach(field => {
+      if (formDataToSubmit[field] !== undefined && formDataToSubmit[field] !== "") {
+        filteredData[field] = formDataToSubmit[field];
+      }
+    });
+
+    // Translate form field names → DB column names, then remove the original key
+    if (filteredData.myFamilyType !== undefined) { filteredData.familyType = filteredData.myFamilyType; delete filteredData.myFamilyType; }
+    if (filteredData.myFamilyStatus !== undefined) { filteredData.familyStatus = filteredData.myFamilyStatus; delete filteredData.myFamilyStatus; }
+    if (filteredData.myFamilyValues !== undefined) { filteredData.familyValues = filteredData.myFamilyValues; delete filteredData.myFamilyValues; }
+    if (filteredData.fathersOccupation !== undefined) { filteredData.fatherProfession = filteredData.fathersOccupation; delete filteredData.fathersOccupation; }
+    if (filteredData.partnerMinimumQualification !== undefined) { filteredData.partnerEducation = filteredData.partnerMinimumQualification; delete filteredData.partnerMinimumQualification; }
+    if (filteredData.partnerOccupation !== undefined) { filteredData.partnerProfession = filteredData.partnerOccupation; delete filteredData.partnerOccupation; }
+    if (filteredData.partnerAnnualIncome !== undefined) { filteredData.partnerIncome = filteredData.partnerAnnualIncome; delete filteredData.partnerAnnualIncome; }
+    if (filteredData.partnerEatingHabit !== undefined) { filteredData.partnerDiet = filteredData.partnerEatingHabit; delete filteredData.partnerEatingHabit; }
+
+    console.log("SUBMITTING PAYLOAD:", filteredData);
+
     try {
-      const response = await api.post<AxiosResponse<null>>(
-        "/users/profile/update",
-        formDataToSubmit,
+      const response = await api.patch<AxiosResponse<null>>(
+        "/users/profile/update-partial",
+        filteredData,
       );
       if (response.data.success) {
         toast.success("Profile updated successfully");
@@ -183,7 +350,8 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
       } else {
         toast.error(response.data.message);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log("UPDATE ERROR RESPONSE:", error.response?.data);
       const errorMessage = isAxiosError(error)
         ? error.response?.data?.message || "Failed to update profile"
         : "Something went wrong";
@@ -195,6 +363,8 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
 
   const renderSection = () => {
     switch (sectionId) {
+      case "about-me":
+        return <Step0AboutMeEdit form={form} />;
       case "basic-info":
         return <Step1BasicEdit form={form} />;
       case "career-education":
@@ -216,7 +386,8 @@ export function ProfileEditModal({ isOpen, onClose, sectionId, data }: ProfileEd
 
   const getSectionTitle = () => {
     switch (sectionId) {
-      case "basic-info": return "Edit Basic Information & About Me";
+      case "about-me": return "Edit About Me";
+      case "basic-info": return "Edit Basic Information";
       case "career-education": return "Edit Education & Career";
       case "religion-background": return "Edit Religion & Astrology Details";
       case "physical-attributes": return "Edit Physical Attributes & Lifestyle";

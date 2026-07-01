@@ -78,7 +78,7 @@ export default function ProfileEditPage() {
       companyName: "",
       passingYear: "",
       familyType: "",
-      familyStatus: "",
+      myFamilyStatus: "",
       familyValues: "",
       fathersOccupation: "",
       mothersOccupation: "",
@@ -150,6 +150,7 @@ export default function ProfileEditPage() {
       collegeInstitution: "",
       fieldOfStudy: "",
       organizationName: "",
+
     },
   });
 
@@ -175,6 +176,7 @@ export default function ProfileEditPage() {
       skinTone: data.skinTone ?? "",
       bodyType: data.bodyType ?? "",
       eatingHabits: data.eatingHabits || "",
+        healthScreening: data.healthScreening || "",
       drinkingHabits: data.drinkingHabits || "",
       smokingHabits: data.smokingHabits || "",
       addressLine1: data.addressLine1 || "",
@@ -191,7 +193,7 @@ export default function ProfileEditPage() {
       monthlyIncome: data.monthlyIncome ?? "",
       languages: data.language || "",
       familyMembers: data.familyMembers || "",
-      fatherProfession: data.fatherProfession || "",
+      fathersOccupation: data.fatherProfession || "",
       candidatePreferences: data.candidatePreference || "",
       locationPreferences: data.locationPreference || "",
       aboutMyPartner: data.aboutMyPartner || "",
@@ -200,27 +202,69 @@ export default function ProfileEditPage() {
       timeOfBirth: data.birthTime || "",
       cityOfBirth: data.cityOfBirth || "",
       countryOfBirth: data.countryOfBirth || "",
-      familyType: data.familyType || "",
+        country: data.country || "",
+        citizenship: data.citizenship || "",
+        ancestralOrigin: data.ancestralOrigin || "",
+      myFamilyType: data.familyType || "",
+      myFamilyStatus: data.myFamilyStatus || "",
       mothersOccupation: data.mothersOccupation || "",
       noOfBrothers: data.noOfBrothers || "",
       noOfSisters: data.noOfSisters || "",
-      familyValues: data.familyValues || "",
+      myFamilyValues: data.familyValues || "",
       workExperience: data.workExperience || "",
       collegeInstitution: data.collegeInstitution || "",
       fieldOfStudy: data.fieldOfStudy || "",
       organizationName: data.organizationName || "",
+      employmentType: data.employmentType || "",
+      designation: data.designation || "",
+      occupationDetails: (data as any).occupationDetails || "",
+      companyName: (data as any).companyName || "",
       partnerAgeRange: data.partnerAgeRange || "",
       partnerHeightRange: data.partnerHeightRange || "",
       partnerMaritalStatus: data.partnerMaritalStatus || "",
       partnerReligion: data.partnerReligion || "",
       partnerCaste: data.partnerCaste || "",
-      partnerEducation: data.partnerEducation || "",
-      partnerProfession: data.partnerProfession || "",
-      partnerIncome: data.partnerIncome || "",
+      partnerMinimumQualification: data.partnerEducation || "",
+      partnerOccupation: data.partnerProfession || "",
+      partnerAnnualIncome: data.partnerIncome || "",
       partnerLocation: data.partnerLocation || "",
-      partnerDiet: data.partnerDiet || "",
+      partnerEatingHabit: data.partnerDiet || "",
+        partnerDiet: data.partnerDiet || "",
       partnerComplexion: data.partnerComplexion || "",
       partnerMotherTongue: data.partnerMotherTongue || "",
+        partnerSpokenLanguages: data.partnerSpokenLanguages || "",
+        partnerPreferredCountry: data.partnerPreferredCountry || "",
+        partnerPreferredState: data.partnerPreferredState || "",
+        partnerPreferredDistrict: data.partnerPreferredDistrict || "",
+        partnerDescription: data.partnerDescription || "",
+        lifeGoals: data.lifeGoals || "",
+        personalityTraits: data.personalityTraits || "",
+
+        // Add missing mappings for contact info and relationship
+      emailId: data.email || "",
+      phoneNumber: data.phone || "",
+      relationshipWithBrideGroom: (data as any).relationshipWithBrideGroom || "",
+      motherTongue: (data as any).motherTongue || "",
+      spokenLanguages: (data as any).spokenLanguages || "",
+      childrenLivingWith: (data as any).childrenLivingWith || "",
+      brothersMarriedCount: (data as any).brothersMarriedCount || "",
+      sistersMarriedCount: (data as any).sistersMarriedCount || "",
+      familyDescription: (data as any).familyDescription || "",
+      familyBackground: (data as any).familyBackground || "",
+      culturalValues: (data as any).culturalValues || "",
+      partnerWeightRange: (data as any).partnerWeightRange || "",
+      partnerEmploymentType: (data as any).partnerEmploymentType || "",
+      partnerSubCaste: (data as any).partnerSubCaste || "",
+      partnerGothra: (data as any).partnerGothra || "",
+      partnerDrinkingHabit: (data as any).partnerDrinkingHabit || "",
+      partnerSmokingHabit: (data as any).partnerSmokingHabit || "",
+      partnerDisabilityAcceptable: (data as any).partnerDisabilityAcceptable || "",
+      partnerPersonalityExpectation: (data as any).partnerPersonalityExpectation || "",
+      partnerFamilyExpectation: (data as any).partnerFamilyExpectation || "",
+      partnerFamilyDetails: (data as any).partnerFamilyDetails || "",
+      familyStatusPreference: (data as any).familyStatusPreference || "",
+      familyTypePreference: (data as any).familyTypePreference || "",
+      familyValuesPreference: (data as any).familyValuesPreference || "",
     };
 
     form.reset(formData);
@@ -255,6 +299,28 @@ export default function ProfileEditPage() {
 
   async function onSubmit(data: any) {
     setLoading(true);
+    if (data.myFamilyType) {
+      data.familyType = data.myFamilyType;
+    }
+    if (data.myFamilyValues) {
+      data.familyValues = data.myFamilyValues;
+    }
+    if (data.partnerEatingHabit) {
+      data.partnerDiet = data.partnerEatingHabit;
+    }
+    if (data.fathersOccupation) {
+      data.fatherProfession = data.fathersOccupation;
+    }
+    if (data.partnerOccupation) {
+      data.partnerProfession = data.partnerOccupation;
+    }
+    if (data.partnerMinimumQualification) {
+      data.partnerEducation = data.partnerMinimumQualification;
+    }
+    if (data.partnerAnnualIncome) {
+      data.partnerIncome = data.partnerAnnualIncome;
+    }
+
     try {
       const response = await api.post<AxiosResponse<null>>(
         "/users/profile/update",
@@ -292,7 +358,14 @@ export default function ProfileEditPage() {
         <div className="pb-10">
           <Form {...form} key={dataLoaded ? "loaded" : "loading"}>
             <form
-              onSubmit={form.handleSubmit(onSubmit as any)}
+              onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                const formattedErrors = Object.keys(errors).reduce((acc: any, key) => {
+                  acc[key] = (errors as any)[key]?.message;
+                  return acc;
+                }, {});
+                console.error("Form validation errors:", JSON.stringify(formattedErrors, null, 2));
+                toast.error("Please fill in all required fields correctly.");
+              })}
               className="space-y-4 bg-card p-4 md:p-6 scroll-smooth border-2 border-primary/20 dark:border-primary/20 rounded-xl shadow-sm"
             >
               <div className="hidden md:flex items-center gap-3 border-b-2 border-primary/20 pb-4 mb-8">
@@ -394,27 +467,31 @@ export default function ProfileEditPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-border">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                  className="w-[120px]"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="w-[120px]"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <LoadingButton title="Saving..." />
-                  ) : (
-                    "Save Changes"
-                  )}
-                </Button>
-              </div>
+              {form.formState.isDirty && (
+                <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-border animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      form.reset();
+                    }}
+                    className="w-[120px]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="w-[120px]"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <LoadingButton title="Saving..." />
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </Button>
+                </div>
+              )}
 
             </form>
           </Form>

@@ -284,24 +284,24 @@ export default function ImagesUploadComponent({
         className="hidden"
       />
 
-      <div className="flex flex-col items-center justify-center px-4 py-3 text-center border-2 border-dashed rounded-2xl bg-muted/30">
+      <div className="flex flex-col items-center justify-center px-3 py-3 md:px-4 md:py-4 text-center border-2 border-dashed rounded-2xl bg-muted/30">
         <div
-          className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
+          className="bg-background mb-1.5 md:mb-2 flex size-8 md:size-11 shrink-0 items-center justify-center rounded-full border"
           aria-hidden="true"
         >
-          <ImageIcon className="size-4 opacity-60" />
+          <ImageIcon className="size-3.5 md:size-4 opacity-60" />
         </div>
-        <p className="mb-1.5 text-sm font-medium">Select multiple images</p>
-        <p className="text-muted-foreground text-xs">
+        <p className="mb-0.5 md:mb-1.5 text-[13px] md:text-sm font-medium">Select multiple images</p>
+        <p className="text-muted-foreground text-[10px] md:text-xs">
           PNG, JPG or JPEG (max. {maxSizeMB}MB per file)
         </p>
         {isUploading ? (
-          <Button className="rounded-full mt-4" disabled>
+          <Button className="rounded-full mt-2 md:mt-4 h-8 md:h-10 text-xs md:text-sm" disabled>
             <LoadingButton title="Uploading..." />
           </Button>
         ) : (
-          <Button className="rounded-full mt-4" onClick={handleFileSelect}>
-            <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
+          <Button className="rounded-full mt-2 md:mt-4 h-8 md:h-10 text-xs md:text-sm px-3 md:px-4" onClick={handleFileSelect}>
+            <UploadIcon className="-ms-1 md:size-4 size-3.5 opacity-60" aria-hidden="true" />
             Select images
           </Button>
         )}

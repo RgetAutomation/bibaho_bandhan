@@ -160,9 +160,8 @@ export function Step7PartnerAdvancedEdit({ form }: { form: any }) {
               )} />
             </div>
           </div>
-
-          
         
     </div>
   );
 }
+

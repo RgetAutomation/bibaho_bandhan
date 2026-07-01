@@ -321,6 +321,8 @@ export async function getUserById(req: Request, res: Response) {
           id: true,
           publicId: true,
           title: true,
+          firstName: true,
+          middleName: true,
           lastName: true,
           gender: true,
           avatar: true,
@@ -377,6 +379,81 @@ export async function getUserById(req: Request, res: Response) {
               birthTime: true,
               cityOfBirth: true,
               countryOfBirth: true,
+              // Basic Info extras
+              motherTongue: true,
+              spokenLanguages: true,
+              childrenLivingWith: true,
+              relationshipWithBrideGroom: true,
+              whatsappNumber: true,
+              alternatePhone: true,
+              addressLine1: true,
+              addressLine2: true,
+              postOffice: true,
+              policeStation: true,
+              pinCode: true,
+              disabilityDetails: true,
+              // Career / Education
+              employmentType: true,
+              occupationDetails: true,
+              designation: true,
+              companyName: true,
+              workExperience: true,
+              organizationName: true,
+              collegeInstitution: true,
+              fieldOfStudy: true,
+              passingYear: true,
+              // Religion / Background
+              country: true,
+              citizenship: true,
+              ancestralOrigin: true,
+              // Physical / Lifestyle
+              healthScreening: true,
+              personalityTraits: true,
+              lifeGoals: true,
+              // Family Details
+              familyType: true,
+              myFamilyStatus: true,
+              familyValues: true,
+              mothersOccupation: true,
+              noOfBrothers: true,
+              noOfSisters: true,
+              brothersMarriedCount: true,
+              sistersMarriedCount: true,
+              familyDescription: true,
+              familyBackground: true,
+              culturalValues: true,
+              // Partner Preferences Basic
+              partnerAgeRange: true,
+              partnerHeightRange: true,
+              partnerWeightRange: true,
+              partnerMaritalStatus: true,
+              partnerMotherTongue: true,
+              partnerSpokenLanguages: true,
+              partnerEmploymentType: true,
+              partnerProfession: true,
+              partnerIncome: true,
+              partnerEducation: true,
+              partnerCaste: true,
+              partnerSubCaste: true,
+              partnerGothra: true,
+              partnerReligion: true,
+              partnerDiet: true,
+              partnerComplexion: true,
+              partnerLocation: true,
+              // Partner Preferences Advanced
+              partnerPreferredCountry: true,
+              partnerPreferredState: true,
+              partnerPreferredDistrict: true,
+              partnerDrinkingHabit: true,
+              partnerSmokingHabit: true,
+              partnerDisabilityAcceptable: true,
+              partnerDescription: true,
+              partnerPersonalityExpectation: true,
+              partnerFamilyExpectation: true,
+              partnerFamilyDetails: true,
+              familyStatusPreference: true,
+              familyTypePreference: true,
+              familyValuesPreference: true,
             },
           },
         },
@@ -478,12 +555,17 @@ export async function getUserById(req: Request, res: Response) {
       status = "Offline";
     }
 
+    // Detect if viewer is looking at their own profile
+    const isSelfView = currentUser.id === targetUser.id;
+
     // Prepare data based on viewer type
     const basicInfo = {
       id: targetUser.id,
       publicId: targetUser.publicId,
       age: age,
       title: targetUser.title,
+      firstName: targetUser.firstName,
+      middleName: targetUser.middleName,
       lastName: targetUser.lastName,
       gender: targetUser.gender,
       avatar: targetUser?.avatar,
@@ -495,6 +577,8 @@ export async function getUserById(req: Request, res: Response) {
       subCaste: targetUser.profile?.subCaste,
       manglikDosh: targetUser.profile?.manglikDosh,
       language: targetUser.profile?.language,
+      motherTongue: targetUser.profile?.motherTongue,
+      spokenLanguages: targetUser.profile?.spokenLanguages,
       dist: targetUser.profile?.dist,
       state: targetUser.profile?.state,
       alreadySentRequest: !!youRequestSent,
@@ -502,8 +586,8 @@ export async function getUserById(req: Request, res: Response) {
       receivedRequestStatus: youRequestReceived?.status,
       alreadyBlocked: !!youBlockUser,
       alreadyFriend: !!bothAreFriends,
-      phone: !!bothAreFriends ? targetUser.phone : null,
-      email: !!bothAreFriends ? targetUser.email : null,
+      phone: (!!bothAreFriends || isSelfView) ? targetUser.phone : null,
+      email: (!!bothAreFriends || isSelfView) ? targetUser.email : null,
       status,
       verificationStatus: targetUser.verificationStatus,
       height: targetUser.profile?.height,
@@ -529,20 +613,97 @@ export async function getUserById(req: Request, res: Response) {
       weight: targetUser.profile?.weight,
       bloodGroup: targetUser.profile?.bloodGroup,
       skinTone: targetUser.profile?.skinTone,
+      bodyType: targetUser.profile?.bodyType,
       hobbies: targetUser.profile?.hobbies,
       monthlyIncome: targetUser.profile?.monthlyIncome,
       familyMembers: targetUser.profile?.familyMembers,
       fatherProfession: targetUser.profile?.fatherProfession,
       candidatePreference: targetUser.profile?.candidatePreference,
       locationPreference: targetUser.profile?.locationPreference,
+      // Basic Info extras
+      firstName: targetUser.firstName,
+      middleName: targetUser.middleName,
+      dob: targetUser.profile?.dob,
+      motherTongue: targetUser.profile?.motherTongue,
+      spokenLanguages: targetUser.profile?.spokenLanguages,
+      childrenLivingWith: targetUser.profile?.childrenLivingWith,
+      relationshipWithBrideGroom: targetUser.profile?.relationshipWithBrideGroom,
+      whatsappNumber: targetUser.profile?.whatsappNumber,
+      alternatePhone: targetUser.profile?.alternatePhone,
+      addressLine1: targetUser.profile?.addressLine1,
+      addressLine2: targetUser.profile?.addressLine2,
+      pinCode: targetUser.profile?.pinCode,
+      disabilityDetails: targetUser.profile?.disabilityDetails,
+      // Career / Education
+      employmentType: targetUser.profile?.employmentType,
+      occupationDetails: targetUser.profile?.occupationDetails,
+      designation: targetUser.profile?.designation,
+      companyName: targetUser.profile?.companyName,
+      workExperience: targetUser.profile?.workExperience,
+      organizationName: targetUser.profile?.organizationName,
+      collegeInstitution: targetUser.profile?.collegeInstitution,
+      fieldOfStudy: targetUser.profile?.fieldOfStudy,
+      passingYear: targetUser.profile?.passingYear,
+      // Religion / Background
+      country: targetUser.profile?.country,
+      citizenship: targetUser.profile?.citizenship,
+      ancestralOrigin: targetUser.profile?.ancestralOrigin,
+      // Physical / Lifestyle
+      healthScreening: targetUser.profile?.healthScreening,
+      personalityTraits: targetUser.profile?.personalityTraits,
+      lifeGoals: targetUser.profile?.lifeGoals,
+      // Family Details
+      familyType: targetUser.profile?.familyType,
+      myFamilyStatus: targetUser.profile?.myFamilyStatus,
+      familyValues: targetUser.profile?.familyValues,
+      mothersOccupation: targetUser.profile?.mothersOccupation,
+      noOfBrothers: targetUser.profile?.noOfBrothers,
+      noOfSisters: targetUser.profile?.noOfSisters,
+      brothersMarriedCount: targetUser.profile?.brothersMarriedCount,
+      sistersMarriedCount: targetUser.profile?.sistersMarriedCount,
+      familyDescription: targetUser.profile?.familyDescription,
+      familyBackground: targetUser.profile?.familyBackground,
+      culturalValues: targetUser.profile?.culturalValues,
+      // Partner Preferences
+      partnerAgeRange: targetUser.profile?.partnerAgeRange,
+      partnerHeightRange: targetUser.profile?.partnerHeightRange,
+      partnerWeightRange: targetUser.profile?.partnerWeightRange,
+      partnerMaritalStatus: targetUser.profile?.partnerMaritalStatus,
+      partnerMotherTongue: targetUser.profile?.partnerMotherTongue,
+      partnerSpokenLanguages: targetUser.profile?.partnerSpokenLanguages,
+      partnerEmploymentType: targetUser.profile?.partnerEmploymentType,
+      partnerProfession: targetUser.profile?.partnerProfession,
+      partnerIncome: targetUser.profile?.partnerIncome,
+      partnerEducation: targetUser.profile?.partnerEducation,
+      partnerCaste: targetUser.profile?.partnerCaste,
+      partnerSubCaste: targetUser.profile?.partnerSubCaste,
+      partnerGothra: targetUser.profile?.partnerGothra,
+      partnerReligion: targetUser.profile?.partnerReligion,
+      partnerDiet: targetUser.profile?.partnerDiet,
+      partnerComplexion: targetUser.profile?.partnerComplexion,
+      partnerLocation: targetUser.profile?.partnerLocation,
+      partnerPreferredCountry: targetUser.profile?.partnerPreferredCountry,
+      partnerPreferredState: targetUser.profile?.partnerPreferredState,
+      partnerPreferredDistrict: targetUser.profile?.partnerPreferredDistrict,
+      partnerDrinkingHabit: targetUser.profile?.partnerDrinkingHabit,
+      partnerSmokingHabit: targetUser.profile?.partnerSmokingHabit,
+      partnerDisabilityAcceptable: targetUser.profile?.partnerDisabilityAcceptable,
+      partnerDescription: targetUser.profile?.partnerDescription,
+      partnerPersonalityExpectation: targetUser.profile?.partnerPersonalityExpectation,
+      partnerFamilyExpectation: targetUser.profile?.partnerFamilyExpectation,
+      partnerFamilyDetails: targetUser.profile?.partnerFamilyDetails,
+      familyStatusPreference: targetUser.profile?.familyStatusPreference,
+      familyTypePreference: targetUser.profile?.familyTypePreference,
+      familyValuesPreference: targetUser.profile?.familyValuesPreference,
 
       isGhotokOwned: targetUser.isGhotokOwned,
       ghotokPublicId: targetUser.ghotok?.ghotokPublicId,
     };
 
     const finalData =
-      currentUser?.type === UserType.PAID_USER &&
-      new Date(currentUser.planExpiryDate) > new Date()
+      isSelfView ||
+      (currentUser?.type === UserType.PAID_USER &&
+      new Date(currentUser.planExpiryDate) > new Date())
         ? fullInfo
         : basicInfo;
 
@@ -560,6 +721,12 @@ export async function getSelfDetails(req: Request, res: Response) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
+        id: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        email: true,
+        phone: true,
         allowSocialPublish: true,
         isProfilePublic: true,
         verificationStatus: true,
@@ -597,8 +764,15 @@ export async function getSelfDetails(req: Request, res: Response) {
             hobbies: true,
             monthlyIncome: true,
             language: true,
+            motherTongue: true,
+            spokenLanguages: true,
+            childrenLivingWith: true,
             familyMembers: true,
             fatherProfession: true,
+            employmentType: true,
+            occupationDetails: true,
+            designation: true,
+            companyName: true,
             candidatePreference: true,
             locationPreference: true,
             aboutMyPartner: true,
@@ -607,17 +781,73 @@ export async function getSelfDetails(req: Request, res: Response) {
             birthTime: true,
             cityOfBirth: true,
             countryOfBirth: true,
+            relationshipWithBrideGroom: true,
+            familyType: true,
+            myFamilyStatus: true,
+            familyValues: true,
+            mothersOccupation: true,
+            noOfBrothers: true,
+            noOfSisters: true,
+            brothersMarriedCount: true,
+            sistersMarriedCount: true,
+            familyDescription: true,
+            familyBackground: true,
+            culturalValues: true,
+            partnerWeightRange: true,
+            partnerEmploymentType: true,
+            partnerSubCaste: true,
+            partnerGothra: true,
+            partnerDrinkingHabit: true,
+            partnerSmokingHabit: true,
+            partnerDisabilityAcceptable: true,
+            partnerPersonalityExpectation: true,
+            partnerFamilyExpectation: true,
+            partnerFamilyDetails: true,
+            familyStatusPreference: true,
+            familyTypePreference: true,
+            familyValuesPreference: true,
+            workExperience: true,
+            collegeInstitution: true,
+            fieldOfStudy: true,
+            organizationName: true,
+            country: true,
+            citizenship: true,
+            ancestralOrigin: true,
+            healthScreening: true,
+            lifeGoals: true,
+            personalityTraits: true,
+            partnerAgeRange: true,
+            partnerHeightRange: true,
+            partnerMaritalStatus: true,
+            partnerReligion: true,
+            partnerMotherTongue: true,
+            partnerProfession: true,
+            partnerIncome: true,
+            partnerEducation: true,
+            partnerCaste: true,
+            partnerSpokenLanguages: true,
+            partnerPreferredCountry: true,
+            partnerPreferredState: true,
+            partnerPreferredDistrict: true,
+            partnerDiet: true,
+            partnerDescription: true,
           },
         },
       },
     });
 
     const formattedData = {
-      isProfilePublic: user?.isProfilePublic,
-      allowSocialPublish: user?.allowSocialPublish,
-      verificationStatus: user?.verificationStatus,
-      ...user?.profile,
-    };
+        isProfilePublic: user?.isProfilePublic,
+        allowSocialPublish: user?.allowSocialPublish,
+        verificationStatus: user?.verificationStatus,
+        id: user?.id,
+        firstName: user?.firstName,
+        middleName: user?.middleName,
+        lastName: user?.lastName,
+        email: user?.email,
+        phone: user?.phone,
+        ...user?.profile,
+      };
 
     res.json(new ApiResponse(200, "User fetched successfully", formattedData));
   } catch (err) {
@@ -678,7 +908,7 @@ export async function updateProfile(req: Request, res: Response) {
       monthlyIncome: data.monthlyIncome,
       language: data.languages,
       familyMembers: data.familyMembers,
-      fatherProfession: data.fatherProfession,
+      fatherProfession: data.fatherProfession || data.fathersOccupation,
       candidatePreference: data.candidatePreferences,
       locationPreference: data.locationPreferences,
       aboutMyPartner: data.aboutMyPartner,
@@ -712,6 +942,11 @@ export async function updateProfile(req: Request, res: Response) {
       partnerDiet: data.partnerDiet,
       partnerComplexion: data.partnerComplexion,
       partnerMotherTongue: data.partnerMotherTongue,
+
+      // Basic Info - was missing, causing fields not to save
+      motherTongue: data.motherTongue,
+      spokenLanguages: data.spokenLanguages,
+      childrenLivingWith: data.childrenLivingWith,
 
       // Additional Missing Fields
       disabilityDetails: data.disabilityDetails,
@@ -3621,5 +3856,59 @@ export async function upsertPrivateNote(req: Request, res: Response) {
   } catch (error) {
     console.error('Error saving private note', error);
     return res.status(500).json(new ApiError(500, 'Internal Server Error'));
+  }
+}
+
+
+export async function updateProfilePartial(req: Request, res: Response) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json(new ApiError(400, "User not found"));
+    }
+
+    const data = req.body;
+    
+    // Fields that belong to the User model
+    const userFields = [
+      "title", "firstName", "middleName", "lastName", 
+      "email", "phone", "isProfilePublic", "allowSocialPublish"
+    ];
+    
+    const userDataToUpdate: any = {};
+    const profileData: any = {};
+    
+    for (const key of Object.keys(data)) {
+      if (userFields.includes(key)) {
+        userDataToUpdate[key] = data[key];
+      } else {
+        profileData[key] = data[key];
+      }
+    }
+
+    // Coerce types that Prisma is strict about
+    if (profileData.dob) profileData.dob = new Date(profileData.dob);
+    if (profileData.children !== undefined) profileData.children = Number(profileData.children);
+    if (profileData.speciallyAble !== undefined) profileData.speciallyAble = Boolean(profileData.speciallyAble);
+    if (profileData.manglik !== undefined) profileData.manglikDosh = Boolean(profileData.manglik);
+    // manglik is the form field name, but DB column is manglikDosh
+    delete profileData.manglik;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...userDataToUpdate,
+        ...(Object.keys(profileData).length > 0 ? {
+          profile: {
+            update: { ...profileData },
+          },
+        } : {})
+      },
+    });
+
+    return res.status(200).json(new ApiResponse(200, "Profile updated successfully", null));
+  } catch (err: any) {
+    console.error("Error in updateProfilePartial:", err);
+    return res.status(500).json(new ApiError(500, "Internal server error"));
   }
 }

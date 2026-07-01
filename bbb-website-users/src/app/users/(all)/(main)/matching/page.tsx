@@ -161,6 +161,13 @@ export default function MatchingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+  useEffect(() => {
+    const handleToggleSearch = () => setShowMobileSearch(prev => !prev);
+    window.addEventListener('toggle-mobile-search', handleToggleSearch as EventListener);
+    return () => window.removeEventListener('toggle-mobile-search', handleToggleSearch as EventListener);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -373,7 +380,142 @@ export default function MatchingPage() {
   }
 
   return (
-    <div className="flex flex-col xl:flex-row h-[calc(100vh-80px)] xl:h-full bg-gray-50/50 dark:bg-zinc-950 px-4 md:px-6 xl:pr-8 xl:pl-3 gap-6 pt-4 pb-0 overflow-hidden">
+    <>
+      {/* --- MOBILE VIEW (TikTok Style Swipe Feed) --- */}
+      <div className="md:hidden relative w-full h-[calc(100dvh-60px)] bg-black overflow-hidden flex flex-col">
+        {/* Search Bar Overlay */}
+        <div className={`absolute left-0 right-0 z-50 px-4 flex items-center justify-between gap-2 transition-all duration-300 ease-out ${showMobileSearch ? 'top-[72px] opacity-100 translate-y-0 pointer-events-auto' : 'top-[72px] opacity-0 -translate-y-4 pointer-events-none'}`}>
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search by Name / ID" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-full pl-10 pr-10 py-2.5 text-[12px] font-bold text-gray-900 dark:text-white shadow-md outline-none placeholder:text-gray-500 transition-shadow focus:shadow-lg"
+              autoFocus={showMobileSearch}
+            />
+            <button onClick={() => setShowMobileFilters(true)} className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5">
+              <Filter className="w-3.5 h-3.5 text-[#E51E44]" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Feed Container */}
+        <div className="flex-1 overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden bg-zinc-950">
+          {!matches || finalMatches.length === 0 ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center text-white">
+              <Users className="w-12 h-12 text-zinc-500 mb-4" />
+              <h2 className="text-xl font-bold mb-2">No Matches Found</h2>
+              <p className="text-sm text-zinc-400">Try adjusting your filters.</p>
+            </div>
+          ) : (
+            paginatedMatches.map((match) => {
+              const age = match.profile.age || 27;
+              const education = match.profile.education || "B.Sc";
+              const profession = match.profile.profession || "Profession Not Set";
+              const location = match.profile.dist && match.profile.state ? `${match.profile.dist}, ${match.profile.state}` : "Location Not Set";
+              const height = match.profile.height || "";
+              const religion = (match.profile as any).religion || "Hindu";
+              const caste = (match.profile as any).caste || "Caste";
+
+              return (
+                <div key={match.id} className="w-full h-full snap-start snap-always flex flex-col bg-zinc-950 overflow-hidden">
+                  {/* Image Section */}
+                  <div className="relative flex-1 w-full">
+                    <Image 
+                      src={match.avatar || (match.gender === "MALE" ? "/groom.webp" : "/bride.webp")} 
+                      alt={match.lastName}
+                      fill 
+                      className="object-cover object-top"
+                    />
+                    
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+
+                    {match.status === "Online" && (
+                      <div className="absolute top-[88px] left-4 bg-black/50 backdrop-blur-md border border-white/10 rounded-full px-3 py-1.5 flex items-center gap-1.5 z-20 shadow-md">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="text-white text-[10px] font-bold">Online</span>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* Info Card Section */}
+                  <div className="relative w-full bg-white dark:bg-zinc-950 rounded-t-2xl pt-1 pb-4 px-3 z-10 shadow-2xl shrink-0 -mt-3">
+                    <div className="w-8 h-1 bg-gray-300 dark:bg-zinc-700 rounded-full mx-auto mb-1.5 mt-1"></div>
+                    
+                    <div className="flex justify-between items-center mb-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <h2 className="text-lg font-black text-gray-900 dark:text-white truncate max-w-[170px]">
+                          {match.firstName || match.lastName}, {age}
+                        </h2>
+                        <BadgeCheck className="w-4 h-4 text-white fill-[#E51E44] shrink-0" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => toggleShortlist(match)} className="w-8 h-8 rounded-full bg-rose-50 dark:bg-zinc-900 border border-rose-100 dark:border-zinc-800 flex items-center justify-center shadow-sm transition-transform active:scale-95 shrink-0">
+                          <Bookmark className={`w-3.5 h-3.5 ${shortlistedUsers.includes(match.id!) ? "fill-[#E51E44] text-[#E51E44]" : "text-[#E51E44]"} stroke-[2]`} />
+                        </button>
+                        <div className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md text-[9px] font-bold flex items-center gap-1 border border-blue-100 dark:border-blue-500/20 shrink-0 h-fit">
+                          <BadgeCheck className="w-2.5 h-2.5 shrink-0" />
+                          <span className="truncate">Verified</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-y-2 gap-x-1.5 mb-2.5 border-b border-gray-100 dark:border-zinc-800 pb-2.5">
+                      <div className="flex items-center justify-center text-center gap-1 relative">
+                        <MapPin className="w-3 h-3 text-[#E51E44] shrink-0" />
+                        <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate">{location}</span>
+                      </div>
+                      <div className="flex items-center justify-center text-center gap-1 border-x border-gray-100 dark:border-zinc-800 relative">
+                        <Briefcase className="w-3 h-3 text-[#E51E44] shrink-0" />
+                        <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate">{profession}</span>
+                      </div>
+                      <div className="flex items-center justify-center text-center gap-1 relative">
+                        <GraduationCap className="w-3 h-3 text-[#E51E44] shrink-0" />
+                        <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate">{education}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-y-2 gap-x-1.5 mb-3 border-b border-gray-100 dark:border-zinc-800 pb-3">
+                      <div className="flex items-center justify-center text-center gap-1">
+                        <Target className="w-3 h-3 text-[#E51E44] shrink-0" />
+                        <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate">{height}</span>
+                      </div>
+                      <div className="flex items-center justify-center text-center gap-1 border-x border-gray-100 dark:border-zinc-800">
+                        <span className="w-[12px] h-[12px] rounded-full bg-[#E51E44] text-white flex items-center justify-center text-[6px] font-bold leading-none shrink-0 pb-[1px]">ॐ</span>
+                        <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate">{religion}</span>
+                      </div>
+                      <div className="flex items-center justify-center text-center gap-1">
+                        <Users className="w-3 h-3 text-[#E51E44] shrink-0" />
+                        <span className="text-[9px] font-bold text-gray-700 dark:text-zinc-300 truncate">{caste}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full pb-0.5">
+                      <Button onClick={() => handleSendInterest(match.id!)} className="flex-1 rounded-xl h-[40px] bg-[#E51E44] hover:bg-[#C81A3C] text-white font-bold shadow-sm shadow-[#E51E44]/20 text-[10px]">
+                        <Heart className="w-3.5 h-3.5 mr-1.5 fill-white" /> Send Interest
+                      </Button>
+                      <Button variant="outline" onClick={() => router.push(`/users/profile/${match.id}`)} className="flex-1 rounded-xl h-[40px] border-[#E51E44] text-[#E51E44] hover:bg-rose-50 dark:hover:bg-[#E51E44]/10 font-bold text-[10px] shadow-sm">
+                        <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> View Full Profile
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+          {/* Intersection observer trigger area */}
+          <div ref={loadMoreRef} className="w-full h-24 flex items-center justify-center shrink-0">
+            {isFetchingNextPage && <div className="text-white text-sm font-bold animate-pulse">Loading more...</div>}
+          </div>
+        </div>
+      </div>
+
+      {/* --- DESKTOP VIEW --- */}
+      <div className="hidden md:flex flex-col xl:flex-row h-[calc(100vh-80px)] xl:h-full bg-gray-50/50 dark:bg-zinc-950 px-4 md:px-6 xl:pr-8 xl:pl-3 gap-6 pt-4 pb-0 overflow-hidden">
       
       {/* Right Sidebar - Refine Matches */}
       <div className={`${showMobileFilters ? "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" : "hidden"} xl:flex xl:static xl:bg-transparent xl:p-0 xl:backdrop-blur-none xl:z-auto flex-col w-full xl:w-[220px] shrink-0 space-y-3 xl:sticky xl:top-0 h-[100dvh] xl:h-fit max-h-screen xl:max-h-[calc(100vh-120px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-10 xl:pb-10`}>
@@ -791,6 +933,7 @@ export default function MatchingPage() {
         </div>
       </div>
       {/* ------------------------------------------------------------- */}
-    </div>
+      </div>
+    </>
   );
 }

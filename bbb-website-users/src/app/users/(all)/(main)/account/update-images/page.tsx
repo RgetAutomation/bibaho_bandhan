@@ -4,12 +4,7 @@ import { UserType } from "@/components/enum/userType";
 import { AxiosResponse } from "@/components/interface/AxiosResponse";
 import LoadingPage from "@/components/loader";
 import { Button } from "@/components/ui/button";
-import {
-  Cropper,
-  CropperCropArea,
-  CropperDescription,
-  CropperImage,
-} from "@/components/ui/cropper";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import api from "@/lib/axiosInstance";
 import NextImage from "next/image";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,38 +12,30 @@ import { redirect } from "next/navigation";
 import { LoadingButton } from "@/components/loadingButton";
 import toast from "react-hot-toast";
 import { compressImage } from "@/components/system/compressImage";
-import DashboardHeader from "@/components/dashboard/header";
 import ImagesUploadComponent from "@/components/ui-custom/imagesUploedComponent";
 import AdvancedImageEditor from "@/components/ui-custom/advanced-image-editor";
 import { associateTempState } from "@/components/system/db";
 import { isRawOrPsdFile, extractEmbeddedJpeg } from "@/components/system/fileParsers";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProfileImages } from "@/actions/users";
-import { Trash2, TriangleAlert, Upload } from "lucide-react";
+import { Camera, Trash2, TriangleAlert, Upload, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import ApiErrorPage from "@/components/apiErrorPage";
 import { IProfileImage } from "@/components/interface/IProfileImages";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { isAxiosError } from "axios";
 import { useAuthSession } from "@/hooks/useAuthSession";
 
-interface CropArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export default function FinleProfilePage() {
   const maxImages = 100; // Effectively unlimited
   const { user, isPending, refetch: refetchSession } = useAuthSession();
+  
   useEffect(() => {
-    refetchSession(); // << refresh session from server
+    refetchSession(); // refresh session from server
   }, []);
 
   const userId = user?.id;
@@ -56,18 +43,29 @@ export default function FinleProfilePage() {
   const userGender = user?.gender;
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedImageForView, setSelectedImageForView] =
-    useState<IProfileImage | null>(null);
+  const [selectedImageForView, setSelectedImageForView] = useState<IProfileImage | null>(null);
   const [openImageView, setOpenImageView] = useState(false);
   const [croppedImageUrl, setCroppedImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deleteImage, setDeleteImage] = useState<boolean>(false);
   const [isEditingGalleryImage, setIsEditingGalleryImage] = useState(false);
   const [isEditingProfileImage, setIsEditingProfileImage] = useState(false);
-  const [editorMode, setEditorMode] = useState<"crop" | "filter">("crop");
   const [isGalleryUploading, setIsGalleryUploading] = useState(false);
-  const [cropData, setCropData] = useState<CropArea | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const desktopScrollRef = useRef<HTMLDivElement>(null);
+  const mobileScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = (ref: React.RefObject<HTMLDivElement | null>) => {
+    if (ref.current) {
+      ref.current.scrollBy({ left: -250, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = (ref: React.RefObject<HTMLDivElement | null>) => {
+    if (ref.current) {
+      ref.current.scrollBy({ left: 250, behavior: "smooth" });
+    }
+  };
 
   const [mounted, setMounted] = useState(false);
 
@@ -82,15 +80,12 @@ export default function FinleProfilePage() {
   }, []);
 
   if (!mounted || isPending) {
-    // Render a consistent placeholder to avoid SSR/client mismatch
     return (
       <div className="flex flex-1">
         <LoadingPage />
       </div>
     );
   }
-
-  // allowed for free users as well
 
   const handleOpen = (file: IProfileImage) => {
     setSelectedImageForView(file);
@@ -106,7 +101,7 @@ export default function FinleProfilePage() {
       
       let uploadFile: File = file;
       if (file.size > 10 * 1024 * 1024) {
-        uploadFile = await compressImage(file, 5000); // Compress to 5MB if > 10MB
+        uploadFile = await compressImage(file, 5000);
       }
 
       const formData = new FormData();
@@ -133,9 +128,7 @@ export default function FinleProfilePage() {
       console.error("Upload error:", error);
       let errorMessage = "Profile image update failed";
       if (isAxiosError(error) && error.response) {
-        errorMessage = error.response.data?.message
-          ? error.response.data.message
-          : "Something went wrong. Please try again.";
+        errorMessage = error.response.data?.message || "Something went wrong. Please try again.";
         toast.error(errorMessage);
       } else {
         toast.error("Something went wrong. Please try again.");
@@ -219,14 +212,13 @@ export default function FinleProfilePage() {
     if (!selectedImageForView) return;
     setIsGalleryUploading(true);
     try {
-      // 1. Upload new image first
       const formData = new FormData();
       const filename = `gallery-${Date.now()}.jpg`;
       const file = new File([blob], filename, { type: "image/jpeg" });
       
       let uploadFile: File = file;
       if (file.size > 10 * 1024 * 1024) {
-        uploadFile = await compressImage(file, 5000); // Compress to 5MB if > 10MB
+        uploadFile = await compressImage(file, 5000);
       }
       formData.append("files", uploadFile);
 
@@ -236,7 +228,6 @@ export default function FinleProfilePage() {
       );
 
       if (uploadResponse.data.success) {
-        // 2. Delete old image
         await api.delete(`/users/profile/${selectedImageForView.id}/image`);
         
         const newUrl = Array.isArray(uploadResponse.data.data) 
@@ -263,11 +254,7 @@ export default function FinleProfilePage() {
     }
   };
 
-  if (
-    user?.isProfileComplete !== true &&
-    !isLoading &&
-    !isPending
-  ) {
+  if (user?.isProfileComplete !== true && !isLoading && !isPending) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <div className="w-full max-w-sm flex flex-col px-4 py-8 rounded-2xl shadow-md border bg-card">
@@ -275,12 +262,8 @@ export default function FinleProfilePage() {
             <div className="flex items-center justify-center p-4 bg-primary/10 rounded-full border">
               <TriangleAlert className="size-10 text-primary" />
             </div>
-            <p className="text-xl font-semibold text-primary">
-              Profile Incomplete
-            </p>
-            <p className="text-muted-foreground">
-              Please complete your profile first.
-            </p>
+            <p className="text-xl font-semibold text-primary">Profile Incomplete</p>
+            <p className="text-muted-foreground">Please complete your profile first.</p>
             <Button asChild className="mt-4 rounded-full">
               <Link href="/users/account">Account</Link>
             </Button>
@@ -290,9 +273,230 @@ export default function FinleProfilePage() {
     );
   }
 
-  return (
-    <div className="flex flex-col h-dvh overflow-hidden">
+  // Common UI Sections
+  const ProfilePictureSection = (
+    <div className="md:bg-white md:dark:bg-zinc-900 md:border md:border-[#F0E8E8] md:dark:border-zinc-800 md:shadow-sm md:rounded-3xl overflow-hidden h-full flex flex-col">
+      <div className="py-2 md:p-8 flex flex-col items-center flex-1">
+        <div className="text-center space-y-1 md:space-y-2 mb-4 md:mb-8">
+          <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-zinc-100">Primary Photo</h1>
+          <p className="hidden md:block text-sm text-gray-500 dark:text-zinc-400 font-medium leading-relaxed max-w-xs mx-auto">
+            This is the first photo people will see. Keep it clear and recent.
+          </p>
+        </div>
 
+        <div className="shrink-0 flex flex-col items-center justify-center w-full">
+          <input
+            type="file"
+            accept="image/jpg, image/jpeg, image/png, .dng, .cr2, .nef, .arw, .raw, .psd"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {!selectedImage && (
+            <div className="flex flex-col items-center gap-6 group relative">
+              <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-white dark:border-zinc-800 shadow-xl relative bg-gray-100 dark:bg-zinc-800 flex items-center justify-center ring-1 ring-black/5 dark:ring-white/10 before:absolute before:inset-[-10px] before:bg-rose-100/50 dark:before:bg-rose-900/20 before:rounded-full before:blur-xl before:-z-10 cursor-pointer" onClick={handleFileSelect}>
+                <NextImage
+                  src={
+                    croppedImageUrl
+                      ? croppedImageUrl
+                      : user?.image
+                        ? user.image
+                        : userGender === "MALE"
+                          ? "/groom.webp"
+                          : "/bride.webp"
+                  }
+                  alt="Profile Picture"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  width={256}
+                  height={256}
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
+                  <div className="bg-white/20 p-4 rounded-full text-white backdrop-blur-md shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                    <Camera className="w-8 h-8" />
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={handleFileSelect}
+                variant="outline"
+                className="rounded-full font-bold px-6 border-[#F0E8E8] dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-zinc-300 shadow-sm"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                Change Photo
+              </Button>
+            </div>
+          )}
+          
+          {selectedImage && !croppedImageUrl && (
+            <div className="w-full relative">
+              <AdvancedImageEditor
+                imageSrc={selectedImage}
+                aspectRatio={4 / 5}
+                onConfirm={handleCropAndUpload}
+                onCancel={() => setSelectedImage(null)}
+                isUploading={isUploading}
+                title="Crop Avatar"
+                fullScreen={true}
+                mode="all"
+                imageKey={`profile_temp_${userId}`}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderGallerySection = (scrollRef: React.RefObject<HTMLDivElement | null>) => (
+    <div className="md:bg-white md:dark:bg-zinc-900 md:border md:border-[#F0E8E8] md:dark:border-zinc-800 md:shadow-sm md:rounded-3xl overflow-hidden flex flex-col h-full min-h-[500px]">
+      <div className="py-2 md:p-8 flex-1 flex flex-col">
+        <div className="flex flex-row items-center justify-between gap-2 md:gap-4 mb-4 pb-3 md:mb-6 md:pb-5 border-b border-[#F0E8E8] dark:border-zinc-800">
+          <div className="space-y-0.5 md:space-y-1">
+            <h2 className="text-lg md:text-xl font-extrabold text-gray-900 dark:text-zinc-100">Photo Gallery</h2>
+            <p className="hidden md:block text-sm text-gray-500 dark:text-zinc-400 font-medium">
+              Upload multiple photos to show your personality.
+            </p>
+          </div>
+          <span className="bg-rose-50 dark:bg-[#9B1C31]/10 text-[#9B1C31] dark:text-[#E35269] text-[10px] md:text-xs font-bold px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full border border-rose-100 dark:border-[#9B1C31]/20 shrink-0 shadow-sm">
+            {data?.profileImages?.length || 0} Photos
+          </span>
+        </div>
+
+        {data?.profileImages && data.profileImages.length < maxImages && (
+          <div className="mb-8">
+            <ImagesUploadComponent refetch={refetch} />
+          </div>
+        )}
+
+        {data?.profileImages && data.profileImages?.length > 0 ? (
+          <div className="relative w-full group">
+            {/* Left Scroll Arrow */}
+            <button 
+              onClick={() => scrollLeft(scrollRef)}
+              className="absolute left-1 md:-left-2 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-white/50 dark:bg-black/50 md:bg-white/80 dark:md:bg-zinc-800/80 backdrop-blur-sm md:shadow-md rounded-full text-gray-700 dark:text-zinc-200 active:scale-95 transition-all md:hover:bg-white md:hover:text-rose-500"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-7 h-7 pr-0.5 md:w-7 md:h-7 md:pr-0.5 drop-shadow-sm md:drop-shadow-none" />
+            </button>
+
+            <div 
+              ref={scrollRef}
+              className="flex overflow-x-auto snap-x snap-mandatory gap-4 w-full pb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth pt-2"
+            >
+              {data.profileImages.map((file: IProfileImage) => (
+                <div 
+                  key={file.id} 
+                  className="relative w-[45vw] sm:w-[180px] lg:w-[220px] shrink-0 aspect-[4/5] rounded-2xl overflow-hidden border border-[#F0E8E8] dark:border-zinc-800 shadow-sm cursor-pointer group bg-gray-50 dark:bg-zinc-800 snap-center" 
+                  onClick={() => handleOpen(file)}
+                >
+                  <NextImage
+                    src={file.url}
+                    alt={file.id}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    width={300}
+                    height={375}
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
+                    <span className="text-white text-xs font-bold bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      View & Edit
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Scroll Arrow */}
+            <button 
+              onClick={() => scrollRight(scrollRef)}
+              className="absolute right-1 md:-right-2 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 bg-white/50 dark:bg-black/50 md:bg-white/80 dark:md:bg-zinc-800/80 backdrop-blur-sm md:shadow-md rounded-full text-gray-700 dark:text-zinc-200 active:scale-95 transition-all md:hover:bg-white md:hover:text-rose-500"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-7 h-7 pl-0.5 md:w-7 md:h-7 md:pl-0.5 drop-shadow-sm md:drop-shadow-none" />
+            </button>
+          </div>
+        ) : (
+          <div className="bg-[#FCFAF8] dark:bg-zinc-950 border border-dashed border-[#E5D0D0] dark:border-zinc-800 rounded-2xl p-10 flex flex-col items-center justify-center text-center mt-4">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+              <ImageIcon className="w-8 h-8 text-gray-400 dark:text-zinc-500" />
+            </div>
+            <p className="text-sm font-semibold text-gray-500 dark:text-zinc-400">
+              No gallery images uploaded yet.<br/> Add some to get noticed!
+            </p>
+          </div>
+        )}
+
+        {/* Immersive Lightbox Dialog */}
+        {selectedImageForView && (
+          <Dialog open={openImageView} onOpenChange={setOpenImageView}>
+            <DialogContent aria-describedby={undefined} className="max-w-4xl p-0 bg-black/95 dark:bg-black/95 backdrop-blur-xl border-none overflow-hidden rounded-3xl shadow-2xl">
+              <DialogTitle className="sr-only">Image Preview</DialogTitle>
+              <div className="relative flex flex-col justify-center items-center w-full min-h-[50vh] max-h-[85vh]">
+                <NextImage
+                  src={selectedImageForView?.url as string}
+                  alt={`Full view`}
+                  width={800}
+                  height={1000}
+                  className="object-contain w-auto h-auto max-h-[85vh] transition-opacity duration-300"
+                  priority
+                />
+                
+                {/* Floating Actions */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-black/50 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-2xl">
+                  <Button
+                    className="rounded-xl font-bold px-6 bg-white/10 hover:bg-white/20 text-white border-none"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditingGalleryImage(true);
+                      setOpenImageView(false);
+                    }}
+                    disabled={deleteImage}
+                  >
+                    Edit Photo
+                  </Button>
+                  <Button
+                    className="rounded-xl font-bold px-6 bg-red-600/90 hover:bg-red-600 text-white border-none"
+                    onClick={() => handleDeleteImage(selectedImageForView.id)}
+                    disabled={deleteImage}
+                  >
+                    {deleteImage ? (
+                      <LoadingButton title="Deleting..." />
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 w-4 h-4" />
+                        Delete
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Full screen editor for existing gallery images */}
+        {isEditingGalleryImage && selectedImageForView && (
+          <AdvancedImageEditor
+            imageSrc={selectedImageForView.url}
+            onConfirm={handleEditGalleryImage}
+            onCancel={() => {
+              setIsEditingGalleryImage(false);
+              setOpenImageView(true);
+            }}
+            title="Edit Gallery Image"
+            isUploading={isGalleryUploading}
+            fullScreen={true}
+            mode="all"
+            imageKey={selectedImageForView.url}
+          />
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col h-dvh overflow-hidden bg-[#FCFAF8] dark:bg-zinc-950">
       {isLoading || isPending ? (
         <div className="flex flex-1 items-center justify-center">
           <LoadingPage />
@@ -305,205 +509,50 @@ export default function FinleProfilePage() {
           />
         </div>
       ) : (
-        <div className="flex flex-col flex-1 p-4 md:p-8 gap-6 overflow-y-auto bg-[#FCFAF8] dark:bg-zinc-950">
-          <div className="max-w-4xl mx-auto w-full flex flex-col gap-8">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 py-6">
+          
+          {/* Desktop Layout (Two Column) */}
+          <div className="hidden lg:grid grid-cols-12 gap-8 max-w-[1400px] mx-auto w-full pb-10">
+            {/* Sticky Sidebar */}
+            <div className="col-span-4 h-full relative">
+              <div className="sticky top-6">
+                {ProfilePictureSection}
+              </div>
+            </div>
             
-            {/* Primary Profile Picture Card */}
-            <div className="bg-white dark:bg-zinc-900 border border-[#F0E8E8] dark:border-zinc-800 shadow-sm rounded-3xl overflow-hidden">
-              <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start">
-                
-                {/* Left Side: Info */}
-                <div className="flex-1 space-y-3 text-center md:text-left">
-                  <h1 className="text-2xl font-extrabold text-gray-900 dark:text-zinc-100">
-                    Profile Picture
-                  </h1>
-                  <p className="text-sm text-gray-500 dark:text-zinc-400 font-medium leading-relaxed max-w-md mx-auto md:mx-0">
-                    This is the first photo people will see. We recommend using a clear, recent face photo to make your profile stand out and receive more interests.
-                  </p>
-                </div>
-
-                {/* Right Side: Upload Control */}
-                <div className="shrink-0 flex flex-col items-center">
-                  <input
-                    type="file"
-                    accept="image/jpg, image/jpeg, image/png, .dng, .cr2, .nef, .arw, .raw, .psd"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-
-                  {!selectedImage && (
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="w-36 md:w-40 h-auto aspect-[4/5] rounded-2xl overflow-hidden border-4 border-white dark:border-zinc-800 shadow-lg relative bg-gray-100 dark:bg-zinc-800 flex items-center justify-center ring-1 ring-black/5 dark:ring-white/10 group">
-                        <NextImage
-                          src={
-                            croppedImageUrl
-                              ? croppedImageUrl
-                              : user?.image
-                                ? user.image
-                                : userGender === "MALE"
-                                  ? "/groom.webp"
-                                  : "/bride.webp"
-                          }
-                          alt="Profile Picture"
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          width={160}
-                          height={200}
-                        />
-                      </div>
-                      <Button
-                        onClick={handleFileSelect}
-                        className="rounded-full bg-[#9B1C31] hover:bg-[#801426] text-white font-bold px-6 shadow-sm h-auto py-2.5"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Change Image
-                      </Button>
-                    </div>
-                  )}
-                  {selectedImage && !croppedImageUrl && (
-                    <AdvancedImageEditor
-                      imageSrc={selectedImage}
-                      aspectRatio={4 / 5}
-                      onConfirm={handleCropAndUpload}
-                      onCancel={() => setSelectedImage(null)}
-                      isUploading={isUploading}
-                      title="Edit Profile Image"
-                      fullScreen={true}
-                      mode="all"
-                      imageKey={`profile_temp_${userId}`}
-                    />
-                  )}
-                </div>
-              </div>
+            {/* Main Content */}
+            <div className="col-span-8 flex flex-col">
+              {renderGallerySection(desktopScrollRef)}
             </div>
-
-            {/* Photo Gallery Card */}
-            <div className="bg-white dark:bg-zinc-900 border border-[#F0E8E8] dark:border-zinc-800 shadow-sm rounded-3xl overflow-hidden">
-              <div className="p-6 md:p-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-[#F0E8E8] dark:border-zinc-800">
-                  <div className="space-y-1">
-                    <h2 className="text-xl font-extrabold text-gray-900 dark:text-zinc-100">Photo Gallery</h2>
-                    <p className="text-sm text-gray-500 dark:text-zinc-400 font-medium">
-                      Add more photos to show your personality and lifestyle.
-                    </p>
-                  </div>
-                  <span className="bg-rose-50 dark:bg-[#9B1C31]/10 text-[#9B1C31] dark:text-[#E35269] text-xs font-bold px-3.5 py-1.5 rounded-full border border-rose-100 dark:border-[#9B1C31]/20 shrink-0">
-                    {data?.profileImages?.length || 0} Photos Uploaded
-                  </span>
-                </div>
-
-                {data?.profileImages && data.profileImages?.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
-                    {data.profileImages.map((file: IProfileImage) => (
-                      <div 
-                        key={file.id} 
-                        className="relative w-full aspect-square rounded-2xl overflow-hidden border border-[#F0E8E8] dark:border-zinc-800 shadow-xs cursor-pointer group bg-gray-50 dark:bg-zinc-800" 
-                        onClick={() => handleOpen(file)}
-                      >
-                        <NextImage
-                          src={file.url}
-                          alt={file.id}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          width={300}
-                          height={300}
-                          priority
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                      </div>
-                    ))}
-
-                    {/* Single Dialog for all images */}
-                    {selectedImageForView && (
-                      <Dialog
-                        open={openImageView}
-                        onOpenChange={setOpenImageView}
-                      >
-                        <DialogContent className="max-w-3xl p-0 bg-white dark:bg-zinc-900 overflow-hidden rounded-3xl">
-                          <DialogHeader className="flex justify-between items-center p-4 border-b border-[#F0E8E8] dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-950/50">
-                            <DialogTitle className="text-lg font-bold text-gray-900 dark:text-zinc-100">
-                              Image Preview
-                            </DialogTitle>
-                          </DialogHeader>
-
-                          <div className="flex flex-col justify-center items-center bg-[#FCFAF8] dark:bg-zinc-950 p-6 max-h-[80vh] overflow-auto">
-                            <div className="relative rounded-2xl overflow-hidden shadow-md ring-1 ring-black/5 dark:ring-white/10">
-                              <NextImage
-                                src={selectedImageForView?.url as string}
-                                alt={`Full view of ${selectedImageForView?.id as string}`}
-                                width={800}
-                                height={800}
-                                className="object-contain max-h-[65vh] w-auto h-auto"
-                                priority
-                              />
-                            </div>
-                            
-                            <div className="w-full max-w-md pt-8 flex gap-3">
-                              <Button
-                                className="flex-1 rounded-xl font-bold py-5 h-auto bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-700"
-                                variant="outline"
-                                onClick={() => {
-                                  setIsEditingGalleryImage(true);
-                                  setOpenImageView(false);
-                                }}
-                                disabled={deleteImage}
-                              >
-                                Edit Photo
-                              </Button>
-                              <Button
-                                className="flex-1 rounded-xl font-bold py-5 h-auto bg-red-600 hover:bg-red-700 text-white border-none shadow-sm shadow-red-600/20"
-                                onClick={() => handleDeleteImage(selectedImageForView.id)}
-                                disabled={deleteImage}
-                              >
-                                {deleteImage ? (
-                                  <LoadingButton title="Deleting..." />
-                                ) : (
-                                  <>
-                                    <Trash2 className="mr-2 w-4 h-4" />
-                                    <span>Delete Image</span>
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    )}
-
-                    {/* Full screen editor for existing gallery images */}
-                    {isEditingGalleryImage && selectedImageForView && (
-                      <AdvancedImageEditor
-                        imageSrc={selectedImageForView.url}
-                        onConfirm={handleEditGalleryImage}
-                        onCancel={() => {
-                          setIsEditingGalleryImage(false);
-                          setOpenImageView(true);
-                        }}
-                        title="Edit Gallery Image"
-                        isUploading={isGalleryUploading}
-                        fullScreen={true}
-                        mode="all"
-                        imageKey={selectedImageForView.url}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-[#FCFAF8] dark:bg-zinc-950 border border-dashed border-[#E5D0D0] dark:border-zinc-800 rounded-2xl p-10 text-center mb-8">
-                    <p className="text-sm font-semibold text-gray-500 dark:text-zinc-400">
-                      No gallery images uploaded yet. Add some to get noticed!
-                    </p>
-                  </div>
-                )}
-
-                {data?.profileImages && data.profileImages.length < maxImages && (
-                  <div className="pt-6 border-t border-[#F0E8E8] dark:border-zinc-800">
-                    <h3 className="text-sm font-extrabold text-gray-800 dark:text-zinc-200 mb-4">Upload New Photos</h3>
-                    <ImagesUploadComponent refetch={refetch} />
-                  </div>
-                )}
-              </div>
-            </div>
-
           </div>
+
+          {/* Mobile Layout (Tabs) */}
+          <div className="block lg:hidden w-full max-w-xl mx-auto pb-10">
+            <Tabs defaultValue="gallery" className="w-full">
+              <TabsList className="flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-xl w-full shrink-0 shadow-inner z-10 relative mb-6 h-auto">
+                <TabsTrigger 
+                  value="profile" 
+                  className="flex-1 text-center px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all data-[state=active]:bg-white data-[state=active]:dark:bg-zinc-700 data-[state=active]:text-[#E51E44] data-[state=active]:dark:text-rose-400 data-[state=active]:shadow-sm text-gray-500 dark:text-zinc-400 data-[state=inactive]:hover:text-gray-700 data-[state=inactive]:dark:hover:text-zinc-200"
+                >
+                  Profile Picture
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="gallery" 
+                  className="flex-1 text-center px-4 md:px-6 py-2 rounded-lg text-sm font-bold transition-all data-[state=active]:bg-white data-[state=active]:dark:bg-zinc-700 data-[state=active]:text-[#E51E44] data-[state=active]:dark:text-rose-400 data-[state=active]:shadow-sm text-gray-500 dark:text-zinc-400 data-[state=inactive]:hover:text-gray-700 data-[state=inactive]:dark:hover:text-zinc-200"
+                >
+                  Photo Gallery
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="profile" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                {ProfilePictureSection}
+              </TabsContent>
+              <TabsContent value="gallery" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                {renderGallerySection(mobileScrollRef)}
+              </TabsContent>
+            </Tabs>
+          </div>
+          
         </div>
       )}
     </div>

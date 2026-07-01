@@ -67,14 +67,14 @@ export default function ChangePassword() {
     <div className="flex flex-col h-[calc(100vh-1px)] bg-[#FCFAF8] dark:bg-zinc-950">
 
       <div className="flex-1 flex flex-col items-center justify-start p-4 md:p-8 overflow-y-auto">
-        <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-[#F0E8E8] dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden flex flex-col mt-4 md:mt-8">
+        <div className="w-full max-w-xl md:bg-white md:dark:bg-zinc-900 md:border md:border-[#F0E8E8] md:dark:border-zinc-800 md:rounded-3xl md:shadow-sm overflow-hidden flex flex-col mt-2 md:mt-8">
           {/* Header Area */}
-          <div className="p-6 md:p-8 pb-4 md:pb-6 border-b border-[#F0E8E8] dark:border-zinc-800 bg-[#FCFAF8] dark:bg-zinc-950/50 text-center">
+          <div className="py-4 md:p-8 pb-4 md:pb-6 md:border-b md:border-[#F0E8E8] md:dark:border-zinc-800 md:bg-[#FCFAF8] md:dark:bg-zinc-950/50 text-center">
             <h1 className="text-2xl font-extrabold text-gray-900 dark:text-zinc-100">Change Password</h1>
           </div>
 
           {/* Form Area */}
-          <div className="p-6 md:p-8">
+          <div className="py-4 md:p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Current Password */}
@@ -188,7 +188,7 @@ export default function ChangePassword() {
                   <Button 
                     type="submit" 
                     disabled={loading}
-                    className="w-full rounded-xl bg-[#9B1C31] hover:bg-[#801426] text-white font-bold h-11 border-none shadow-sm shadow-[#9B1C31]/20 text-sm"
+                    className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-11 border-none shadow-sm shadow-primary/20 text-sm"
                   >
                     {loading ? (
                       <>

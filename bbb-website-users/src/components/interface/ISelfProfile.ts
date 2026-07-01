@@ -1,4 +1,10 @@
 export interface UserProfileSelf {
+  id: string;
+  firstName?: string | null;
+  middleName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
   isProfilePublic: boolean;
   allowSocialPublish: boolean;
   verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
@@ -30,6 +36,10 @@ export interface UserProfileSelf {
   alternatePhone: string;
   aboutMyself: string | null;
   profession: string;
+  employmentType?: string | null;
+  designation?: string | null;
+  occupationDetails?: string | null;
+  companyName?: string | null;
   education: string;
   hobbies: string;
   monthlyIncome: string;
@@ -69,4 +79,43 @@ export interface UserProfileSelf {
   partnerDiet?: string | null;
   partnerComplexion?: string | null;
   partnerMotherTongue?: string | null;
+
+  healthScreening?: string | null;
+  country?: string | null;
+  citizenship?: string | null;
+  ancestralOrigin?: string | null;
+  myFamilyStatus?: string | null;
+  partnerSpokenLanguages?: string | null;
+  partnerPreferredCountry?: string | null;
+  partnerPreferredState?: string | null;
+  partnerPreferredDistrict?: string | null;
+  partnerDescription?: string | null;
+  motherTongue?: string | null;
+  spokenLanguages?: string | null;
+  childrenLivingWith?: string | null;
+  relationshipWithBrideGroom?: string | null;
+  brothersMarriedCount?: string | null;
+  sistersMarriedCount?: string | null;
+  familyDescription?: string | null;
+  familyBackground?: string | null;
+  culturalValues?: string | null;
+  partnerPersonalityExpectation?: string | null;
+  partnerFamilyExpectation?: string | null;
+  partnerFamilyDetails?: string | null;
+  familyStatusPreference?: string | null;
+  familyTypePreference?: string | null;
+  familyValuesPreference?: string | null;
+
+  // Missing fields causing TS errors
+  lifeGoals?: string | null;
+  personalityTraits?: string | null;
+  partnerWeightRange?: string | null;
+  partnerEmploymentType?: string | null;
+  partnerSubCaste?: string | null;
+  partnerGothra?: string | null;
+  partnerDrinkingHabit?: string | null;
+  partnerSmokingHabit?: string | null;
+  partnerDisabilityAcceptable?: string | null;
+  partnerEatingHabit?: string | null;
 }
+

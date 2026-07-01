@@ -172,6 +172,14 @@ export function ProfileRedesigned({
   const [activeEditSection, setActiveEditSection] = useState<string | null>(null);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const handleImageScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const width = e.currentTarget.offsetWidth;
+    const index = Math.round(scrollLeft / width);
+    setCurrentImageIndex(index);
+  };
 
   // Dynamic Tab Visibilities based on database records
   const hasFamilyData = !!(
@@ -179,7 +187,7 @@ export function ProfileRedesigned({
     hasValue(data.mothersOccupation) ||
     hasValue(data.noOfBrothers) ||
     hasValue(data.noOfSisters) ||
-    hasValue(data.familyStatus) ||
+    hasValue((data as any).myFamilyStatus) ||
     hasValue(data.familyType) ||
     hasValue(data.familyValues) ||
     hasValue(data.familyBackground)
@@ -212,12 +220,15 @@ export function ProfileRedesigned({
   );
 
 
+  const validProfileImages = profileImages ? profileImages.filter((img: any) => img && img.url && img.url.trim() !== "") : [];
+
   const primaryPhoto =
-    profileImages.length > 0 ? profileImages[0].url : "/placeholder-user.jpg";
+    validProfileImages.length > 0 ? validProfileImages[0].url : "/placeholder-user.jpg";
 
   // Formatted dynamic display values
+  const prefix = data.gender === "MALE" ? "Mr." : data.gender === "FEMALE" ? "Miss" : "";
   const displayName = (data.firstName || data.lastName)
-    ? `${data.firstName || ""} ${data.lastName || ""}`.trim()
+    ? `${prefix} ${data.firstName || ""} ${data.lastName || ""}`.trim()
     : "User";
 
   const formattedDob = data.dob
@@ -292,37 +303,72 @@ export function ProfileRedesigned({
         
         <main className="flex-1 flex flex-col xl:flex-row gap-6 md:gap-8 min-w-0 min-h-0">
           {/* Middle column: Profile summary and Tabs */}
-          <div className="flex-1 space-y-6 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pr-2 pb-10">
+          <div className="flex-1 space-y-6 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pr-2 pb-28 md:pb-10">
             {/* Top Profile Summary Card */}
             <Card className="border-0 shadow-none bg-transparent md:border md:border-[#F0E8E8] dark:md:border-zinc-800 md:shadow-sm md:bg-gradient-to-br md:from-rose-50/80 md:to-pink-50/80 dark:md:from-zinc-950 dark:md:to-zinc-950 rounded-none md:rounded-[2rem] overflow-visible md:overflow-hidden p-0 gap-0 flex flex-col relative">
               {/* Subtle background decoration */}
               <div className="hidden md:block absolute top-0 right-0 w-full h-full opacity-40 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/floral-motif.png')] mix-blend-overlay" />
               
-              <div className="flex flex-row p-0 md:p-5 gap-4 relative z-10">
+              <div className="flex flex-col md:flex-row p-0 md:p-5 gap-4 relative z-10">
                 {/* Photo Column */}
-                <div className="w-[115px] sm:w-[130px] md:w-[140px] lg:w-[180px] shrink-0 relative aspect-square lg:aspect-[4/5] bg-gray-100 dark:bg-zinc-900 rounded-2xl md:rounded-[1.5rem] overflow-hidden md:shadow-md border-0 md:border-4 border-white dark:border-zinc-800 group">
-                  <Image
-                    src={activePhoto || primaryPhoto || "/placeholder-user.jpg"}
-                    alt={displayName}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
-                    priority
-                    onClick={() => setIsPhotoModalOpen(true)}
-                  />
+                <div className="w-full md:w-[140px] lg:w-[180px] shrink-0 relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] bg-gray-100 dark:bg-zinc-900 rounded-2xl md:rounded-[1.5rem] overflow-hidden md:shadow-md border-0 md:border-4 border-white dark:border-zinc-800 group">
+                  
+                  {/* Swipeable Image Container */}
+                  <div 
+                    className="w-full h-full flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                    onScroll={handleImageScroll}
+                  >
+                    {validProfileImages.length > 0 ? (
+                      validProfileImages.map((img, idx) => (
+                        <div key={idx} className="w-full h-full shrink-0 snap-center relative">
+                          <Image
+                            src={img.url}
+                            alt={`${displayName} - Photo ${idx + 1}`}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                            priority={idx === 0}
+                            onClick={() => {
+                              setActivePhoto(img.url);
+                              setIsPhotoModalOpen(true);
+                            }}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="w-full h-full shrink-0 snap-center relative">
+                        <Image
+                          src={primaryPhoto}
+                          alt={displayName}
+                          fill
+                          className="object-cover cursor-pointer"
+                          onClick={() => setIsPhotoModalOpen(true)}
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   {!isProfileVerified && (
                     <div className="absolute top-2 left-2 bg-amber-500/90 text-white px-2.5 py-1 rounded-full shadow-lg border border-amber-400 backdrop-blur-sm text-[10px] font-bold flex items-center gap-1.5 z-10 pointer-events-none">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
                       Pending
                     </div>
                   )}
-                  {/* Camera icon floating */}
+                  {/* Camera icon floating (hidden on mobile, replaced by pill) */}
                   <div 
-                    className="absolute bottom-3 right-3 bg-white dark:bg-zinc-800 rounded-xl p-2.5 shadow-lg border border-gray-100 dark:border-zinc-700 cursor-pointer hover:scale-110 transition-transform" 
+                    className="hidden md:block absolute bottom-3 right-3 bg-white dark:bg-zinc-800 rounded-xl p-2.5 shadow-lg border border-gray-100 dark:border-zinc-700 cursor-pointer hover:scale-110 transition-transform" 
                     onClick={() => setIsPhotoModalOpen(true)}
                     title="View Photos"
                   >
                     <ImageIcon className="w-5 h-5 text-pink-500" />
                   </div>
+                  {/* Mobile image counter pill */}
+                  {profileImages.length > 1 && (
+                    <div 
+                      className="md:hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm text-gray-800 text-[11px] font-bold px-3 py-1 rounded-full shadow-sm pointer-events-none"
+                    >
+                      {currentImageIndex + 1} / {profileImages.length}
+                    </div>
+                  )}
                 </div>
 
                 {/* Info Details Column */}
@@ -332,17 +378,23 @@ export function ProfileRedesigned({
                     <div className="flex flex-col">
                       {/* Name and Verified */}
                       <h2 className="text-lg sm:text-xl md:text-[22px] font-extrabold text-[#1a1b4b] dark:text-zinc-100 flex items-center gap-1.5 flex-wrap leading-tight">
-                        <span className="truncate">{displayName}</span>
+                        <span className="truncate max-w-[200px] md:max-w-none">{displayName}</span>
                         {isProfileVerified && (
-                          <div className="bg-amber-500 rounded-full p-0.5 shadow-sm">
+                          <div className="bg-amber-500 rounded-full p-0.5 shadow-sm shrink-0">
                              <CheckCircle2 className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                        {/* Gold Verified Badge - Mobile (inline with name) */}
+                        {isProfileVerified && (
+                          <div className="md:hidden inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded text-[10px] font-extrabold border border-amber-200 dark:border-amber-800/50 shadow-sm shrink-0">
+                            <ShieldCheck className="w-3 h-3" /> Gold
                           </div>
                         )}
                       </h2>
 
-                      {/* Gold Verified Badge */}
+                      {/* Gold Verified Badge - Desktop (below name) */}
                       {isProfileVerified && (
-                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-lg text-[11px] font-extrabold w-fit border border-amber-200 dark:border-amber-800/50 shadow-sm">
+                        <div className="hidden md:inline-flex mt-2 items-center gap-1.5 px-2.5 py-1 bg-amber-100/80 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-lg text-[11px] font-extrabold w-fit border border-amber-200 dark:border-amber-800/50 shadow-sm">
                           <ShieldCheck className="w-4 h-4" /> Gold Verified
                         </div>
                       )}
@@ -538,19 +590,41 @@ export function ProfileRedesigned({
             )}
             </Card>
 
-            {/* ─── 1. BASIC INFORMATION & ABOUT ME ────────────────────────────── */}
+            {/* ─── 0. ABOUT ME ─────────────────────────────────────────────────── */}
+            {hasValue(data.aboutMyself) && (
+              <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0 mb-4">
+                <SectionHeader icon={User} title="About Me" onEditClick={isOwnProfile ? () => setActiveEditSection("about-me") : undefined} />
+                <div className="px-4 pb-4 pt-2">
+                  <div className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed font-medium">
+                    <MaskedText
+                      value={<ExpandableText text={data.aboutMyself as string} maxLength={150} />}
+                      visible={isFreeOrAbove}
+                      fallback="Description hidden. Upgrade to premium to view."
+                    />
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* ─── 1. BASIC INFORMATION ──────────────────────────────────────── */}
             {(() => {
               const basicItems = [
+                { label: "Profile Created By", value: data.title, show: hasValue(data.title) },
+                { label: "First Name", value: data.firstName, show: hasValue(data.firstName) },
+                { label: "Middle Name", value: data.middleName, show: hasValue(data.middleName) },
+                { label: "Last Name", value: data.lastName, show: hasValue(data.lastName) },
                 { label: "Date of Birth", value: formattedDob, show: hasValue(data.dob) },
                 { label: "Age", value: data.age ? `${data.age} Years` : null, show: !!data.age },
+                { label: "Height", value: data.height ? formatHeight(data.height) : null, show: hasValue(data.height) },
+                { label: "Weight", value: data.weight, show: hasValue(data.weight) },
                 { label: "Marital Status", value: data.maritalStatus, show: hasValue(data.maritalStatus) },
-                { label: "Children", value: data.children !== undefined && data.children !== null ? String(data.children) : null, show: data.children !== undefined && data.children !== null },
-                { label: "Children Living With", value: data.childrenLivingWith, show: hasValue(data.childrenLivingWith) },
                 { label: "Mother Tongue", value: data.motherTongue, show: hasValue(data.motherTongue) },
+                { label: "No of Children", value: data.children !== undefined && data.children !== null ? String(data.children) : null, show: data.children !== undefined && data.children !== null },
+                { label: "Children Living With", value: data.childrenLivingWith, show: hasValue(data.childrenLivingWith) },
                 { label: "Spoken Languages", value: data.spokenLanguages, show: hasValue(data.spokenLanguages) },
                 { label: "Blood Group", value: data.bloodGroup, show: hasValue(data.bloodGroup), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.bloodGroup} /> },
                 { label: "Specially Abled", value: data.speciallyAble ? "Yes" : "No", show: data.speciallyAble !== undefined && data.speciallyAble !== null },
-                { label: "Disability Details", value: data.disabilityDetails, show: hasValue(data.disabilityDetails) },
+                { label: "Disability Details", value: data.disabilityDetails, show: hasValue(data.disabilityDetails), truncate: true },
                 { label: "Address", value: data.addressLine1 || data.addressLine2 ? `${data.addressLine1} ${data.addressLine2}`.trim() : null, show: hasValue(data.addressLine1) || hasValue(data.addressLine2), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={`${data.addressLine1} ${data.addressLine2}`} /> },
                 { label: "City/Village", value: data.townVillage, show: hasValue(data.townVillage) },
                 { label: "District", value: data.dist, show: hasValue(data.dist) },
@@ -558,32 +632,17 @@ export function ProfileRedesigned({
                 { label: "Country", value: data.country, show: hasValue(data.country) },
                 { label: "Pincode", value: data.pinCode, show: hasValue(data.pinCode) },
               ].filter(i => i.show);
-              return (basicItems.length > 0 || hasValue(data.aboutMyself)) ? (
-                <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
-                  <SectionHeader icon={Info} title="Basic Information & About Me" onEditClick={isOwnProfile ? () => setActiveEditSection("basic-info") : undefined} />
+              return basicItems.length > 0 ? (
+                <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0 mb-4">
+                  <SectionHeader icon={Info} title="Basic Information" onEditClick={isOwnProfile ? () => setActiveEditSection("basic-info") : undefined} />
                   
-                  {hasValue(data.aboutMyself) && (
-                    <div className="px-5 pb-5">
-                      <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-1.5">About Me</p>
-                      <p className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed font-medium">
-                        <MaskedText
-                          value={data.aboutMyself}
-                          visible={isFreeOrAbove}
-                          fallback="Description hidden. Upgrade to premium to view."
-                        />
-                      </p>
+                  <div className="px-4 pb-4 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
+                      {basicItems.map(item => (
+                        <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
+                      ))}
                     </div>
-                  )}
-
-                  {basicItems.length > 0 && (
-                    <div className="px-5 pb-5">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                        {basicItems.map(item => (
-                          <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </Card>
               ) : null;
             })()}
@@ -592,22 +651,23 @@ export function ProfileRedesigned({
             {(() => {
               const eduItems = [
                 { label: "Highest Qualification", value: data.education, show: hasValue(data.education) },
-                { label: "Field of Study", value: data.fieldOfStudy, show: hasValue(data.fieldOfStudy) },
                 { label: "College / Institution", value: data.collegeInstitution, show: hasValue(data.collegeInstitution) },
-                { label: "Passing Year", value: data.passingYear, show: hasValue(data.passingYear) },
+                { label: "Field of Study", value: data.fieldOfStudy, show: hasValue(data.fieldOfStudy) },
                 { label: "Employment Type", value: data.employmentType, show: hasValue(data.employmentType) },
-                { label: "Profession", value: data.profession, show: hasValue(data.profession) },
+                { label: "Occupation", value: data.profession, show: hasValue(data.profession) },
+                { label: "Occupation Details", value: (data as any).occupationDetails, show: hasValue((data as any).occupationDetails), truncate: true },
                 { label: "Designation", value: data.designation, show: hasValue(data.designation) },
-                { label: "Company", value: data.organizationName, show: hasValue(data.organizationName), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.organizationName} /> },
                 { label: "Work Experience", value: data.workExperience, show: hasValue(data.workExperience) },
+                { label: "Organization Name", value: data.organizationName, show: hasValue(data.organizationName), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.organizationName} /> },
+                { label: "Company / Business Name", value: (data as any).companyName, show: hasValue((data as any).companyName), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={(data as any).companyName} /> },
                 { label: "Annual Income", value: data.monthlyIncome, show: hasValue(data.monthlyIncome), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.monthlyIncome} /> },
               ].filter(i => i.show);
               return eduItems.length > 0 ? (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                   <SectionHeader icon={GraduationCap} title="Education & Career" onEditClick={isOwnProfile ? () => setActiveEditSection("career-education") : undefined} />
-                  <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                  <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
                     {eduItems.map(item => (
-                      <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                      <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
                     ))}
                   </div>
                 </Card>
@@ -631,9 +691,9 @@ export function ProfileRedesigned({
               return astroItems.length > 0 ? (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                   <SectionHeader icon={Sparkles} title="Religion & Astrology Details" onEditClick={isOwnProfile ? () => setActiveEditSection("religion-background") : undefined} />
-                  <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                  <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
                     {astroItems.map(item => (
-                      <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                      <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
                     ))}
                   </div>
                 </Card>
@@ -643,8 +703,6 @@ export function ProfileRedesigned({
             {/* ─── 4. PHYSICAL ATTRIBUTES & LIFESTYLE ────────────────────────── */}
             {(() => {
               const lifestyleItems = [
-                { label: "Height", value: data.height ? formatHeight(data.height) : null, show: hasValue(data.height) },
-                { label: "Weight", value: data.weight, show: hasValue(data.weight) },
                 { label: "Body Type", value: data.bodyType, show: hasValue(data.bodyType) },
                 { label: "Skin Tone", value: data.skinTone, show: hasValue(data.skinTone) },
                 { label: "Health Screening", value: data.healthScreening, show: hasValue(data.healthScreening) },
@@ -652,47 +710,19 @@ export function ProfileRedesigned({
                 { label: "Smoking", value: data.smokingHabits, show: hasValue(data.smokingHabits), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.smokingHabits} /> },
                 { label: "Drinking", value: data.drinkingHabits, show: hasValue(data.drinkingHabits), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.drinkingHabits} /> },
                 { label: "Life Goals", value: data.lifeGoals, show: hasValue(data.lifeGoals) },
+                { label: "Hobbies", value: data.hobbies, show: hasValue(data.hobbies) },
+                { label: "Personality Traits", value: data.personalityTraits, show: hasValue(data.personalityTraits) },
               ].filter(i => i.show);
               
-              return (lifestyleItems.length > 0 || hasValue(data.hobbies) || hasValue(data.personalityTraits)) ? (
+              return lifestyleItems.length > 0 ? (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                   <SectionHeader icon={Activity} title="Physical Attributes & Lifestyle" onEditClick={isOwnProfile ? () => setActiveEditSection("physical-attributes") : undefined} />
                   
-                  {lifestyleItems.length > 0 && (
-                    <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
-                      {lifestyleItems.map(item => (
-                        <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Hobbies */}
-                  {hasValue(data.hobbies) && (
-                    <div className="mx-5 mb-5 pt-4 border-t border-[#F5EBEB] dark:border-zinc-800">
-                      <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-2.5">Hobbies</p>
-                      <div className="flex flex-wrap gap-2">
-                        {String(data.hobbies).split(',').map((h, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-400 text-xs font-bold border border-pink-100 dark:border-pink-900/30">
-                            {h.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Personality Traits */}
-                  {hasValue(data.personalityTraits) && (
-                    <div className="mx-5 mb-5 pt-4 border-t border-[#F5EBEB] dark:border-zinc-800">
-                      <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wider font-bold mb-2.5">Personality Traits</p>
-                      <div className="flex flex-wrap gap-2">
-                        {String(data.personalityTraits).split(',').map((trait, i) => (
-                          <span key={i} className="px-3 py-1 rounded-full bg-[#FCE4EC] dark:bg-rose-950/20 text-[#9B1C31] dark:text-rose-400 text-xs font-bold border border-rose-100 dark:border-rose-900/30">
-                            {trait.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
+                    {lifestyleItems.map(item => (
+                      <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
+                    ))}
+                  </div>
                 </Card>
               ) : null;
             })()}
@@ -701,22 +731,22 @@ export function ProfileRedesigned({
             {(() => {
               const familyItems = [
                 { label: "Family Type", value: data.familyType, show: hasValue(data.familyType), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyType} /> },
-                { label: "Family Status", value: data.familyStatus, show: hasValue(data.familyStatus), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyStatus} /> },
+                { label: "Family Status", value: (data as any).myFamilyStatus || data.familyStatus, show: hasValue((data as any).myFamilyStatus) || hasValue(data.familyStatus), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={(data as any).myFamilyStatus || data.familyStatus} /> },
                 { label: "Family Values", value: data.familyValues, show: hasValue(data.familyValues), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyValues} /> },
                 { label: "Father's Occupation", value: data.fatherProfession, show: hasValue(data.fatherProfession), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.fatherProfession} /> },
                 { label: "Mother's Occupation", value: data.mothersOccupation, show: hasValue(data.mothersOccupation), masked: <MaskedText visible={isPaidOrConnected} fallback="Upgrade to view" value={data.mothersOccupation} /> },
-                { label: "Brothers", value: [data.noOfBrothers ? `${data.noOfBrothers} Brother(s)` : null, data.noOfMarriedBrothers ? `${data.noOfMarriedBrothers} Married` : null].filter(Boolean).join(', '), show: hasValue(data.noOfBrothers) || hasValue(data.noOfMarriedBrothers) },
-                { label: "Sisters", value: [data.noOfSisters ? `${data.noOfSisters} Sister(s)` : null, data.noOfMarriedSisters ? `${data.noOfMarriedSisters} Married` : null].filter(Boolean).join(', '), show: hasValue(data.noOfSisters) || hasValue(data.noOfMarriedSisters) },
-                { label: "Family Location", value: data.familyLocation, show: hasValue(data.familyLocation) },
+                { label: "Brothers", value: [data.noOfBrothers ? `${data.noOfBrothers} Brother(s)` : null, (data as any).brothersMarriedCount ? `${(data as any).brothersMarriedCount} Married` : data.noOfMarriedBrothers ? `${data.noOfMarriedBrothers} Married` : null].filter(Boolean).join(', '), show: hasValue(data.noOfBrothers) || hasValue((data as any).brothersMarriedCount) || hasValue(data.noOfMarriedBrothers) },
+                { label: "Sisters", value: [data.noOfSisters ? `${data.noOfSisters} Sister(s)` : null, (data as any).sistersMarriedCount ? `${(data as any).sistersMarriedCount} Married` : data.noOfMarriedSisters ? `${data.noOfMarriedSisters} Married` : null].filter(Boolean).join(', '), show: hasValue(data.noOfSisters) || hasValue((data as any).sistersMarriedCount) || hasValue(data.noOfMarriedSisters) },
+                { label: "Family Description", value: data.familyDescription, show: hasValue(data.familyDescription), truncate: true },
                 { label: "Ancestral Origin", value: data.ancestralOrigin, show: hasValue(data.ancestralOrigin) },
-                { label: "Family Background", value: data.familyMembers, show: hasValue(data.familyMembers), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyMembers} /> },
+                { label: "Family Members", value: data.familyMembers, show: hasValue(data.familyMembers), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.familyMembers} />, truncate: true },
               ].filter(i => i.show);
               return familyItems.length > 0 ? (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                   <SectionHeader icon={Home} title="Family Details" onEditClick={isOwnProfile ? () => setActiveEditSection("family-details") : undefined} />
-                  <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                  <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
                     {familyItems.map(item => (
-                      <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                      <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
                     ))}
                   </div>
                 </Card>
@@ -728,19 +758,19 @@ export function ProfileRedesigned({
               const prefBasicItems = [
                 { label: "Age Range", value: data.partnerAgeRange, show: hasValue(data.partnerAgeRange) },
                 { label: "Height Range", value: data.partnerHeightRange, show: hasValue(data.partnerHeightRange) },
+                { label: "Weight Range", value: data.partnerWeightRange, show: hasValue(data.partnerWeightRange) },
                 { label: "Marital Status", value: data.partnerMaritalStatus, show: hasValue(data.partnerMaritalStatus) },
-                { label: "Children Acceptability", value: data.partnerChildren, show: hasValue(data.partnerChildren) },
                 { label: "Religion", value: data.partnerReligion, show: hasValue(data.partnerReligion) },
                 { label: "Community", value: data.partnerCaste, show: hasValue(data.partnerCaste) },
                 { label: "Mother Tongue", value: data.partnerMotherTongue, show: hasValue(data.partnerMotherTongue) },
-                { label: "Manglik Acceptability", value: data.partnerManglik, show: hasValue(data.partnerManglik) },
+                { label: "Spoken Languages", value: data.partnerSpokenLanguages, show: hasValue(data.partnerSpokenLanguages) },
               ].filter(i => i.show);
               return prefBasicItems.length > 0 ? (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                   <SectionHeader icon={Heart} title="Partner Preferences (Basic)" onEditClick={isOwnProfile ? () => setActiveEditSection("partner-basic") : undefined} />
-                  <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                  <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
                     {prefBasicItems.map(item => (
-                      <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} />
+                      <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
                     ))}
                   </div>
                 </Card>
@@ -750,26 +780,26 @@ export function ProfileRedesigned({
             {/* ─── 7. PARTNER PREFERENCES (ADVANCED) ──────────────────────────── */}
             {(() => {
               const prefAdvItems = [
-                { label: "Education", value: data.partnerEducation, show: hasValue(data.partnerEducation), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.partnerEducation} /> },
-                { label: "Profession", value: data.partnerProfession, show: hasValue(data.partnerProfession) },
-                { label: "Income", value: data.partnerIncome, show: hasValue(data.partnerIncome) },
-                { label: "Location", value: data.partnerLocation, show: hasValue(data.partnerLocation) },
-                { label: "Diet", value: data.partnerDiet, show: hasValue(data.partnerDiet) },
-                { label: "Complexion", value: data.partnerComplexion, show: hasValue(data.partnerComplexion) },
-                { label: "Body Type", value: data.partnerBodyType, show: hasValue(data.partnerBodyType) },
-                { label: "Family Values", value: data.partnerFamilyValues, show: hasValue(data.partnerFamilyValues) },
-                { label: "Family Type", value: data.partnerFamilyType, show: hasValue(data.partnerFamilyType) },
-                { label: "Candidate Preferences", value: data.candidatePreference, show: hasValue(data.candidatePreference) },
-                { label: "Location Preferences", value: data.locationPreference, show: hasValue(data.locationPreference) },
+                { label: "Education", value: data.partnerMinimumQualification || data.partnerEducation, show: hasValue(data.partnerMinimumQualification) || hasValue(data.partnerEducation), masked: <MaskedText visible={isFreeOrAbove} fallback="Upgrade to view" value={data.partnerMinimumQualification || data.partnerEducation} /> },
+                { label: "Profession", value: data.partnerOccupation || data.partnerProfession, show: hasValue(data.partnerOccupation) || hasValue(data.partnerProfession) },
+                { label: "Annual Income", value: data.partnerAnnualIncome || data.partnerIncome, show: hasValue(data.partnerAnnualIncome) || hasValue(data.partnerIncome) },
+                { label: "Employment Type", value: data.partnerEmploymentType, show: hasValue(data.partnerEmploymentType) },
+                { label: "Diet / Eating", value: data.partnerEatingHabit || data.partnerDiet, show: hasValue(data.partnerEatingHabit) || hasValue(data.partnerDiet) },
+                { label: "Drinking", value: data.partnerDrinkingHabit, show: hasValue(data.partnerDrinkingHabit) },
+                { label: "Smoking", value: data.partnerSmokingHabit, show: hasValue(data.partnerSmokingHabit) },
+                { label: "Disability Acceptable", value: data.partnerDisabilityAcceptable, show: hasValue(data.partnerDisabilityAcceptable) },
+                { label: "Preferred Country", value: data.partnerPreferredCountry, show: hasValue(data.partnerPreferredCountry) },
+                { label: "Preferred State", value: data.partnerPreferredState, show: hasValue(data.partnerPreferredState) },
+                { label: "Preferred District", value: data.partnerPreferredDistrict, show: hasValue(data.partnerPreferredDistrict) },
               ].filter(i => i.show);
               return (prefAdvItems.length > 0 || hasValue(data.aboutMyPartner)) ? (
                 <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                   <SectionHeader icon={Heart} title="Partner Preferences (Advanced)" onEditClick={isOwnProfile ? () => setActiveEditSection("partner-advanced") : undefined} />
                   
                   {prefAdvItems.length > 0 && (
-                    <div className="px-5 pb-5 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5">
+                    <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-12 gap-y-2 relative before:hidden md:before:block before:absolute before:left-1/2 before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:before:bg-zinc-800 before:-translate-x-1/2">
                       {prefAdvItems.map(item => (
-                        <InfoCell key={item.label} label={item.label} value={item.masked ?? item.value} />
+                        <InfoCell key={item.label} label={item.label} value={(item as any).masked ?? item.value} truncate={(item as any).truncate} />
                       ))}
                     </div>
                   )}
@@ -777,9 +807,9 @@ export function ProfileRedesigned({
                   {hasValue(data.aboutMyPartner) && (
                     <div className="mx-5 mb-5 p-3 bg-pink-50 dark:bg-pink-950/20 rounded-xl flex items-start gap-2.5">
                       <Heart className="w-4 h-4 text-pink-600 dark:text-pink-400 mt-0.5 shrink-0" />
-                      <p className="text-xs text-pink-600 dark:text-pink-400 font-bold leading-relaxed">
-                        <MaskedText visible={isFreeOrAbove} fallback="Partner description is hidden. Upgrade to premium to view." value={data.aboutMyPartner} />
-                      </p>
+                      <div className="text-xs text-pink-600 dark:text-pink-400 font-bold leading-relaxed">
+                        <MaskedText visible={isFreeOrAbove} fallback="Partner description is hidden. Upgrade to premium to view." value={<ExpandableText text={data.aboutMyPartner as string} maxLength={150} />} />
+                      </div>
                     </div>
                   )}
                 </Card>
@@ -790,7 +820,7 @@ export function ProfileRedesigned({
             {profileImages.length > 0 && (
               <Card className="border border-[#F0E8E8] dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 rounded-2xl overflow-hidden p-0">
                 <SectionHeader icon={ImageIcon} title="Photos" editHref={isOwnProfile ? "/users/account/update-images" : undefined} editLabel={isOwnProfile ? "Edit" : undefined} />
-                <div className="px-5 pb-5">
+                <div className="px-4 pb-4">
                   <div className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {profileImages.map((img, idx) => {
                       const isActive = (activePhoto === img.url) || (!activePhoto && idx === 0);
@@ -829,7 +859,7 @@ export function ProfileRedesigned({
               <Card className="border border-red-100 dark:border-red-950 shadow-xs bg-red-50/20 dark:bg-red-950/10 rounded-2xl p-6 text-center flex flex-col items-center">
                 <Info className="w-12 h-12 text-[#9B1C31] dark:text-[#E35269] mb-4" />
                 <h3 className="text-base font-extrabold text-gray-800 dark:text-zinc-200 mb-2">Your Plan Has Expired</h3>
-                <p className="text-xs text-gray-500 dark:text-zinc-400 w-4/5 mb-6 leading-relaxed font-semibold">
+                <p className="text-xs text-gray-500 dark:text-zinc-400 w-4/5 mb-4 leading-relaxed font-semibold">
                   Please Upgrade Your Plan To Continue Using Our Services and view contact details.
                 </p>
                 <Link href="/users/plan">
@@ -1070,11 +1100,8 @@ function SectionHeader({
   editLabel?: string;
 }) {
   return (
-    <div className="flex items-center justify-between px-5 py-4 border-b border-[#F5EBEB] dark:border-zinc-800 mb-4">
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-[#FCE4EC] dark:bg-rose-950/20 flex items-center justify-center">
-          <Icon className="w-4 h-4 text-[#9B1C31] dark:text-rose-400" />
-        </div>
+    <div className="flex items-center justify-between px-4 py-3 border-b border-[#F5EBEB] dark:border-zinc-800">
+      <div className="flex items-center">
         <h3 className="text-sm font-extrabold text-gray-800 dark:text-zinc-200">{title}</h3>
       </div>
       {onEditClick ? (
@@ -1092,19 +1119,77 @@ function SectionHeader({
   );
 }
 
-// Helper: Simple label + value data cell
+// Helper: Simple label + value data cell with optional "See more / See less" for long text
 function InfoCell({
   label,
   value,
+  truncate = false,
 }: {
   label: string;
   value: React.ReactNode;
+  truncate?: boolean;
 }) {
+  const [expanded, setExpanded] = React.useState(false);
+
+  // Only apply truncation logic if truncate is explicitly requested
+  const isLongString =
+    truncate && typeof value === "string" && value.length > 60;
+
   return (
-    <div className="flex flex-col min-w-0">
-      <p className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-wider leading-none mb-1.5">{label}</p>
-      <div className="text-sm font-semibold text-gray-800 dark:text-zinc-200 leading-snug">{value || "-"}</div>
+    <div className="flex items-start text-xs sm:text-[13px] min-w-0 py-0.5">
+      <div className="w-[120px] md:w-[130px] shrink-0 text-gray-500 dark:text-zinc-400 font-medium truncate pr-2">
+        {label}
+      </div>
+      <div className="shrink-0 mr-3 text-gray-400 dark:text-zinc-500 font-medium">:</div>
+      <div className="flex-1 text-gray-800 dark:text-zinc-200 font-bold break-words min-w-0">
+        {isLongString ? (
+          expanded ? (
+            <div>
+              {value as string}
+              <button
+                onClick={() => setExpanded(false)}
+                className="text-[11px] text-[#9B1C31] dark:text-rose-400 font-semibold hover:underline inline ml-1.5"
+              >
+                See less
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center min-w-0 gap-1.5">
+              <span className="truncate">{value as string}</span>
+              <button
+                onClick={() => setExpanded(true)}
+                className="text-[11px] text-[#9B1C31] dark:text-rose-400 font-semibold hover:underline shrink-0"
+              >
+                See more
+              </button>
+            </div>
+          )
+        ) : (
+          value || "-"
+        )}
+      </div>
     </div>
   );
 }
 
+
+// Helper: Expandable text for description paragraphs
+function ExpandableText({ text, maxLength }: { text: string; maxLength: number }) {
+  const [expanded, setExpanded] = React.useState(false);
+  
+  if (!text || text.length <= maxLength) return <>{text}</>;
+
+  return (
+    <>
+      <span>
+        {expanded ? text : `${text.slice(0, maxLength)}... `}
+      </span>
+      <button
+        onClick={() => setExpanded(prev => !prev)}
+        className="text-[11px] text-[#9B1C31] dark:text-rose-400 font-semibold hover:underline inline ml-1"
+      >
+        {expanded ? "See less" : "See more"}
+      </button>
+    </>
+  );
+}

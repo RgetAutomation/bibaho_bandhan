@@ -28,7 +28,7 @@ export function Step4PhysicalEdit({ form }: { form: any }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="eatingHabits" render={({ field }) => (
                 <FormItem><FormLabel>Eating Habits<FormBadge type="optional" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="Non Vegetarian">Non Vegetarian</SelectItem>
@@ -42,7 +42,7 @@ export function Step4PhysicalEdit({ form }: { form: any }) {
               )} />
               <FormField control={form.control} name="drinkingHabits" render={({ field }) => (
                 <FormItem><FormLabel>Drinking Habits<FormBadge type="optional" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="No">No</SelectItem>
@@ -55,7 +55,7 @@ export function Step4PhysicalEdit({ form }: { form: any }) {
               )} />
               <FormField control={form.control} name="smokingHabits" render={({ field }) => (
                 <FormItem><FormLabel>Smoking Habits<FormBadge type="optional" /></FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="No">No</SelectItem>
